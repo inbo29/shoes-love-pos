@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from '../types';
+import { View } from '../src/types';
 
 interface DayOpenProps {
   setView: (view: View) => void;
@@ -67,7 +67,7 @@ const DayOpen: React.FC<DayOpenProps> = ({ setView }) => {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-icons-round text-sm">calendar_today</span>
-                <input className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium cursor-not-allowed focus:ring-0" readOnly type="text" value="2023.10.27"/>
+                <input className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium cursor-not-allowed focus:ring-0" readOnly type="text" value="2023.10.27" />
               </div>
             </div>
             <div>
@@ -76,7 +76,7 @@ const DayOpen: React.FC<DayOpenProps> = ({ setView }) => {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-icons-round text-sm">schedule</span>
-                <input className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium cursor-not-allowed focus:ring-0 font-mono" readOnly type="text" value="14:30:45"/>
+                <input className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium cursor-not-allowed focus:ring-0 font-mono" readOnly type="text" value="14:30:45" />
               </div>
             </div>
             <div>
@@ -85,7 +85,7 @@ const DayOpen: React.FC<DayOpenProps> = ({ setView }) => {
               </label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 material-icons-round text-sm">person</span>
-                <input className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium cursor-not-allowed focus:ring-0" readOnly type="text" value="Админ"/>
+                <input className="w-full pl-9 pr-4 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 font-medium cursor-not-allowed focus:ring-0" readOnly type="text" value="Админ" />
               </div>
             </div>
           </div>

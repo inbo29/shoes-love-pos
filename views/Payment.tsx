@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View } from '../types';
+import { View } from '../src/types';
 
 interface PaymentProps {
   setView: (view: View) => void;
@@ -79,7 +79,7 @@ const Payment: React.FC<PaymentProps> = ({ setView, onComplete }) => {
           <p className="text-primary font-medium animate-pulse text-sm">QR уншуулна уу...</p>
         </div>
 
-        <button 
+        <button
           onClick={handleFinish}
           className="w-full py-5 bg-secondary hover:bg-yellow-400 text-gray-900 rounded-2xl font-bold text-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center gap-3"
         >

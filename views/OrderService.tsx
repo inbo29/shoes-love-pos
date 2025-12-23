@@ -1,13 +1,13 @@
 import React from 'react';
-import { View } from '../types';
+import { View } from '../src/types';
 
 interface OrderServiceProps {
   setView: (view: View) => void;
 }
 
-const ServiceCategory: React.FC<{ 
-  icon: string; 
-  title: string; 
+const ServiceCategory: React.FC<{
+  icon: string;
+  title: string;
   count: number;
   active?: boolean;
 }> = ({ icon, title, count, active }) => (
@@ -41,7 +41,7 @@ const OrderService: React.FC<OrderServiceProps> = ({ setView }) => {
         <ServiceCategory icon="layers" title="Хивс" count={0} />
         <ServiceCategory icon="sanitizer" title="Ариутгал" count={0} />
       </div>
-      
+
       <div className="mt-8 pt-4 border-t border-gray-200 dark:border-gray-700">
         <div className="text-center mb-6">
           <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
@@ -49,13 +49,13 @@ const OrderService: React.FC<OrderServiceProps> = ({ setView }) => {
           </p>
         </div>
         <div className="grid grid-cols-2 gap-6">
-          <button 
+          <button
             onClick={() => setView(View.ORDER_CUSTOMER)}
             className="h-14 rounded-xl border-2 border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-300 font-bold text-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition active:scale-[0.98]"
           >
             Буцах
           </button>
-          <button 
+          <button
             onClick={() => setView(View.ORDER_DETAIL)}
             className="h-14 rounded-xl bg-primary text-black font-bold text-lg shadow-lg hover:shadow-xl hover:brightness-105 transition active:scale-[0.98] flex items-center justify-center gap-2"
           >

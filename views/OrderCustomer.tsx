@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from '../types';
+import { View } from '../src/types';
 
 interface OrderCustomerProps {
   setView: (view: View) => void;
@@ -26,7 +26,7 @@ const OrderCustomer: React.FC<OrderCustomerProps> = ({ setView }) => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons-round text-gray-400 text-xl">person</span>
                 </div>
-                <input className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3" placeholder="Нэр оруулах" type="text"/>
+                <input className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3" placeholder="Нэр оруулах" type="text" />
               </div>
             </div>
             <div className="relative">
@@ -37,7 +37,7 @@ const OrderCustomer: React.FC<OrderCustomerProps> = ({ setView }) => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons-round text-gray-400 text-xl">phone</span>
                 </div>
-                <input className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3" placeholder="9999-9999" type="tel"/>
+                <input className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3" placeholder="9999-9999" type="tel" />
               </div>
             </div>
             <div className="relative">
@@ -48,7 +48,7 @@ const OrderCustomer: React.FC<OrderCustomerProps> = ({ setView }) => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons-round text-gray-400 text-xl">location_on</span>
                 </div>
-                <input className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3" placeholder="Дүүрэг, хороо..." type="text"/>
+                <input className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3" placeholder="Дүүрэг, хороо..." type="text" />
               </div>
             </div>
             <div className="relative">
@@ -89,7 +89,7 @@ const OrderCustomer: React.FC<OrderCustomerProps> = ({ setView }) => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons-round text-gray-400 text-xl">event</span>
                 </div>
-                <input className="bg-gray-50 dark:bg-gray-800 block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 text-gray-500 dark:text-gray-400 sm:text-sm py-3 cursor-not-allowed" readOnly value="2023.10.27" type="text"/>
+                <input className="bg-gray-50 dark:bg-gray-800 block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 text-gray-500 dark:text-gray-400 sm:text-sm py-3 cursor-not-allowed" readOnly value="2023.10.27" type="text" />
               </div>
             </div>
             <div className="relative">
@@ -100,7 +100,7 @@ const OrderCustomer: React.FC<OrderCustomerProps> = ({ setView }) => {
                 <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                   <span className="material-icons-round text-gray-400 text-xl">badge</span>
                 </div>
-                <input className="bg-gray-50 dark:bg-gray-800 block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 text-gray-500 dark:text-gray-400 sm:text-sm py-3 cursor-not-allowed" readOnly value="Админ" type="text"/>
+                <input className="bg-gray-50 dark:bg-gray-800 block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 text-gray-500 dark:text-gray-400 sm:text-sm py-3 cursor-not-allowed" readOnly value="Админ" type="text" />
               </div>
             </div>
             <div className="flex items-center justify-between p-3 border border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700/50 mt-2">
@@ -118,7 +118,7 @@ const OrderCustomer: React.FC<OrderCustomerProps> = ({ setView }) => {
             <button className="px-8 py-3.5 rounded-xl border-2 border-primary text-primary font-bold hover:bg-primary/5 dark:hover:bg-primary/10 transition active:scale-95 text-sm uppercase tracking-wide">
               Хадгалах
             </button>
-            <button 
+            <button
               onClick={() => setView(View.ORDER_SERVICE)}
               className="px-8 py-3.5 rounded-xl bg-secondary text-gray-900 font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition active:scale-95 text-sm uppercase tracking-wide flex items-center gap-2"
             >
