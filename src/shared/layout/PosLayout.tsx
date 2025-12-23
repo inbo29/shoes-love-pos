@@ -161,8 +161,8 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
             label={<>Өдрийн<br />нээлт / хаалт</>}
             icon="lock_open"
             variant="yellow"
-            active={isActive('/pos/day-management')}
-            onClick={() => navigate('/pos/day-management')}
+            active={isActive('/pos/management/day')}
+            onClick={() => navigate('/pos/management/day')}
           />
           <NavButton
             label={<>Мөнгө<br />тушаах</>}
@@ -173,7 +173,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
           />
           <NavButton
             label={<>Кассын<br />тайлан</>}
-            icon="cancel_presentation"
+            icon="assessment"
             variant="yellow"
             active={isActive('/pos/cash-report')}
             onClick={() => navigate('/pos/cash-report')}
