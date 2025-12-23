@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { View } from '../types';
 
@@ -93,7 +94,8 @@ const Dashboard: React.FC<DashboardProps> = ({ setView }) => {
         <div className="bg-gray-50 dark:bg-surface-dark px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between shrink-0">
           <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-400">
+              {/* Fixed: Changed 'class' to 'className' below */}
+              <p className="text-sm text-gray-700 dark:text-gray-400">
                 Нийт <span className="font-medium text-gray-900 dark:text-white">56</span> захиалгаас <span className="font-medium text-gray-900 dark:text-white">1</span>-ээс <span className="font-medium text-gray-900 dark:text-white">6</span>-г харуулж байна
               </p>
             </div>

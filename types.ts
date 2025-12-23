@@ -7,9 +7,17 @@ export enum View {
   ORDER_DETAIL = 'ORDER_DETAIL',
   PAYMENT = 'PAYMENT',
   FEEDBACK = 'FEEDBACK',
+  // Operational List Views
+  ORDER_HANDOVER = 'ORDER_HANDOVER',
+  RETURN_OUT = 'RETURN_OUT',
+  RETURN_IN = 'RETURN_IN',
+  SHIPMENT_OUT = 'SHIPMENT_OUT',
+  SHIPMENT_IN = 'SHIPMENT_IN',
+  CARD_REQUEST = 'CARD_REQUEST',
   DAY_OPEN = 'DAY_OPEN',
   DAY_CLOSE = 'DAY_CLOSE',
-  // Add other views as needed for full implementation
+  CASH_SUBMIT = 'CASH_SUBMIT',
+  CANCEL_CLOSE = 'CANCEL_CLOSE',
 }
 
 export interface User {
