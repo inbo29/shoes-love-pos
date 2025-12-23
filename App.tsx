@@ -9,6 +9,9 @@ import OrderService from './views/OrderService';
 import OrderDetail from './views/OrderDetail';
 import Payment from './views/Payment';
 import GenericListView from './views/GenericListView';
+import ReturnManagement from './views/ReturnManagement';
+import ShipmentManagement from './views/ShipmentManagement';
+import DayManagement from './views/DayManagement';
 
 const INITIAL_DATA = [
   { id: '#ORD-2023-1001', info: 'Гутал (Угаалга, Будалт)', customer: 'Бат-Эрдэнэ Болд', phone: '9911-2345', date: '2023.10.27 14:15', status: 'Шинэ', statusColor: 'bg-green-100 text-green-800', amount: '45,000 ₮' },
@@ -70,14 +73,18 @@ const App: React.FC = () => {
       
       case View.ORDER_HANDOVER: 
         return <GenericListView title="Захиалга хүлээлгэн өгөх" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+      
       case View.RETURN_MANAGEMENT: 
-        return <GenericListView title="Буцаалт олгох / авах" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+        return <ReturnManagement />;
+      
       case View.SHIPMENT_MANAGEMENT: 
-        return <GenericListView title="Ачилт хийх / авах" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+        return <ShipmentManagement />;
+      
+      case View.DAY_MANAGEMENT: 
+        return <DayManagement />;
+
       case View.CARD_REQUEST: 
         return <GenericListView title="Картын хүсэлт" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
-      case View.DAY_MANAGEMENT: 
-        return <GenericListView title="Өдрийн нээлт / хаалт" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
       case View.CASH_SUBMIT: 
         return <GenericListView title="Мөнгө тушаах" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
       case View.CASH_REPORT: 
