@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import Layout from './components/Layout';
 import { View } from './types';
 import Login from './views/Login';
@@ -8,70 +8,92 @@ import OrderCustomer from './views/OrderCustomer';
 import OrderService from './views/OrderService';
 import OrderDetail from './views/OrderDetail';
 import Payment from './views/Payment';
-import DayOpen from './views/DayOpen';
 import GenericListView from './views/GenericListView';
+
+const INITIAL_DATA = [
+  { id: '#ORD-2023-1001', info: 'Гутал (Угаалга, Будалт)', customer: 'Бат-Эрдэнэ Болд', phone: '9911-2345', date: '2023.10.27 14:15', status: 'Шинэ', statusColor: 'bg-green-100 text-green-800', amount: '45,000 ₮' },
+  { id: '#ORD-2023-1002', info: 'Хими цэвэрлэгээ', customer: 'Сүхбаатар Сарнай', phone: '8800-5566', date: '2023.10.27 13:45', status: 'Хүлээгдэж буй', statusColor: 'bg-yellow-100 text-yellow-800', amount: '89,900 ₮' },
+  { id: '#ORD-2023-1003', info: 'Хивс угаалга', customer: 'Доржпүрэв Гантулга', phone: '9191-3344', date: '2023.10.27 12:30', status: 'Бэлэн', statusColor: 'bg-blue-100 text-blue-800', amount: '245,000 ₮' },
+];
 
 const App: React.FC = () => {
   const [currentView, setView] = useState<View>(View.LOGIN);
-  const [isDark, setIsDark] = useState(false);
+  const [userName, setUserName] = useState('Админ');
+  const [orders, setOrders] = useState(INITIAL_DATA);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
+  const handleLogin = (id: string, pw: string) => {
+    const userId = id.toLowerCase();
+    if (userId === 'admin' && pw === '1234') {
+      setUserName('Админ');
+      setView(View.ROLE_SELECT);
+    } else if (userId === 'worker' && pw === '1234') {
+      setUserName('Ажилтан');
+      setView(View.DASHBOARD);
     } else {
-      document.documentElement.classList.remove('dark');
+      alert('Буруу мэдээлэл байна! (admin/1234 эсвэл worker/1234)');
     }
-  }, [isDark]);
+  };
 
-  const toggleTheme = () => setIsDark(!isDark);
+  const handleLogout = () => {
+    setSearchTerm('');
+    setView(View.LOGIN);
+  };
+
+  const addNewOrder = (newOrder: any) => {
+    setOrders([newOrder, ...orders]);
+  };
+
+  const filteredOrders = orders.filter(order => 
+    order.customer.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    order.phone.includes(searchTerm)
+  );
 
   if (currentView === View.LOGIN) {
-    return <Login setView={setView} />;
+    return <Login onLogin={handleLogin} />;
   }
 
   if (currentView === View.ROLE_SELECT) {
-    return <RoleSelect setView={setView} />;
+    return <RoleSelect setView={setView} onLogout={handleLogout} />;
   }
-
-  const mockData = [
-    { id: '#2023-1001', info: 'Гутал засвар', customer: 'Бат-Эрдэнэ', date: '2023.10.27 14:15', status: 'Шинэ', statusColor: 'bg-green-100 text-green-800', amount: '45,000 ₮' },
-    { id: '#2023-1002', info: 'Хими цэвэрлэгээ', customer: 'Сарнай', date: '2023.10.27 13:45', status: 'Хийгдэж буй', statusColor: 'bg-blue-100 text-blue-800', amount: '120,000 ₮' },
-    { id: '#2023-1003', info: 'Хивс угаалга', customer: 'Гантулга', date: '2023.10.27 12:30', status: 'Бэлэн', statusColor: 'bg-yellow-100 text-yellow-800', amount: '89,000 ₮' },
-  ];
 
   const renderContent = () => {
     switch (currentView) {
-      case View.DASHBOARD: return <Dashboard setView={setView} />;
+      case View.DASHBOARD: 
+        return <Dashboard setView={setView} />;
       case View.ORDER_CUSTOMER: return <OrderCustomer setView={setView} />;
       case View.ORDER_SERVICE: return <OrderService setView={setView} />;
       case View.ORDER_DETAIL: return <OrderDetail setView={setView} />;
-      case View.PAYMENT: return <Payment setView={setView} />;
-      case View.DAY_OPEN: return <DayOpen setView={setView} />;
+      case View.PAYMENT: 
+        return <Payment setView={setView} onComplete={addNewOrder} />;
       
       case View.ORDER_HANDOVER: 
-        return <GenericListView title="Захиалга хүлээлгэн өгөх жагсаалт" data={mockData} />;
-      case View.RETURN_OUT: 
-        return <GenericListView title="Буцаалт олгох жаг사алт" data={mockData} />;
-      case View.RETURN_IN: 
-        return <GenericListView title="Буцаалт хүлээж авах жаг사алт" data={mockData} />;
-      case View.SHIPMENT_OUT: 
-        return <GenericListView title="А치лт хийх жаг사алт" data={mockData} />;
-      case View.SHIPMENT_IN: 
-        return <GenericListView title="Ачилт хүлээж авах жа그사алт" data={mockData} />;
+        return <GenericListView title="Захиалга хүлээлгэн өгөх" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+      case View.RETURN_MANAGEMENT: 
+        return <GenericListView title="Буцаалт олгох / авах" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+      case View.SHIPMENT_MANAGEMENT: 
+        return <GenericListView title="Ачилт хийх / авах" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
       case View.CARD_REQUEST: 
-        return <GenericListView title="Картын хүсэлтүүд" data={mockData} />;
-      case View.DAY_CLOSE: 
-        return <GenericListView title="Өдрийн хаалтын жаг사алт" data={mockData} />;
+        return <GenericListView title="Картын хүсэлт" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+      case View.DAY_MANAGEMENT: 
+        return <GenericListView title="Өдрийн нээлт / хаалт" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
       case View.CASH_SUBMIT: 
-        return <GenericListView title="Мөнгө тушаах бүртгэл" data={mockData} />;
-      case View.CANCEL_CLOSE: 
-        return <GenericListView title="Хаалт цуцлах хүсэлт" data={mockData} />;
-      default: return <Dashboard setView={setView} />;
+        return <GenericListView title="Мөнгө тушаах" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+      case View.CASH_REPORT: 
+        return <GenericListView title="Кассын тайлан" data={filteredOrders} searchTerm={searchTerm} setSearchTerm={setSearchTerm} />;
+      default: 
+        return <Dashboard setView={setView} />;
     }
   };
 
   return (
-    <Layout currentView={currentView} setView={setView} toggleTheme={toggleTheme} isDark={isDark}>
+    <Layout 
+      currentView={currentView} 
+      setView={setView} 
+      userName={userName}
+      onLogout={handleLogout}
+    >
       {renderContent()}
     </Layout>
   );
