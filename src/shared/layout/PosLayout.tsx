@@ -93,20 +93,26 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center gap-4">
-            <span className="text-white/80 text-xs font-artsans uppercase tracking-widest">Өнөөдөр</span>
-            <div className="bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg text-white font-bold tracking-wider flex items-center gap-3 border border-white/20">
-              <span className="text-xs font-andale">{formatDate(time)}</span>
-              <span className="opacity-40">|</span>
-              <span className="text-sm font-andale">{formatTime(time)}</span>
+            <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/20 pb-0.5">Төв салбар</span>
+            <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl text-white font-bold tracking-wider flex items-center gap-3 border border-white/10 shadow-inner">
+              <span className="text-[10px] font-andale opacity-80">{formatDate(time)}</span>
+              <span className="opacity-20 text-xs">|</span>
+              <span className="text-xs font-andale">{formatTime(time)}</span>
             </div>
           </div>
 
-          <button
-            onClick={onLogout}
-            className="w-9 h-9 rounded-lg bg-white/20 hover:bg-white/30 text-white transition-all flex items-center justify-center border border-white/20 group active:scale-95"
-          >
-            <span className="material-icons-round text-lg group-hover:rotate-12 transition-transform">logout</span>
-          </button>
+          <div className="flex items-center gap-3 pl-2 border-l border-white/10">
+            <div className="flex flex-col items-end">
+              <span className="text-[10px] text-white/50 font-black uppercase tracking-tighter leading-none mb-1">Ажилтан</span>
+              <span className="text-xs text-white font-bold leading-none">{userName}</span>
+            </div>
+            <button
+              onClick={onLogout}
+              className="w-9 h-9 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-all flex items-center justify-center border border-white/10 group active:scale-95 shadow-sm"
+            >
+              <span className="material-icons-round text-lg group-hover:rotate-12 transition-transform">logout</span>
+            </button>
+          </div>
         </div>
       </header>
 

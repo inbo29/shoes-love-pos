@@ -80,8 +80,8 @@ const Step4ItemCondition: React.FC = () => {
                                     key={option.id}
                                     onClick={() => handleSelection(itemIdx, group.groupCode, option.id, false)}
                                     className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all border ${isSelected
-                                            ? 'bg-primary border-primary text-white'
-                                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                                        ? 'bg-primary border-primary text-white'
+                                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
                                         }`}
                                 >
                                     {option.label}
@@ -128,8 +128,8 @@ const Step4ItemCondition: React.FC = () => {
                                     key={option.id}
                                     onClick={() => handleSelection(itemIdx, group.groupCode, option.id, group.multiSelect)}
                                     className={`px-4 py-1.5 rounded-full border transition-all text-[11px] font-medium ${isSelected
-                                            ? 'bg-primary border-primary text-white'
-                                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                                        ? 'bg-primary border-primary text-white'
+                                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
                                         }`}
                                 >
                                     {option.label}
@@ -178,7 +178,7 @@ const Step4ItemCondition: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto w-full p-4 h-full overflow-y-auto">
+        <div className="w-full p-4 md:p-6 h-full overflow-y-auto no-scrollbar">
             <h1 className="text-xl font-bold text-gray-800 mb-6">Одоогийн байдал бүртгэх</h1>
 
             <div className="space-y-6 pb-20">

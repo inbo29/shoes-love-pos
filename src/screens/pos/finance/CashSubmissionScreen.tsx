@@ -58,9 +58,6 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
             <div className="flex-1 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col min-h-[400px]">
                 <div className="p-4 md:p-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-                            <span className="material-icons-round text-2xl">account_balance_wallet</span>
-                        </div>
                         <h2 className="text-sm md:text-base font-black text-gray-800 uppercase tracking-tight">Мөнгөний жагсаалт</h2>
                     </div>
                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">

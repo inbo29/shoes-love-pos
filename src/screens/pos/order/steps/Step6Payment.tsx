@@ -48,19 +48,19 @@ const Step6Payment: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto w-full p-4 h-full flex flex-col lg:flex-row gap-8 overflow-hidden">
+        <div className="w-full p-4 md:p-6 h-full flex flex-col lg:flex-row gap-8 overflow-y-auto no-scrollbar overflow-visible">
             {/* Left Column: Payment Methods (60%) */}
-            <div className="lg:w-[60%] flex flex-col gap-6 overflow-y-auto pr-4 pb-24">
+            <div className="lg:w-[60%] flex flex-col gap-6 overflow-visible pr-4 pb-24">
                 <h1 className="text-xl font-bold text-gray-800 uppercase">Төлбөрийн хэрэгсэл</h1>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 p-1">
                     {PAYMENT_METHODS.map((method) => (
                         <button
                             key={method.id}
                             onClick={() => setSelectedMethod(method.id)}
                             className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-3 relative overflow-hidden group ${selectedMethod === method.id
-                                    ? 'border-primary bg-primary/5 shadow-md scale-[1.02]'
-                                    : 'border-gray-100 bg-white hover:border-primary/30 hover:shadow-sm'
+                                ? 'border-primary bg-primary/5 shadow-md scale-[1.02]'
+                                : 'border-gray-100 bg-white hover:border-primary/30 hover:shadow-sm'
                                 }`}
                         >
                             <div className={`w-12 h-12 rounded-full flex items-center justify-center text-white ${method.color} shadow-sm group-hover:scale-110 transition-transform`}>
@@ -172,8 +172,8 @@ const Step6Payment: React.FC = () => {
                             disabled={!isReadyToPay || isProcessing}
                             onClick={handlePayment}
                             className={`w-full mt-10 py-5 rounded-2xl text-base font-black tracking-tight shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${isReadyToPay && !isProcessing
-                                    ? 'bg-primary text-white shadow-primary/30 hover:bg-primary-dark cursor-pointer'
-                                    : 'bg-gray-100 text-gray-300 border-gray-50 cursor-not-allowed shadow-none'
+                                ? 'bg-primary text-white shadow-primary/30 hover:bg-primary-dark cursor-pointer'
+                                : 'bg-gray-100 text-gray-300 border-gray-50 cursor-not-allowed shadow-none'
                                 }`}
                         >
                             {isProcessing ? (

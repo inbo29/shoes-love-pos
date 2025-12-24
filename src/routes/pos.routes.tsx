@@ -7,6 +7,9 @@ import DayManagementScreen from '../screens/pos/management/DayManagementScreen';
 import CashSubmissionScreen from '../screens/pos/finance/CashSubmissionScreen';
 import CashReportScreen from '../screens/pos/finance/CashReportScreen';
 import CardManagementScreen from '../screens/pos/cards/CardManagementScreen';
+import ReceiveListScreen from '../screens/pos/receive/ReceiveListScreen';
+import ReceiveDetailScreen from '../screens/pos/receive/ReceiveDetailScreen';
+
 
 // Placeholder for screens moving to new structure
 const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
@@ -40,7 +43,14 @@ const PosRoutes: React.FC = () => {
             <Route path="cash-report" element={<CashReportScreen />} />
 
             {/* Placeholders for other features as per rule.md */}
-            <Route path="receive/*" element={<PlaceholderScreen title="Receive" />} />
+            {/* 수령 (Handover) */}
+            <Route path="receive">
+                <Route index element={<ReceiveListScreen />} />
+                <Route path=":id/step/:step" element={<ReceiveDetailScreen />} />
+                {/* Fallback to step 1 */}
+                <Route path=":id" element={<Navigate to="step/1" replace />} />
+            </Route>
+
             <Route path="returns/*" element={<PlaceholderScreen title="Returns" />} />
             <Route path="shipments/*" element={<PlaceholderScreen title="Shipments" />} />
             <Route path="cards/*" element={<CardManagementScreen />} />

@@ -59,9 +59,6 @@ const CashReportScreen: React.FC = () => {
             {/* Header Summary */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-wrap items-center justify-between gap-6 shrink-0">
                 <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-primary rounded-2xl flex items-center justify-center text-white shadow-lg shadow-primary/20">
-                        <span className="material-icons-round text-2xl">assessment</span>
-                    </div>
                     <div>
                         <h1 className="text-xl font-black text-gray-800 tracking-tight uppercase">Кассын тайлан</h1>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Өдрийн эцсийн нэгтгэл</p>
@@ -86,7 +83,7 @@ const CashReportScreen: React.FC = () => {
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
+            <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
                 {/* Left Column: Breakdown */}
                 <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-6">
                     <div className="flex items-center justify-between ml-1">
@@ -175,11 +172,11 @@ const CashReportScreen: React.FC = () => {
                 </div>
 
                 {/* Right Column: Summaries & Action */}
-                <div className="w-full md:w-[320px] lg:w-96 flex flex-col gap-6 shrink-0 overflow-y-auto no-scrollbar pb-6">
+                <div className="w-full lg:w-[320px] xl:w-96 flex flex-col gap-6 shrink-0 overflow-y-auto no-scrollbar pb-6 lg:pb-0">
 
                     {/* Service Breakdown Summary */}
-                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                        <div className="p-6 bg-gray-100/50 border-b border-gray-100 flex items-center gap-2">
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden shrink-0">
+                        <div className="p-5 bg-gray-50 border-b border-gray-100 flex items-center gap-2">
                             <span className="material-icons-round text-primary text-sm">category</span>
                             <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-widest">Үйлчилгээний нэгтгэл</h4>
                         </div>
@@ -200,8 +197,8 @@ const CashReportScreen: React.FC = () => {
                     </div>
 
                     {/* Financial Summary Card */}
-                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                        <div className="p-6 bg-primary/5 border-b border-gray-100 flex items-center gap-2">
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden shrink-0">
+                        <div className="p-5 bg-primary/5 border-b border-gray-100 flex items-center gap-2">
                             <span className="material-icons-round text-primary text-sm">account_balance</span>
                             <h4 className="text-[10px] font-black text-primary uppercase tracking-widest">Санхүүгийн нэгтгэл</h4>
                         </div>
@@ -223,7 +220,7 @@ const CashReportScreen: React.FC = () => {
                     </div>
 
                     {/* Cash Validation */}
-                    <div className={`rounded-3xl p-6 border shadow-xl transition-all ${isCashMismatch
+                    <div className={`rounded-3xl p-6 border shadow-xl transition-all shrink-0 ${isCashMismatch
                         ? 'bg-orange-50 border-orange-100 text-orange-600'
                         : 'bg-green-50 border-green-100 text-green-600'
                         }`}>
@@ -241,7 +238,7 @@ const CashReportScreen: React.FC = () => {
                     </div>
 
                     {/* Action Button */}
-                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 space-y-6 mt-auto">
+                    <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 space-y-4 mt-auto shrink-0">
                         <button
                             onClick={handleFinalize}
                             disabled={isProcessing}
@@ -259,8 +256,8 @@ const CashReportScreen: React.FC = () => {
                                 </>
                             )}
                         </button>
-                        <p className="text-[10px] text-gray-400 text-center leading-relaxed font-bold uppercase tracking-tighter">
-                            * Магад хийсний дараа өөрчлөлт оруулах боломжгүй
+                        <p className="text-[9px] text-gray-400 text-center leading-relaxed font-bold uppercase tracking-tighter px-2">
+                            * МАГАД ХИЙСНИЙ ДАРАА ӨӨРЧЛӨЛТ ОРУУЛАХ БОЛОМЖГҮЙ
                         </p>
                     </div>
                 </div>

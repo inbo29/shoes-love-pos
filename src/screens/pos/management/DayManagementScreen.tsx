@@ -1,18 +1,28 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { mockDayManagementData, DayRecord } from '../../../services/mockDayManagementData';
 import Popup from '../../../shared/components/Popup/Popup';
+import PosExcelButton from '../../../shared/components/PosExcelButton';
+import PosPagination from '../../../shared/components/PosPagination';
+import PosDateRangePicker from '../../../shared/components/PosDateRangePicker';
 
 const DayManagementScreen: React.FC = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
-    const [activeTab, setActiveTab] = useState<'open' | 'close'>('open');
     const [searchTerm, setSearchTerm] = useState('');
     const [showConfirmPopup, setShowConfirmPopup] = useState(false);
     const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-    const [records, setRecords] = useState<DayRecord[]>(mockDayManagementData);
+    const [records, setRecords] = useState<DayRecord[]>(() => {
+        return mockDayManagementData.map(r => ({
+            ...r,
+            role: r.employeeName.includes('Админ') ? 'Manager' : 'Staff'
+        }));
+    });
+    const [currentPage, setCurrentPage] = useState(1);
 
-    // Simulated Role
-    const userRole: 'ADMIN' | 'STAFF' = 'ADMIN';
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [endDate, setEndDate] = useState<Date | null>(null);
+
     const userName = 'Б.Болд';
+    const userRoleText = 'Manager';
 
     useEffect(() => {
         const timer = setInterval(() => setCurrentTime(new Date()), 1000);
@@ -20,229 +30,302 @@ const DayManagementScreen: React.FC = () => {
     }, []);
 
     const formatDate = (date: Date) => {
-        return date.toLocaleDateString('en-GB').replace(/\//g, '.');
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}.${m}.${d}`;
+    };
+    const formatTime = (date: Date) => date.toLocaleTimeString('en-GB', { hour12: false });
+
+    const calculateDuration = (open?: string, close?: string) => {
+        if (!open || !close) return '—';
+        const [h1, m1, s1] = open.split(':').map(Number);
+        const [h2, m2, s2] = close.split(':').map(Number);
+        const d1 = new Date(2000, 0, 1, h1, m1, s1);
+        const d2 = new Date(2000, 0, 1, h2, m2, s2);
+        const diffMs = d2.getTime() - d1.getTime();
+        const diffHrs = Math.floor(diffMs / 3600000);
+        const diffMins = Math.floor((diffMs % 3600000) / 60000);
+        return `${diffHrs}ц ${diffMins}мин`;
     };
 
-    const formatTime = (date: Date) => {
-        return date.toLocaleTimeString('en-GB', { hour12: false });
-    };
+    const todayStr = formatDate(currentTime);
+    const activeShift = records.find(r => r.date === todayStr && r.employeeName.includes(userName) && r.status === 'Нээлттэй');
+    const isClockedIn = !!activeShift;
 
-    const filteredRecords = records.filter(r => {
-        const matchesTab = activeTab === 'open' ? !!r.openTime : !!r.closeTime;
-        const matchesSearch = userRole === 'ADMIN' ? r.employeeName.toLowerCase().includes(searchTerm.toLowerCase()) : r.employeeName === userName;
-        return matchesTab && matchesSearch;
-    });
+    const filteredRecords = useMemo(() => {
+        return records.filter(r => {
+            const matchesSearch = r.employeeName.toLowerCase().includes(searchTerm.toLowerCase());
+            const recDate = new Date(r.date.replace(/\./g, '-'));
+            const matchesDate = (!startDate || recDate >= startDate) && (!endDate || recDate <= endDate);
+            return matchesSearch && matchesDate;
+        }).sort((a, b) => new Date(b.date.replace(/\./g, '-')).getTime() - new Date(a.date.replace(/\./g, '-')).getTime());
+    }, [records, searchTerm, startDate, endDate]);
 
-    const handleAction = () => {
-        setShowConfirmPopup(true);
-    };
+    const itemsPerPage = 10;
+    const paginatedRecords = filteredRecords.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const handleAction = () => setShowConfirmPopup(true);
 
     const confirmAction = () => {
         setShowConfirmPopup(false);
-        // Simulate adding record
-        const newRecord: DayRecord = {
-            id: Math.random().toString(),
-            date: formatDate(currentTime),
-            openTime: activeTab === 'open' ? formatTime(currentTime) : undefined,
-            closeTime: activeTab === 'close' ? formatTime(currentTime) : undefined,
-            employeeName: userName + (userRole === 'ADMIN' ? ' (Admin)' : ' (Staff)'),
-            status: activeTab === 'open' ? 'Нээлттэй' : 'Хаагдсан'
-        };
-        setRecords([newRecord, ...records]);
+        const timeStr = formatTime(currentTime);
+
+        if (!isClockedIn) {
+            const newRecord: DayRecord = {
+                id: Math.random().toString(),
+                date: todayStr,
+                openTime: timeStr,
+                employeeName: `${userName} (${userRoleText})`,
+                status: 'Нээлттэй'
+            };
+            setRecords([newRecord, ...records]);
+        } else {
+            setRecords(prev => prev.map(r =>
+                r.id === activeShift?.id
+                    ? { ...r, closeTime: timeStr, status: 'Хаагдсан' }
+                    : r
+            ));
+        }
         setShowSuccessPopup(true);
     };
 
     return (
-        <div className="flex-1 flex flex-col p-6 gap-6 overflow-hidden h-full bg-gray-50/50">
-            {/* Header Area */}
-            <div className="bg-[#40C1C7] rounded-2xl shadow-lg p-4 flex justify-between items-center text-white">
-                <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-                        <span className="material-icons-round text-2xl">wb_sunny</span>
-                    </div>
-                    <h2 className="text-lg font-black uppercase tracking-tight italic">Shoes Love</h2>
-                </div>
-                <div className="flex items-center gap-6">
-                    <div className="flex items-center gap-2 bg-black/10 px-4 py-1.5 rounded-lg border border-white/10">
-                        <span className="material-icons-round text-sm">schedule</span>
-                        <span className="text-sm font-bold tracking-wider">{formatDate(currentTime)} {formatTime(currentTime)}</span>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white text-[#40C1C7] px-4 py-1.5 rounded-lg font-black shadow-sm">
-                        <span className="material-icons-round text-sm">person</span>
-                        <span className="text-xs uppercase">{userName}</span>
-                    </div>
-                </div>
-            </div>
+        <div className="flex-1 flex flex-col h-full bg-[#F1F5F9] overflow-y-auto no-scrollbar overflow-visible">
+            <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20 overflow-visible">
 
-            {/* Main Content Area */}
-            <div className="flex-1 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col">
-                {/* Tabs & Search */}
-                <div className="p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="flex bg-gray-100 p-1.5 rounded-2xl w-full md:w-auto">
-                        <button
-                            onClick={() => setActiveTab('open')}
-                            className={`flex-1 md:w-40 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'open' ? 'bg-white text-green-500 shadow-md scale-105' : 'text-gray-400 hover:text-gray-600'
-                                }`}
-                        >
-                            <span className="material-icons-round text-sm">login</span>
-                            Ирсэн (Нээлт)
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('close')}
-                            className={`flex-1 md:w-40 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${activeTab === 'close' ? 'bg-white text-red-500 shadow-md scale-105' : 'text-gray-400 hover:text-gray-600'
-                                }`}
-                        >
-                            <span className="material-icons-round text-sm">logout</span>
-                            Тарсан (Хаалт)
-                        </button>
+                {/* 1. Header Card - Teal Banner */}
+                <div className="bg-[#40C1C7] rounded-[32px] shadow-2xl p-6 flex items-center justify-between text-white shrink-0">
+                    <div className="flex flex-col">
+                        <h1 className="text-2xl font-black italic tracking-tighter leading-none">SHOES LOVE</h1>
+                        <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80 mt-1">Attendance Management</p>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        {userRole === 'ADMIN' && (
-                            <div className="relative flex-1 md:w-64">
-                                <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400">
+                    <div className="flex items-center gap-6">
+                        <div className="bg-white/10 px-5 py-2.5 rounded-2xl border border-white/20 backdrop-blur-md flex items-center gap-3">
+                            <span className="material-icons-round text-sm opacity-60">schedule</span>
+                            <span className="text-sm font-black tracking-widest whitespace-nowrap">{formatDate(currentTime)} {formatTime(currentTime)}</span>
+                        </div>
+
+                        <div className="flex items-center gap-4 border-l border-white/20 pl-6">
+                            <div className="text-right">
+                                <p className="text-[9px] font-black uppercase tracking-widest opacity-60">Manager</p>
+                                <p className="text-sm font-black whitespace-nowrap">{userName}</p>
+                            </div>
+                            <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center shadow-lg transform rotate-3">
+                                <span className="material-icons-round text-[#40C1C7] text-2xl">person</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 2. Filter Card (Static Position & Overflow Visible) */}
+                <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-8 flex flex-col xl:flex-row items-end justify-between gap-6 relative z-[10] overflow-visible">
+                    <div className="flex flex-col sm:flex-row items-end gap-8 flex-nowrap shrink-0 overflow-visible">
+                        <PosDateRangePicker
+                            label="Шүүх хугацаа"
+                            start={startDate}
+                            end={endDate}
+                            onChange={(s, e) => {
+                                setStartDate(s);
+                                setEndDate(e);
+                                setCurrentPage(1);
+                            }}
+                        />
+
+                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-[320px]">
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан хайх</label>
+                            <div className="relative">
+                                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
                                     <span className="material-icons-round text-lg">search</span>
                                 </span>
                                 <input
                                     type="text"
                                     placeholder="Нэрээр хайх..."
                                     value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                    className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-100 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-[#40C1C7]/20 transition-all font-bold"
+                                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                                    className="w-full h-[44px] pl-11 pr-4 bg-white border border-gray-200 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all hover:border-primary/50"
                                 />
                             </div>
-                        )}
-                        <button className="p-2.5 bg-gray-50 border border-gray-100 rounded-xl text-gray-400 hover:text-gray-600 transition-colors">
-                            <span className="material-icons-round text-lg">filter_alt</span>
+                        </div>
+                    </div>
+
+                    <div className="shrink-0 h-[44px]">
+                        <PosExcelButton />
+                    </div>
+                </div>
+
+                {/* 3. List Card (Relative Position, Overflow Visible for Popups) */}
+                <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 flex flex-col relative z-[1] min-h-[400px] overflow-visible">
+                    <div className="flex-1 overflow-x-auto no-scrollbar">
+                        <table className="w-full text-left border-collapse min-w-[1000px]">
+                            <thead className="bg-gray-50/50 sticky top-0 z-10">
+                                <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                                    <th className="px-8 py-5">Огноо</th>
+                                    <th className="px-8 py-5">Ажилтны нэр</th>
+                                    <th className="px-8 py-5">Ирсэн</th>
+                                    <th className="px-8 py-5">Тарсан</th>
+                                    <th className="px-8 py-5">Хугацаа</th>
+                                    <th className="px-8 py-5 text-center">Төлөв</th>
+                                    <th className="px-8 py-5 text-right w-20"></th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50">
+                                {paginatedRecords.length > 0 ? paginatedRecords.map((record) => (
+                                    <tr key={record.id} className="group hover:bg-primary/[0.02] transition-colors">
+                                        <td className="px-8 py-5 text-[13px] font-bold text-gray-700">{record.date}</td>
+                                        <td className="px-8 py-5">
+                                            <span className="text-[13px] font-black text-gray-800">{record.employeeName.split(' (')[0]}</span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-icons-round text-green-500 text-lg">login</span>
+                                                <span className="text-[14px] font-black text-gray-900">{record.openTime?.slice(0, 5) || '—'}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex items-center gap-2">
+                                                <span className={`material-icons-round text-lg ${record.closeTime ? 'text-red-500' : 'text-gray-200'}`}>logout</span>
+                                                <span className={`text-[14px] font-black ${record.closeTime ? 'text-gray-900' : 'text-gray-300'}`}>
+                                                    {record.closeTime?.slice(0, 5) || '—'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <span className="text-[13px] font-bold text-gray-700 whitespace-nowrap">
+                                                {calculateDuration(record.openTime, record.closeTime)}
+                                            </span>
+                                        </td>
+                                        <td className="px-8 py-5">
+                                            <div className="flex justify-center">
+                                                <span className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest border flex items-center gap-1.5 whitespace-nowrap
+                                                    ${record.status === 'Нээлттэй'
+                                                        ? 'bg-green-100 text-green-600 border-green-200'
+                                                        : 'bg-gray-100 text-gray-400 border-gray-200'
+                                                    }
+                                                `}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${record.status === 'Нээлттэй' ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`} />
+                                                    {record.status === 'Нээлттэй' ? 'Ажиллаж байна' : 'Хааг드сан'}
+                                                </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-8 py-5 text-right">
+                                            <span className="material-icons-round text-gray-200 text-lg">lock_outline</span>
+                                        </td>
+                                    </tr>
+                                )) : (
+                                    <tr>
+                                        <td colSpan={7} className="py-32 text-center">
+                                            <span className="material-icons-round text-7xl opacity-10 text-gray-400 block mb-4">history</span>
+                                            <p className="font-black uppercase tracking-widest text-gray-300">Бүртгэл олдсонгүй</p>
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div className="p-6 border-t border-gray-50 flex justify-center">
+                        <PosPagination
+                            totalItems={filteredRecords.length}
+                            itemsPerPage={itemsPerPage}
+                            currentPage={currentPage}
+                            onPageChange={setCurrentPage}
+                        />
+                    </div>
+                </div>
+
+                {/* 4. Action Card (Bottom) */}
+                <div className="bg-white rounded-[32px] shadow-2xl border border-gray-100 p-10 shrink-0">
+                    <div className="mb-8">
+                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">ӨДӨР НЭЭХ</h3>
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ATTENDANCE ACTION</p>
+                    </div>
+
+                    <div className="flex flex-col lg:flex-row items-end gap-10">
+                        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Одоогийн огноо</label>
+                                <div className="h-[56px] px-6 bg-gray-50 rounded-2xl border border-gray-200 text-[14px] font-bold text-gray-700 flex items-center gap-4">
+                                    <span className="material-icons-round text-gray-300">calendar_today</span>
+                                    {todayStr}
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Систе미йн цаг</label>
+                                <div className="h-[56px] px-6 bg-[#40C1C7]/5 rounded-2xl border border-[#40C1C7]/10 text-[20px] font-black text-[#40C1C7] flex items-center gap-4 italic shadow-inner">
+                                    <span className="material-icons-round text-[#40C1C7]/30">timer</span>
+                                    {formatTime(currentTime)}
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан</label>
+                                <div className="h-[56px] px-6 bg-gray-50 rounded-2xl border border-gray-100 text-[14px] font-bold text-gray-700 flex items-center gap-4">
+                                    <span className="material-icons-round text-gray-300">person</span>
+                                    {userName}
+                                </div>
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={handleAction}
+                            className={`w-full lg:w-[320px] h-[56px] rounded-2xl text-[14px] font-black uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3
+                                ${isClockedIn
+                                    ? 'bg-red-500 text-white shadow-red-500/30 hover:bg-red-600'
+                                    : 'bg-[#40C1C7] text-white shadow-[#40C1C7]/30 hover:bg-[#39ADB3]'
+                                }
+                            `}
+                        >
+                            <span className="material-icons-round">
+                                {isClockedIn ? 'stop_circle' : 'play_circle'}
+                            </span>
+                            {isClockedIn ? 'Тарах цаг бүртгэх' : 'Ирэх цаг бүртгэх'}
                         </button>
                     </div>
                 </div>
-
-                {/* Table Header */}
-                <div className="bg-gray-50/50 px-8 py-4 border-b border-gray-100 flex text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                    <div className="w-40">Огноо</div>
-                    <div className="w-40">{activeTab === 'open' ? 'Нээсэн цаг' : 'Хаасан цаг'}</div>
-                    <div className="flex-1">Ажилтны нэр</div>
-                    <div className="w-32 text-center">Төлөв</div>
-                </div>
-
-                {/* Table Body */}
-                <div className="flex-1 overflow-y-auto no-scrollbar">
-                    {filteredRecords.map((record) => (
-                        <div key={record.id} className="px-8 py-5 border-b border-gray-50 flex items-center hover:bg-gray-50/30 transition-colors group">
-                            <div className="w-40 text-sm font-bold text-gray-700">{record.date}</div>
-                            <div className="w-40 text-sm font-black text-[#40C1C7] italic">
-                                {activeTab === 'open' ? record.openTime : record.closeTime}
-                            </div>
-                            <div className="flex-1 text-sm font-bold text-gray-600">{record.employeeName}</div>
-                            <div className="w-32 flex justify-center">
-                                <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${record.status === 'Нээлттэй' ? 'bg-green-50 text-green-500 border border-green-100' : 'bg-gray-50 text-gray-400'
-                                    }`}>
-                                    {record.status}
-                                </span>
-                            </div>
-                        </div>
-                    ))}
-                    {filteredRecords.length === 0 && (
-                        <div className="flex flex-col items-center justify-center p-20 opacity-20">
-                            <span className="material-icons-round text-6xl">history</span>
-                            <p className="mt-2 font-black uppercase tracking-widest">Бичлэг байхгүй</p>
-                        </div>
-                    )}
-                </div>
             </div>
 
-            {/* Bottom Action Area */}
-            <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6">
-                <h3 className="text-xs font-black text-[#40C1C7] uppercase tracking-widest mb-6 flex items-center gap-2">
-                    <span className="material-icons-round text-sm">{activeTab === 'open' ? 'wb_sunny' : 'nightlight_round'}</span>
-                    Өдөр {activeTab === 'open' ? 'нээх' : 'хаах'}
-                </h3>
-                <div className="flex flex-col md:flex-row items-end gap-6">
-                    <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-6 w-full">
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Огноо</label>
-                            <div className="p-3.5 bg-gray-50 rounded-2xl border border-gray-100 text-sm font-bold text-gray-600 flex items-center gap-3">
-                                <span className="material-icons-round text-gray-300 text-lg">calendar_today</span>
-                                {formatDate(currentTime)}
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Цаг (Систем)</label>
-                            {/* Read-only time as per user request (Employees cannot edit) */}
-                            <div className="p-3.5 bg-orange-50/50 rounded-2xl border border-orange-100 text-sm font-black text-orange-600 flex items-center gap-3 italic">
-                                <span className="material-icons-round text-orange-300 text-lg">timer</span>
-                                {formatTime(currentTime)}
-                            </div>
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан</label>
-                            <div className="p-3.5 bg-gray-50 rounded-2xl border border-gray-100 text-sm font-bold text-gray-600 flex items-center gap-3">
-                                <span className="material-icons-round text-gray-300 text-lg">person_pin</span>
-                                {userName}
-                            </div>
-                        </div>
-                    </div>
-
-                    <button
-                        onClick={handleAction}
-                        className={`w-full md:w-64 py-4 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${activeTab === 'open'
-                                ? 'bg-yellow-400 text-gray-900 shadow-yellow-400/30 hover:bg-yellow-500'
-                                : 'bg-red-500 text-white shadow-red-500/30 hover:bg-red-600'
-                            }`}
-                    >
-                        <span className="material-icons-round">
-                            {activeTab === 'open' ? 'play_arrow' : 'stop'}
-                        </span>
-                        Өдөр {activeTab === 'open' ? 'нээх' : 'хаах'}
-                    </button>
-                </div>
-            </div>
-
-            {/* Confirmation Popup */}
+            {/* Confirmation Dialog */}
             {showConfirmPopup && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in duration-300">
-                        <div className="p-8 text-center space-y-4">
-                            <div className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center mb-4 ${activeTab === 'open' ? 'bg-green-100 text-green-500' : 'bg-red-100 text-red-500'
-                                }`}>
-                                <span className="material-icons-round text-4xl">
-                                    {activeTab === 'open' ? 'wb_sunny' : 'nightlight_round'}
+                    <div className="bg-white rounded-[40px] shadow-2xl max-w-sm w-full overflow-hidden animate-in zoom-in duration-300">
+                        <div className="p-10 text-center space-y-4">
+                            <div className={`w-24 h-24 rounded-[30px] mx-auto flex items-center justify-center mb-6 ${isClockedIn ? 'bg-red-50 text-red-500' : 'bg-green-50 text-green-500'}`}>
+                                <span className="material-icons-round text-5xl">
+                                    {isClockedIn ? 'logout' : 'login'}
                                 </span>
                             </div>
-                            <h3 className="text-lg font-black text-gray-800">
-                                {activeTab === 'open' ? 'Өдрийн нээлт' : 'Өдрийн хаалт'}
+                            <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight italic">
+                                {isClockedIn ? 'Өдрийн хаалт' : 'Өдрийн нээлт'}
                             </h3>
-                            <p className="text-sm text-gray-400 leading-relaxed">
-                                Та өдрийн {activeTab === 'open' ? 'нээлт хийж цагийг' : 'хаалт хийж цагийг'} бүртгэх үү?
+                            <p className="text-[13px] text-gray-400 font-bold leading-relaxed px-4">
+                                {isClockedIn ? 'Тарах' : 'Ирэх'} цагийг {formatTime(currentTime)} системд бүртгэх үү?
                             </p>
                         </div>
-                        <div className="p-6 bg-gray-50 flex gap-3">
+                        <div className="p-8 bg-gray-50/80 flex gap-4">
                             <button
                                 onClick={() => setShowConfirmPopup(false)}
-                                className="flex-1 py-3.5 bg-white border border-gray-200 rounded-2xl text-xs font-black text-gray-400 hover:bg-gray-100 transition-all uppercase tracking-widest"
+                                className="flex-1 h-14 bg-white border border-gray-200 rounded-2xl text-[11px] font-black text-gray-400 hover:bg-gray-100 transition-all uppercase tracking-widest"
                             >
-                                Цуцлах
+                                Буцах
                             </button>
                             <button
                                 onClick={confirmAction}
-                                className={`flex-1 py-3.5 rounded-2xl text-xs font-black text-white shadow-lg transition-all active:scale-95 uppercase tracking-widest ${activeTab === 'open' ? 'bg-green-500 shadow-green-500/30 hover:bg-green-600' : 'bg-red-500 shadow-red-500/30 hover:bg-red-600'
-                                    }`}
+                                className={`flex-1 h-14 rounded-2xl text-[11px] font-black text-white shadow-lg transition-all active:scale-95 uppercase tracking-widest ${isClockedIn ? 'bg-red-500 shadow-red-500/30 hover:bg-red-600' : 'bg-[#40C1C7] shadow-[#40C1C7]/30 hover:bg-[#39ADB3]'}`}
                             >
-                                Баталгаажуулах
+                                Тийм
                             </button>
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Success Popup */}
             <Popup
                 isOpen={showSuccessPopup}
                 onClose={() => setShowSuccessPopup(false)}
                 type="success"
                 title="Амжилттай"
-                message={`Өдрийн ${activeTab === 'open' ? 'нээлт' : 'хаалт'} амжилттай бүртгэгдлээ.`}
+                message={`Таны ${isClockedIn ? 'тарах' : 'ирэх'} ца그 амжилттай бүртгэгдлээ.`}
             />
         </div>
     );

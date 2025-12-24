@@ -30,7 +30,7 @@ const Step1Info: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto w-full h-full flex flex-col p-4 md:p-6">
+        <div className="w-full h-full flex flex-col p-4 md:p-6 overflow-y-auto no-scrollbar">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
                 {/* Left: Input Form */}
                 <section className="bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 flex flex-col">

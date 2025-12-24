@@ -64,6 +64,19 @@ const Step3ServiceDetails: React.FC = () => {
     // Order Handling Type state
     const [handlingTypes, setHandlingTypes] = useState<Set<OrderHandlingType>>(new Set(['NORMAL']));
 
+    const toggleGlobalHandlingType = (type: OrderHandlingType) => {
+        setHandlingTypes(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(type)) {
+                if (newSet.size === 1) return prev;
+                newSet.delete(type);
+            } else {
+                newSet.add(type);
+            }
+            return newSet;
+        });
+    };
+
     const getAccordionKey = (itemIdx: number, typeId: string) => `${itemIdx}-${typeId}`;
 
     const toggleAccordion = (itemIdx: number, typeId: string) => {
@@ -157,8 +170,8 @@ const Step3ServiceDetails: React.FC = () => {
     };
 
     return (
-        <div className="max-w-5xl mx-auto w-full p-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <div className="w-full p-4 md:p-6 h-full overflow-y-auto no-scrollbar">
+            <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-8">
                 {/* Header */}
                 <div className="border-b border-gray-100 pb-4 mb-6">
                     <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide">
@@ -309,13 +322,13 @@ const Step3ServiceDetails: React.FC = () => {
                                                     key={type}
                                                     onClick={() => toggleHandlingType(itemIdx, type)}
                                                     className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all active:scale-95 text-left ${isSelected
-                                                            ? 'border-primary bg-primary/10'
-                                                            : 'border-gray-200 bg-white hover:border-gray-300'
+                                                        ? 'border-primary bg-primary/10'
+                                                        : 'border-gray-200 bg-white hover:border-gray-300'
                                                         }`}
                                                 >
                                                     <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${isSelected
-                                                            ? 'bg-primary border-primary'
-                                                            : 'border-gray-300 bg-white'
+                                                        ? 'bg-primary border-primary'
+                                                        : 'border-gray-300 bg-white'
                                                         }`}>
                                                         {isSelected && (
                                                             <span className="material-icons-round text-white text-xs">check</span>
@@ -335,7 +348,7 @@ const Step3ServiceDetails: React.FC = () => {
                 </div>
 
                 {/* Order Handling Type Selection */}
-                <div className="border-t border-gray-100 pt-6 mt-6">
+                {/* <div className="border-t border-gray-100 pt-6 mt-6">
                     <div className="mb-4">
                         <h3 className="text-base font-bold text-gray-800 uppercase tracking-wide mb-1">
                             Захиалгын боловсруулалтын төрөл
@@ -352,7 +365,7 @@ const Step3ServiceDetails: React.FC = () => {
                             return (
                                 <button
                                     key={type}
-                                    onClick={() => toggleHandlingType(type)}
+                                    onClick={() => toggleGlobalHandlingType(type)}
                                     className={`flex items-center gap-3 px-4 py-3 rounded-lg border-2 transition-all active:scale-95 text-left ${isSelected
                                         ? 'border-primary bg-primary/10'
                                         : 'border-gray-200 bg-white hover:border-gray-300'
@@ -386,7 +399,7 @@ const Step3ServiceDetails: React.FC = () => {
                             ))}
                         </p>
                     </div>
-                </div>
+                </div> */}
 
                 {/* Selection Summary */}
                 <div className="text-center pt-4 border-t border-gray-100 mt-6">

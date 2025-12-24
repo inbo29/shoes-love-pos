@@ -73,9 +73,9 @@ const Step5OrderSummary: React.FC = () => {
     };
 
     return (
-        <div className="max-w-7xl mx-auto w-full p-4 h-full flex flex-col lg:flex-row gap-6 overflow-hidden">
+        <div className="w-full p-4 md:p-6 h-full flex flex-col lg:flex-row gap-6 overflow-y-auto no-scrollbar overflow-visible">
             {/* Left Column: Summary (65%) */}
-            <div className="lg:w-[65%] flex flex-col gap-6 overflow-y-auto pr-2 pb-20">
+            <div className="lg:w-[65%] flex flex-col gap-6 overflow-visible pr-2 pb-20">
                 <h1 className="text-xl font-bold text-gray-800 uppercase tracking-tight">Захиалгын хураангуй</h1>
 
                 {/* Customer Info */}
@@ -233,7 +233,7 @@ const Step5OrderSummary: React.FC = () => {
                 <div className="p-5 bg-orange-50 rounded-xl border border-orange-100 flex items-start gap-3">
                     <span className="material-icons-round text-orange-400 text-sm mt-0.5">info</span>
                     <p className="text-[10px] text-orange-700 leading-relaxed font-medium">
-                        Дараагийн алхамд шилжихэд 결제(Payment) 단계로 이동합니다.
+                        Дараагийн алхамд шилжих бөгөөд
                         Төлбөр хийгдсэний дараа захиалга баталгаажна.
                     </p>
                 </div>

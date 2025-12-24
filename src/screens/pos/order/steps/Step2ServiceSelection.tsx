@@ -33,7 +33,7 @@ const Step2ServiceSelection: React.FC = () => {
     const selectedCount = services.filter(s => s.quantity > 0).length;
 
     return (
-        <div className="max-w-2xl mx-auto w-full p-6">
+        <div className="w-full p-4 md:p-6 h-full overflow-y-auto no-scrollbar">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 {/* Header */}
                 <div className="border-b border-gray-100 pb-4 mb-6">
@@ -50,8 +50,8 @@ const Step2ServiceSelection: React.FC = () => {
                             <div
                                 key={service.id}
                                 className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all ${isActive
-                                        ? 'border-[#FFD400] bg-[#FFD400]/5'
-                                        : 'border-gray-200 bg-white hover:bg-gray-50'
+                                    ? 'border-[#FFD400] bg-[#FFD400]/5'
+                                    : 'border-gray-200 bg-white hover:bg-gray-50'
                                     }`}
                             >
                                 {/* Icon and Name */}
