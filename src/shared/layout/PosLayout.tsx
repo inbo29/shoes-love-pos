@@ -122,7 +122,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
           <NavButton
             label="Нүүр"
             icon="home"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/dashboard')}
             onClick={() => navigate('/pos/dashboard')}
           />
@@ -130,7 +130,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
           <NavButton
             label="Захиалга авах"
             icon="add"
-            variant="yellow"
+            // variant="yellow"
             active={isOrdersActive}
             onClick={() => navigate('/pos/orders')}
           />
@@ -138,49 +138,49 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
           <NavButton
             label={<>Захиалга<br />хүлээлгэн өгөх</>}
             icon="handshake"
-            variant="yellow"
+            // variant="yellow"
             active={location.pathname.startsWith('/pos/receive')}
             onClick={() => navigate('/pos/receive')}
           />
           <NavButton
             label={<>Буцаалт<br />олгох / авах</>}
             icon="keyboard_return"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/returns')}
             onClick={() => navigate('/pos/returns')}
           />
           <NavButton
             label={<>Ачилт<br />хийх / авах</>}
             icon="local_shipping"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/shipments')}
             onClick={() => navigate('/pos/shipments')}
           />
           <NavButton
             label={<>Картын<br />хүсэлт</>}
             icon="credit_card"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/cards')}
             onClick={() => navigate('/pos/cards')}
           />
           <NavButton
             label={<>Өдрийн<br />нээлт / хаалт</>}
             icon="lock_open"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/management/day')}
             onClick={() => navigate('/pos/management/day')}
           />
           <NavButton
             label={<>Мөнгө<br />тушаах</>}
             icon="payments"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/cash-submit')}
             onClick={() => navigate('/pos/cash-submit')}
           />
           <NavButton
             label={<>Кассын<br />тайлан</>}
             icon="assessment"
-            variant="yellow"
+            // variant="yellow"
             active={isActive('/pos/cash-report')}
             onClick={() => navigate('/pos/cash-report')}
           />

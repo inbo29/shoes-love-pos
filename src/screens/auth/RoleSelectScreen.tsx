@@ -40,7 +40,7 @@ const RoleSelectScreen: React.FC<RoleSelectScreenProps> = ({ onLogout }) => {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                     {/* POS Card - Cyan Color */}
                     <button
-                        onClick={() => navigate('/pos/orders')}
+                        onClick={() => navigate('/pos/dashboard')}
                         className="group relative flex flex-col items-center justify-center bg-white h-[380px] rounded-[48px] border-[3px] border-[#40C1C7] transition-all duration-500 ease-out hover:-translate-y-4 shadow-[0_20px_50px_rgba(64,193,199,0.15)] hover:shadow-[0_40px_80px_rgba(64,193,199,0.25)] outline-none"
                     >
                         <div className="flex-1 flex items-center justify-center w-full">
