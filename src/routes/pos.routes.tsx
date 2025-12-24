@@ -8,7 +8,7 @@ import CashSubmissionScreen from '../screens/pos/finance/CashSubmissionScreen';
 import CashReportScreen from '../screens/pos/finance/CashReportScreen';
 import CardManagementScreen from '../screens/pos/cards/CardManagementScreen';
 import ReceiveListScreen from '../screens/pos/receive/ReceiveListScreen';
-import ReceiveDetailScreen from '../screens/pos/receive/ReceiveDetailScreen';
+import ReceiveFlowScreen from '../screens/pos/flow/ReceiveFlowScreen';
 
 
 // Placeholder for screens moving to new structure
@@ -46,7 +46,7 @@ const PosRoutes: React.FC = () => {
             {/* 수령 (Handover) */}
             <Route path="receive">
                 <Route index element={<ReceiveListScreen />} />
-                <Route path=":id/step/:step" element={<ReceiveDetailScreen />} />
+                <Route path=":id/step/:step" element={<ReceiveFlowScreen />} />
                 {/* Fallback to step 1 */}
                 <Route path=":id" element={<Navigate to="step/1" replace />} />
             </Route>

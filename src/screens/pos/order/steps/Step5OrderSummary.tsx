@@ -4,6 +4,8 @@ import React, { useState } from 'react';
 interface SummaryItem {
     id: number;
     category: string;
+    model?: string;
+    status?: 'completed' | 'ready' | 'pending';
     services: string[];
     priceDetails: { label: string, price: number }[];
     conditions: { label: string, value: string, warning?: boolean }[];
@@ -28,21 +30,41 @@ const Step5OrderSummary: React.FC = () => {
         {
             id: 1,
             category: 'Гутал',
-            services: ['Угаах', 'Будах'],
+            model: 'Nike Air Max 97',
+            status: 'completed',
+            services: ['Угаах (Deep Clean)', 'Будах (Whole)'],
             priceDetails: [
                 { label: 'Угаах (Стандарт)', price: 23900 },
                 { label: 'Будах (Хар)', price: 15000 },
             ],
             conditions: [
-                { label: 'Өнгө', value: 'Хар' },
-                { label: 'Материал', value: 'Арьс' },
-                { label: 'Толбо', value: 'Тосны толботой' },
-                { label: 'Гэмтэл', value: 'Ул хагарсан' },
-                { label: 'УДӨ', value: 'Өнгө хувирч болзошгүй', warning: true },
+                { label: 'Бохирдол', value: 'Их (Тос)' },
+                { label: 'Материал', value: 'Илгэ / Арьс' },
+                { label: 'Гэмтэл', value: 'Ул хагарсан', warning: true },
             ],
             photos: [
                 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
-                'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200'
+                'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200',
+                'https://images.unsplash.com/photo-1512374382149-233c42b6a83b?w=200'
+            ]
+        },
+        {
+            id: 2,
+            category: 'Гутал',
+            model: 'Adidas Superstar',
+            status: 'ready',
+            services: ['Ул наах', 'Ус хамгаалалт'],
+            priceDetails: [
+                { label: 'Ул наах', price: 15000 },
+                { label: 'Ус хамгаалалт', price: 5000 },
+            ],
+            conditions: [
+                { label: 'Бохирдол', value: 'Бага' },
+                { label: 'Материал', value: 'Арьс' },
+                { label: 'Гэмтэл', value: 'Үгүй' },
+            ],
+            photos: [
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200'
             ]
         }
     ];
@@ -97,73 +119,89 @@ const Step5OrderSummary: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Service Overview Tags */}
-                <div className="bg-white rounded-xl shadow-sm border border-white p-5 flex gap-3">
-                    <div className="flex items-center gap-2 bg-blue-50/50 text-blue-500 px-3 py-1.5 rounded-lg border border-blue-50">
-                        <span className="material-icons-round text-sm">directions_walk</span>
-                        <span className="text-xs font-bold">Гутал × 1</span>
-                    </div>
-                </div>
+                {/* Service Overview Tags - REMOVED as per request */}
 
                 {/* Detailed Item Summary Blocks */}
-                {orderItems.map((item) => (
-                    <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-                        <div className="p-5 space-y-6">
-                            {/* Selected Services Title */}
-                            <div>
-                                <h3 className="text-xs font-bold text-teal-500 uppercase mb-3 tracking-wider">Үйлчилгээний хураангуй</h3>
-                                <div className="flex gap-2">
-                                    {item.services.map(s => (
-                                        <span key={s} className="px-3 py-1 bg-gray-50 text-gray-500 text-[11px] font-bold rounded-lg border border-gray-100 italic">
-                                            {s}
-                                        </span>
-                                    ))}
+                <div className="flex flex-col gap-6">
+                    {orderItems.map((item) => (
+                        <div key={item.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                            {/* Card Header */}
+                            <div className="px-5 py-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/30">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                        <span className="material-icons-round text-sm">hiking</span>
+                                    </div>
+                                    <div>
+                                        <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight">{item.category} {item.id}</h3>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">{item.model}</p>
+                                    </div>
+                                </div>
+                                {/* Status Badge */}
+                                <div className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 ${item.status === 'completed' ? 'bg-green-50 border-green-100 text-green-600' :
+                                    item.status === 'ready' ? 'bg-yellow-50 border-yellow-100 text-yellow-600' :
+                                        'bg-gray-50 border-gray-100 text-gray-400'
+                                    }`}>
+                                    <div className={`w-2 h-2 rounded-full ${item.status === 'completed' ? 'bg-green-500' :
+                                        item.status === 'ready' ? 'bg-yellow-500' :
+                                            'bg-gray-400'
+                                        }`} />
+                                    <span className="text-[10px] font-black uppercase tracking-wider">
+                                        {item.status === 'completed' ? 'Бүрэн гүйцэтгэсэн' :
+                                            item.status === 'ready' ? 'Хүлээлгэн өгөхөд бэлэн' : 'Тодорхойгүй'}
+                                    </span>
                                 </div>
                             </div>
 
-                            {/* Price Details */}
-                            <div className="grid grid-cols-2 gap-x-8 gap-y-3 pt-4 border-t border-gray-50">
-                                {item.priceDetails.map(p => (
-                                    <div key={p.label} className="flex justify-between items-center bg-gray-50/30 p-2 rounded-lg pr-4">
-                                        <div className="flex items-center gap-2">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-teal-400" />
-                                            <span className="text-xs text-gray-600">{p.label}</span>
-                                        </div>
-                                        <span className="text-xs font-bold text-gray-800">₮ {p.price.toLocaleString()}</span>
-                                    </div>
-                                ))}
-                            </div>
-
-                            {/* Condition State Summary */}
-                            <div className="pt-4 border-t border-gray-50">
-                                <h3 className="text-[11px] font-bold text-teal-500 uppercase mb-3 tracking-wider">Одоогийн байдал</h3>
-                                <div className="flex flex-wrap gap-x-6 gap-y-2">
-                                    {item.conditions.map(c => (
-                                        <div key={c.label} className="flex items-center gap-1.5 text-xs">
-                                            <span className="text-gray-400">{c.label}:</span>
-                                            <span className={`font-bold ${c.warning ? 'text-orange-500 underline decoration-dotted' : 'text-gray-700'}`}>
-                                                {c.value}
-                                                {c.warning && <span className="material-icons-round text-[10px] ml-0.5">warning</span>}
+                            <div className="p-5 space-y-6">
+                                {/* 1. Service Details (Read Only) */}
+                                <div>
+                                    <h4 className="text-[10px] font-black text-teal-500 uppercase mb-3 tracking-wider opacity-70">1. Үйлчилгээний дэлгэрэнгүй</h4>
+                                    <div className="flex flex-wrap gap-2">
+                                        {item.services.map(s => (
+                                            <span key={s} className="px-3 py-1.5 bg-white border-2 border-primary/5 text-primary text-[11px] font-bold rounded-lg shadow-sm flex items-center gap-2">
+                                                <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                                {s}
                                             </span>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
 
-                            {/* Photo Thumbnails */}
-                            <div className="pt-4 border-t border-gray-50 flex gap-3">
-                                {item.photos.map((p, idx) => (
-                                    <div key={idx} className="w-20 h-20 rounded-lg overflow-hidden border border-gray-100 shadow-sm relative group cursor-pointer">
-                                        <img src={p} alt="Thumbnail" className="w-full h-full object-cover" />
-                                        <div className="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                            <span className="material-icons-round text-white text-sm">zoom_in</span>
+                                {/* 2. Current Status (Conditions) */}
+                                <div className="pt-4 border-t border-gray-50">
+                                    <h4 className="text-[10px] font-black text-teal-500 uppercase mb-3 tracking-wider opacity-70">2. Одоогийн байдал</h4>
+                                    <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
+                                        <div className="flex flex-wrap gap-x-8 gap-y-3">
+                                            {item.conditions.map(c => (
+                                                <div key={c.label} className="flex flex-col gap-1">
+                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{c.label}</span>
+                                                    <div className={`flex items-center gap-1.5 text-xs font-bold ${c.warning ? 'text-orange-500' : 'text-gray-700'}`}>
+                                                        {c.warning && <span className="material-icons-round text-sm">warning</span>}
+                                                        {c.value}
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                {/* 3. Photos */}
+                                <div className="pt-4 border-t border-gray-50">
+                                    <h4 className="text-[10px] font-black text-teal-500 uppercase mb-3 tracking-wider opacity-70">3. Гүйцэтгэлийн зураг</h4>
+                                    <div className="flex gap-3 overflow-x-auto pb-2 no-scrollbar">
+                                        {item.photos.map((p, idx) => (
+                                            <div key={idx} className="w-24 h-24 rounded-xl overflow-hidden border border-gray-100 shadow-sm relative group cursor-pointer shrink-0 hover:ring-2 hover:ring-primary/20 transition-all">
+                                                <img src={p} alt="Result" className="w-full h-full object-cover" />
+                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                                                    <span className="material-icons-round text-white opacity-0 group-hover:opacity-100 transition-opacity scale-75 group-hover:scale-100 duration-200 bg-black/20 p-1 rounded-full backdrop-blur-sm">zoom_in</span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                ))}
+                    ))}
+                </div>
             </div>
 
             {/* Right Column: Payment & Points (35%) */}

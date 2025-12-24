@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import OrderStepLayout from './OrderStepLayout';
+import StepLayout from '../flow/StepLayout';
 import Step1Info from './steps/Step1Info';
 import Step2ServiceSelection from './steps/Step2ServiceSelection';
 import Step3ServiceDetails from './steps/Step3ServiceDetails';
@@ -65,7 +65,7 @@ const OrderFlowScreen: React.FC = () => {
 
     return (
         <>
-            <OrderStepLayout
+            <StepLayout
                 steps={totalSteps}
                 currentStep={currentStep}
                 onBack={handleBack}
@@ -75,7 +75,7 @@ const OrderFlowScreen: React.FC = () => {
                 isLastStep={currentStep === totalSteps}
             >
                 {renderStepContent()}
-            </OrderStepLayout>
+            </StepLayout>
 
             <Popup
                 isOpen={showPopup}

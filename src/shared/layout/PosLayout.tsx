@@ -139,7 +139,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
             label={<>Захиалга<br />хүлээлгэн өгөх</>}
             icon="handshake"
             variant="yellow"
-            active={isActive('/pos/receive')}
+            active={location.pathname.startsWith('/pos/receive')}
             onClick={() => navigate('/pos/receive')}
           />
           <NavButton

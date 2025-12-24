@@ -142,7 +142,7 @@ const ReceiveDetailScreen: React.FC = () => {
                                 <div className={`w-12 h-0.5 ${stepNum <= currentStep ? 'bg-primary' : 'bg-gray-100'}`} />
                             )}
                             <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs border-2 transition-all ${isActive ? 'bg-primary border-primary text-white shadow-lg ring-4 ring-primary/10' :
-                                isCompleted ? 'bg-white border-primary text-primary' : 'bg-gray-50 border-gray-200 text-gray-300'
+                                    isCompleted ? 'bg-white border-primary text-primary' : 'bg-gray-50 border-gray-200 text-gray-300'
                                 }`}>
                                 {isCompleted ? <span className="material-icons-round text-sm">check</span> : stepNum}
                             </div>
@@ -508,8 +508,8 @@ const ReceiveDetailScreen: React.FC = () => {
                         onClick={handleNext}
                         disabled={(currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && finalTotal > 0) || isProcessing}
                         className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-yellow-200/50 ${((currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && finalTotal > 0))
-                            ? 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
-                            : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400]'
+                                ? 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
+                                : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400]'
                             }`}
                     >
                         {isProcessing ? (
