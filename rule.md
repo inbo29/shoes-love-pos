@@ -362,3 +362,164 @@ margin: 0 auto
 POS의 모든 STEP 화면은
 좌측 콘텐츠 스크롤 + 우측 요약 패널 sticky
 구조를 절대적으로 유지한다.
+
+📐 POS 주문 처리 STEP 공통 규칙 (필수 추가)
+🔁 STEP 상태 관리 규칙 (중요)
+STEP은 “페이지 이동”이 아니라 상태 기반으로 관리한다
+
+STEP 상태는 URL 기준 ❌
+
+STEP 상태는 완료 이벤트 기준 ⭕
+
+STEP 상태 타입
+type StepStatus = "PENDING" | "ACTIVE" | "COMPLETED";
+
+🧭 Stepper UI 렌더링 규칙
+Stepper는 항상 다음 기준으로 렌더링한다
+상태	표시 방식
+COMPLETED	✅ 체크 아이콘
+ACTIVE	🔵 강조된 숫자
+PENDING	⚪ 비활성 숫자
+필수 규칙
+
+ACTIVE STEP은 항상 1개
+
+COMPLETED는 현재 STEP 이전까지만
+
+PENDING은 이후 STEP
+
+❌ URL 이동만으로 체크 표시 금지
+⭕ 반드시 상태값(stepStatus) 기준
+
+✅ STEP 완료 처리 규칙 (가장 중요)
+“다음” 버튼은 STEP 완료를 의미하지 않는다
+
+STEP 체크(✔)는 반드시
+해당 STEP의 핵심 액션이 완료되었을 때만 찍힌다
+
+STEP별 완료 트리거 정의
+STEP 1 – Захиалга хүлээлгэн өгөх (확인 단계)
+
+완료 조건:
+
+필수 체크 2개 모두 체크
+
+ХҮЛЭЭЛГЭН ӨГӨХ 버튼 클릭 성공
+
+결과:
+
+STEP 1 → COMPLETED
+
+STEP 2 → ACTIVE
+
+STEP 2 – Төлбөр / 정산
+
+완료 조건:
+
+결제 금액 검증 완료
+
+결제 수단 중 1개 이상 확정
+
+ТӨЛБӨР БАТАЛГААЖУУЛАХ 성공
+
+결과:
+
+STEP 2 → COMPLETED
+
+STEP 3 → ACTIVE
+
+STEP 3 – Сэтгэл ханамж (설문)
+
+완료 조건 (둘 중 하나):
+
+설문 제출
+
+또는 설문 Skip 확정
+
+결과:
+
+STEP 3 → COMPLETED
+
+STEP 4 → ACTIVE
+
+STEP 4 – Гомдол / 완료
+
+완료 조건:
+
+클레임 등록 성공 또는
+
+최종 완료 확인
+
+결과:
+
+STEP 4 → COMPLETED
+
+프로세스 종료
+
+🔒 “ДАРААГИЙН АЛХАМ (다음)” 버튼 UX 규칙
+다음 버튼 활성 조건
+
+현재 STEP의 완료 조건이 모두 충족된 경우에만 활성
+
+미충족 시:
+
+버튼 비활성
+
+힌트 문구 표시
+
+Энэ алхмыг бүрэн гүйцээнэ үү
+
+
+❌ 강제 이동 금지
+⭕ 사용자 인지 + 명시적 완료 유도
+
+🔄 STEP 상태 변경 로직 규칙 (개발용)
+STEP 상태 변경은 반드시 아래 순서를 따른다
+completeStep(currentStep);
+activateStep(nextStep);
+navigateTo(nextStep);
+
+예시 (STEP 2 → STEP 3)
+onConfirmPayment() {
+  updateStepStatus(2, "COMPLETED");
+  updateStepStatus(3, "ACTIVE");
+  router.push("/step/3");
+}
+
+🧠 중간 이탈 & 재진입 규칙 (권장)
+
+STEP 상태는:
+
+서버(DB) 기준 저장
+
+재진입 시 마지막 ACTIVE STEP 복원
+
+URL 직접 접근 시:
+
+이전 STEP이 COMPLETED가 아니면 접근 차단
+
+Өмнөх алхмыг гүйцэтгэнэ үү
+
+📌 UX 일관성 규칙 (공통)
+
+Stepper는 항상 상단 고정
+
+상단 메뉴(아이콘 메뉴)는 STEP 화면에서도 항상 활성
+
+우측 결제 요약 / 포인트 영역은:
+
+position: sticky
+
+스크롤 시 항상 따라옴
+
+STEP 화면 레이아웃은:
+
+주문 화면(Order)과 동일한 가로 기준 유지
+
+임의 축소 / 중앙 정렬 금지
+
+✅ 한 줄 요약 (규칙용 문장)
+
+STEP 체크는 화면 이동이 아니라
+각 STEP의 ‘완료 이벤트’를 기준으로만 표시한다.
+Stepper는 URL이 아닌 상태를 기준으로 렌더링한다.

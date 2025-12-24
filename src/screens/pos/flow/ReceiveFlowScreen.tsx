@@ -5,6 +5,7 @@ import Step1Info from '../receive/receiveSteps/Step1Info';
 import Step2Payment from '../receive/receiveSteps/Step2Payment';
 import Step3Survey from '../receive/receiveSteps/Step3Survey';
 import Step4Complete from '../receive/receiveSteps/Step4Complete';
+import Step4Complaint from '../receive/receiveSteps/Step4Complaint';
 
 const ReceiveFlowScreen: React.FC = () => {
     const { id, step } = useParams();
@@ -15,35 +16,102 @@ const ReceiveFlowScreen: React.FC = () => {
     const [step1Valid, setStep1Valid] = useState(false);
     const [step2Complete, setStep2Complete] = useState(false);
 
-    const handleNext = () => {
-        if (currentStep === 1 && !step1Valid) return;
-        // Step 2 can proceed if user just wants to check history, OR if they made a payment. 
-        // User request doesn't explicitly block next on Step 2 unless logic requires 0 balance?
-        // Step 2 Action "Confirm Payment" adds payment. 
-        // "Right Primary Button" in Prompt says "Payment Confirm" if in step 2? 
-        // Actually, Prompt says:
-        // ACTION BUTTONS:
-        // Left: Receipt Preview
-        // Right: Payment Confirm (Active Condition: Amount > 0, Method Selected)
+    // Stepper Status State (User Logic: stepStatus drives the UI)
+    const [stepStatuses, setStepStatuses] = useState<Record<number, 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'WARNING'>>({
+        1: 'ACTIVE',
+        2: 'PENDING',
+        3: 'PENDING',
+        4: 'PENDING'
+    });
 
-        // BUT, what if there is NO balance to pay? Then user should move to Step 3.
-        // The Prompt says: "Loop Step 2 -> Step 2 if partial".
-        // So Step 2 acts as a tool.
-        // To move to Step 3, maybe we need a separate "Next Step" button, or "Finish Payment" button.
-        // The prompt says "Step 1 -> 2 -> 3 -> 4".
-        // In Step 2, if Balance > 0, we can Pay.
-        // If Balance == 0, we should be able to go to Step 3.
+    // Helper to update status and navigate
+    // This is the "Trigger" the user asked for.
+    const handleStepComplete = (step: number, nextStepStatus: 'ACTIVE' | 'WARNING' = 'ACTIVE') => {
+        setStepStatuses(prev => ({
+            ...prev,
+            [step]: 'COMPLETED',
+            [step + 1]: nextStepStatus
+        }));
 
-        if (currentStep < 4) {
-            navigate(`/pos/receive/${id}/step/${currentStep + 1}`);
+        if (step < 4) {
+            navigate(`/pos/receive/${id}/step/${step + 1}`);
         } else {
             navigate('/pos/receive');
         }
     };
 
+    const handleNext = () => {
+        // Step 1 Validation
+        if (currentStep === 1) {
+            if (step1Valid) {
+                handleStepComplete(1, 'ACTIVE');
+            } else {
+                // Trigger validation shake or alert? 
+                // For now, simple return, but ideally should show error.
+                // Step1Info needs to expose validation state or handle its own next.
+                // Current logic relies on StepLayout footer button.
+                alert('Харилцагчийн мэдээллийг гүйцэд оруулна уу');
+            }
+            return;
+        }
+
+        // Step 2 Logic (If balance 0, can skip/complete?)
+        // If "Payment Confirm" was done, Step2Payment should have called something? 
+        // But here we are in the Footer Next button.
+        // If user clicks "Next" on Step 2, we assume they are done verifying.
+        if (currentStep === 2) {
+            handleStepComplete(2, 'ACTIVE');
+            return;
+        }
+
+        // Step 3 (Skip/Finish)
+        if (currentStep === 3) {
+            handleStepComplete(3, 'ACTIVE'); // Go to Step 4 Complete (Default)
+            return;
+        }
+
+        // Step 4
+        if (currentStep === 4) {
+            navigate('/pos/receive');
+        }
+    };
+
+    // Complaint Logic
+    const [isComplaintMode, setIsComplaintMode] = useState(false);
+
+    const handleComplaint = () => {
+        setIsComplaintMode(true);
+        // Mark Step 3 as Completed, Step 4 as WARNING (Active but Warning color)
+        setStepStatuses(prev => ({
+            ...prev,
+            [3]: 'COMPLETED',
+            [4]: 'WARNING'
+        }));
+        navigate(`/pos/receive/${id}/step/4`);
+    };
+
     const handleBack = () => {
         if (currentStep > 1) {
-            navigate(`/pos/receive/${id}/step/${currentStep - 1}`);
+            const prevStep = currentStep - 1;
+
+            // Should we mark current as PENDING/ACTIVE? 
+            // User says: "ACTIVE is only 1".
+            // So if we go back, previous becomes ACTIVE. Current becomes PENDING? 
+            // Or remains COMPLETED if it was completed? 
+            // If we go back to edit 2, we are making 2 ACTIVE. 
+            // 3 Should probably become PENDING to force re-verification?
+            // Or keep 3 as PENDING.
+
+            setStepStatuses(prev => ({
+                ...prev,
+                [prevStep]: 'ACTIVE',
+                [currentStep]: 'PENDING' // Reset current to Pending when going back?
+            }));
+
+            if (currentStep === 4 && isComplaintMode) {
+                setIsComplaintMode(false);
+            }
+            navigate(`/pos/receive/${id}/step/${prevStep}`);
         } else {
             navigate('/pos/receive');
         }
@@ -51,6 +119,26 @@ const ReceiveFlowScreen: React.FC = () => {
 
     // We can show a custom footer left button for Step 2 (Receipt Preview)
     const renderFooterLeft = () => {
+        if (currentStep === 3) {
+            return (
+                <div className="flex items-center gap-3">
+                    <button
+                        onClick={() => handleNext()} // Skip acts same as Next (Finish Step 3)
+                        className="px-6 py-3 rounded-2xl border-2 border-gray-100 bg-white text-gray-400 font-black text-xs uppercase tracking-widest hover:bg-gray-50 hover:text-gray-600 transition-all flex items-center gap-2"
+                    >
+                        <span className="material-icons-round text-sm">skip_next</span>
+                        Алгасах
+                    </button>
+                    <button
+                        onClick={handleComplaint}
+                        className="px-6 py-3 rounded-2xl border-2 border-yellow-300 bg-yellow-300 text-yellow-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-400 hover:border-yellow-400 transition-all flex items-center gap-2 shadow-sm"
+                    >
+                        <span className="material-icons-round text-sm">report_problem</span>
+                        Гомдол
+                    </button>
+                </div>
+            );
+        }
         if (currentStep === 2) {
             return (
                 <button className="px-6 py-3 rounded-2xl border-2 border-gray-100 bg-white text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-95 flex items-center gap-2">
@@ -60,69 +148,48 @@ const ReceiveFlowScreen: React.FC = () => {
             )
         }
         return null;
-    }
-
-    // Mock Status for logic demonstration
-    // In real app, this comes from API: 'CREATED' | 'ACCEPTED' | 'PAID_PARTIAL' | 'PAID_FULL' | 'DELIVERED' | 'COMPLETED'
-    const [orderStatus, setOrderStatus] = useState('PAID_PARTIAL'); // Default example
-
-    const getCompletedStep = (status: string) => {
-        switch (status) {
-            case 'CREATED': return 0;
-            case 'ACCEPTED': return 1;
-            case 'PAID_PARTIAL': return 1; // Step 2 is in progress? Or if Partial is done, Step 2 is... active?
-            // User rule: STEP 2 (Payment) -> status >= PAID_PARTIAL.
-            // So if PAID_PARTIAL, Step 2 is technically 'started' or 'done'?
-            // User said: STEP 2 Completion Condition status >= PAID_PARTIAL ??
-            // Wait, logic table: "STEP 2 ... condition status >= PAID_PARTIAL"
-            // Does that mean Step 2 IS DONE if partial?
-            // Or Step 2 IS ACTIVE?
-            // "Completed Step" usually means previous steps.
-            // If status is PAID_PARTIAL, Step 1 is done. Step 2 is Active.
-            // So completedStep = 1.
-            // If PAID_FULL, Step 2 is done. completedStep = 2.
-            case 'PAID_FULL': return 2;
-            case 'DELIVERED': return 3; // Step 3 Survey done? Or Handover done? 
-            // Step 4 is Handover.
-            // "STEP 4 (Handover) -> status >= DELIVERED".
-            // If Delivered, Step 4 is Done? Or Active?
-            // Usually Delivered means Handover is finished.
-            // So completedStep = 4.
-            case 'COMPLETED': return 4;
-            default: return 0;
-        }
     };
 
-    const maxCompletedStep = getCompletedStep(orderStatus);
+    // Initialize state on mount/param change if needed? 
+    // Ideally state should sync with URL if deep linking. 
+    // For now we trust the default state + user interaction.
+    // To support refresh: useEffect to set stepStatuses based on 'step' param?
+    // User asked to decouple, but we need initial consistency.
+    // If I load /step/3 directly, I should probably show 1,2 as COMPLETED?
+    React.useEffect(() => {
+        if (currentStep > 1) {
+            setStepStatuses(prev => {
+                const newStatus = { ...prev };
+                for (let i = 1; i < currentStep; i++) {
+                    newStatus[i] = 'COMPLETED';
+                }
+                newStatus[currentStep] = isComplaintMode ? 'WARNING' : 'ACTIVE';
+                return newStatus;
+            });
+        }
+    }, [currentStep, isComplaintMode]);
 
-    // Current Step Logic is mostly Navigation-based, but we constrain it?
-    // User wants Stepper to reflect 'history'.
+
+    const nextLabel = currentStep === 3 ? 'Дуусгах' : 'Дараах';
 
     return (
         <StepLayout
             steps={4}
             currentStep={currentStep}
-            maxCompletedStep={maxCompletedStep}
+            stepStatuses={stepStatuses}
             onBack={handleBack}
             onNext={handleNext}
+            nextLabel={currentStep === 4 ? (isComplaintMode ? 'Бүртгэх' : 'ДУУСГАХ') : nextLabel}
             footerLeft={renderFooterLeft()}
-            // For Step 2, the "Next" button in the Footer might be confusing if there is a "Pay" button content-side. 
-            // The prompt says "Right Primary: Confirm Payment".
-            // It seems "Confirm Payment" IS the main action of step 2. 
-            // But after payment, we might stay in Step 2 (append only).
-            // So how do we go to Step 3?
-            // "Cycle: Step 1 -> 2 -> 3 -> 4".
-            // Maybe if Balance is 0, the button becomes "Next Step"?
-            // Or maybe there is a "Skip/Next" if no payment needed?
-            // For now, I will keep standard Next button functionality, but maybe disable it if balance > 0 ??
-            // User did NOT specify Step 3 transition logic explicitly other than "Satisfy Survey".
-            nextLabel={currentStep === 4 ? 'ДУУСГАХ' : 'ДАРААГИЙН АЛХАМ'}
             isLastStep={currentStep === 4}
         >
             {currentStep === 1 && <Step1Info onValidationChange={setStep1Valid} />}
-            {currentStep === 2 && <Step2Payment onPaymentComplete={setStep2Complete} />}
+            {currentStep === 2 && <Step2Payment onPaymentComplete={(isComplete) => {
+                if (isComplete) handleStepComplete(2, 'ACTIVE');
+                setStep2Complete(isComplete);
+            }} />}
             {currentStep === 3 && <Step3Survey />}
-            {currentStep === 4 && <Step4Complete />}
+            {currentStep === 4 && (isComplaintMode ? <Step4Complaint /> : <Step4Complete />)}
         </StepLayout>
     );
 };

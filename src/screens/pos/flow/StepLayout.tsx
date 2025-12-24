@@ -2,11 +2,14 @@ import React from 'react';
 import StepIndicator from '../../../shared/components/StepIndicator/StepIndicator';
 import StepFooter from '../../../shared/components/StepFooter/StepFooter';
 
+import { StepStatus } from '../../../shared/components/StepIndicator/StepIndicator';
+
 interface StepLayoutProps {
     children: React.ReactNode;
     steps?: number;
     currentStep: number;
     maxCompletedStep?: number;
+    stepStatuses?: Record<number, StepStatus>; // New Prop
     onBack: () => void;
     onTempSave?: () => void;
     onNext: () => void;
@@ -22,6 +25,7 @@ const StepLayout: React.FC<StepLayoutProps> = ({
     steps = 4,
     currentStep,
     maxCompletedStep,
+    stepStatuses,
     onBack,
     onTempSave,
     onNext,
@@ -45,6 +49,7 @@ const StepLayout: React.FC<StepLayoutProps> = ({
                     totalSteps={steps}
                     currentStep={currentStep}
                     maxCompletedStep={maxCompletedStep}
+                    stepStatuses={stepStatuses}
                     onStepClick={onStepClick}
                 />
             </div>
