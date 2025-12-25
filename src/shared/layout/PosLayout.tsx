@@ -123,7 +123,6 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
           <NavButton
             label="Нүүр"
             icon="home"
-            // variant="yellow"
             active={isActive('/pos/dashboard')}
             onClick={() => navigate('/pos/dashboard')}
           />
@@ -131,7 +130,6 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
           <NavButton
             label="Захиалга авах"
             icon="add"
-            // variant="yellow"
             active={isOrdersActive}
             onClick={() => navigate('/pos/orders')}
           />
@@ -139,42 +137,69 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
           <NavButton
             label={<>Захиалга<br />хүлээлгэн өгөх</>}
             icon="handshake"
-            // variant="yellow"
             active={location.pathname.startsWith('/pos/receive')}
             onClick={() => navigate('/pos/receive')}
           />
           <NavButton
             label={<>Буцаалт<br />хийх / олгох</>}
             icon="keyboard_return"
-            // variant="yellow"
             active={isActive('/pos/returns')}
             onClick={() => navigate('/pos/returns')}
           />
+
+          {/* Products Module - Individual Buttons */}
+          <NavButton
+            label={<>Бараа<br />зарах</>}
+            icon="shopping_cart"
+            active={isActive('/pos/sell')}
+            onClick={() => navigate('/pos/sell')}
+          />
+          <NavButton
+            label={<>Бараа<br />захиалах</>}
+            icon="add_shopping_cart"
+            active={isActive('/pos/order')}
+            onClick={() => navigate('/pos/order')}
+          />
+          <NavButton
+            label={<>Бараа<br />тооллого</>}
+            icon="inventory"
+            active={isActive('/pos/inventory')}
+            onClick={() => navigate('/pos/inventory')}
+          />
+          <NavButton
+            label={<>Бараа<br />шилжүүлэх</>}
+            icon="sync_alt"
+            active={isActive('/pos/transfer')}
+            onClick={() => navigate('/pos/transfer')}
+          />
+          <NavButton
+            label={<>Бараа<br />буцаалт</>}
+            icon="assignment_return"
+            active={isActive('/pos/product-return')}
+            onClick={() => navigate('/pos/product-return')}
+          />
+
           <NavButton
             label={<>Ачилт<br />хийх / авах</>}
             icon="local_shipping"
-            // variant="yellow"
             active={location.pathname.startsWith('/pos/shipments')}
             onClick={() => navigate('/pos/shipments')}
           />
           <NavButton
             label={<>Гишүүнчлэл</>}
             icon="credit_card"
-            // variant="yellow"
             active={isActive('/pos/cards')}
             onClick={() => navigate('/pos/cards')}
           />
           <NavButton
             label={<>Өдрийн<br />нээлт / хаалт</>}
             icon="lock_open"
-            // variant="yellow"
             active={isActive('/pos/management/day')}
             onClick={() => navigate('/pos/management/day')}
           />
           <NavButton
             label={<>Мөнгө<br />тушаах</>}
             icon="payments"
-            // variant="yellow"
             active={isActive('/pos/cash-submit')}
             onClick={() => navigate('/pos/cash-submit')}
           />

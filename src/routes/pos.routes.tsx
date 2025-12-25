@@ -14,6 +14,14 @@ import ShipmentDispatchScreen from '../screens/pos/shipment/ShipmentDispatchScre
 import ShipmentReceiveScreen from '../screens/pos/shipment/ShipmentReceiveScreen';
 import ReturnListScreen from '../screens/pos/return/ReturnListScreen';
 import ReturnFlowScreen from '../screens/pos/return/ReturnFlowScreen';
+import ReturnIssueFlowScreen from '../screens/pos/return/ReturnIssueFlowScreen';
+// Products module imports
+import ProductSellScreen from '../screens/pos/products/sell/ProductSellScreen';
+import ProductOrderScreen from '../screens/pos/products/order/ProductOrderScreen';
+import InventoryListScreen from '../screens/pos/products/inventory/InventoryListScreen';
+import TransferListScreen from '../screens/pos/products/transfer/TransferListScreen';
+import ProductReturnScreen from '../screens/pos/products/return/ProductReturnScreen';
+import ProductSellFlowScreen from '../screens/pos/products/sell/ProductSellFlowScreen';
 
 
 // Placeholder for screens moving to new structure
@@ -47,27 +55,22 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
             <Route path="cash-submit" element={<CashSubmissionScreen />} />
             <Route path="cash-report" element={<CashReportScreen userName={userName} initialBranch={selectedBranch} />} />
 
-            {/* Placeholders for other features as per rule.md */}
             {/* 수령 (Handover) */}
             <Route path="receive">
                 <Route index element={<ReceiveListScreen />} />
                 <Route path=":id/step/:step" element={<ReceiveFlowScreen />} />
-                {/* Fallback to step 1 */}
                 <Route path=":id" element={<Navigate to="step/1" replace />} />
             </Route>
 
-
-
-            // ... (existing imports)
-
-            // ...
-
+            {/* Returns */}
             <Route path="returns">
                 <Route index element={<ReturnListScreen />} />
                 <Route path="new/step/:step" element={<ReturnFlowScreen />} />
+                <Route path="issue/step/:step" element={<ReturnIssueFlowScreen />} />
                 <Route path=":id" element={<PlaceholderScreen title="Return Details" />} />
             </Route>
 
+            {/* Shipments */}
             <Route path="shipments">
                 <Route index element={<ShipmentListScreen />} />
                 <Route path="new" element={<ShipmentDispatchScreen />} />
@@ -75,7 +78,16 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
             </Route>
 
             <Route path="cards/*" element={<CardManagementScreen />} />
-            <Route path="cash-report/*" element={<PlaceholderScreen title="Cash Report" />} />
+
+            {/* Products Module - Individual Routes */}
+            <Route path="sell">
+                <Route index element={<Navigate to="step/1" replace />} />
+                <Route path="step/:step" element={<ProductSellFlowScreen />} />
+            </Route>
+            <Route path="order" element={<ProductOrderScreen />} />
+            <Route path="inventory" element={<InventoryListScreen />} />
+            <Route path="transfer" element={<TransferListScreen />} />
+            <Route path="product-return" element={<ProductReturnScreen />} />
 
             <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>

@@ -185,8 +185,8 @@ const CardManagementScreen: React.FC = () => {
                 {/* 1. List Section */}
                 <div className="bg-white rounded-[24px] shadow-lg border border-gray-100 flex flex-col min-h-[480px] overflow-visible relative z-[1]">
                     {/* Header */}
-                    <div className="p-6 border-b border-gray-100 flex flex-col lg:flex-row items-end justify-between gap-6">
-                        <div className="flex items-center gap-3 w-full lg:w-auto">
+                    <div className="p-6 border-b border-gray-100 flex flex-col xl:flex-row items-end justify-between gap-6">
+                        <div className="flex items-center gap-3 w-full xl:w-auto">
                             <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                             <div>
                                 <h2 className="text-[18px] font-bold text-[#374151] tracking-tight">Гишүүнчлэлийн жагсаалт</h2>
@@ -194,7 +194,7 @@ const CardManagementScreen: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center gap-4 w-full lg:w-auto">
+                        <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
                             <div className="relative flex-1 min-w-[260px]">
                                 <span className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-gray-400">
                                     <span className="material-icons-round text-xl">search</span>

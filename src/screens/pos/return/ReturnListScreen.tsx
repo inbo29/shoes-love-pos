@@ -107,17 +107,17 @@ const ReturnListScreen: React.FC = () => {
                                 Буцаалт хийх / олгох
                             </h2>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 w-full md:w-auto">
                             <button
                                 onClick={() => navigate('/pos/returns/new/step/1')}
-                                className="flex-1 lg:flex-none px-6 py-3 bg-[#40C1C7] hover:bg-[#35a8ae] text-white rounded-2xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg shadow-cyan-200/50 font-black uppercase text-[11px] tracking-wider"
+                                className="flex-1 md:flex-none px-6 py-3 bg-[#40C1C7] hover:bg-[#35a8ae] text-white rounded-2xl flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 active:scale-95 shadow-lg shadow-cyan-200/50 font-black uppercase text-[11px] tracking-wider whitespace-nowrap"
                             >
                                 <span className="material-icons-round text-base">add_circle</span>
                                 Буцаалт хийх
                             </button>
                             <button
-                                onClick={() => { }}
-                                className="bg-[#FFD400] hover:bg-[#eec600] text-gray-900 px-6 py-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center gap-2 transition-all font-black uppercase text-[11px] tracking-wider hover:-translate-y-0.5 active:scale-95 w-fit shrink-0 whitespace-nowrap"
+                                onClick={() => navigate('/pos/returns/issue/step/1')}
+                                className="flex-1 md:flex-none bg-[#FFD400] hover:bg-[#eec600] text-gray-900 px-6 py-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center justify-center gap-2 transition-all font-black uppercase text-[11px] tracking-wider hover:-translate-y-0.5 active:scale-95 whitespace-nowrap"
                             >
                                 <span className="material-icons-round text-lg">keyboard_return</span>
                                 Буцаалт олгох

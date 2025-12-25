@@ -204,7 +204,7 @@ const ReceiveListScreen: React.FC = () => {
         <div className="flex-1 flex flex-col h-full bg-[#F8F9FA] overflow-y-auto no-scrollbar overflow-visible">
             <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20 overflow-visible">
                 {/* 1. Header Section */}
-                <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6 shrink-0">
+                <div className="flex flex-col xl:flex-row justify-between xl:items-end gap-6 shrink-0">
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                         <h2 className="text-[18px] font-bold text-[#374151]">
@@ -212,15 +212,15 @@ const ReceiveListScreen: React.FC = () => {
                         </h2>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto">
-                        <div className="relative flex-1 lg:w-[360px]">
+                    <div className="flex items-center gap-3 w-full xl:w-auto">
+                        <div className="relative flex-1 xl:w-[400px]">
                             <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                                 <span className="material-icons-round text-xl">search</span>
                             </span>
                             <input
                                 value={searchTerm}
                                 onChange={e => setSearchTerm(e.target.value)}
-                                className="block w-full h-[48px] pl-11 pr-4 py-3 border border-gray-100 rounded-2xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary text-sm shadow-sm transition-all"
+                                className="block w-full h-[48px] pl-11 pr-4 border border-gray-100 rounded-2xl bg-white text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary text-sm shadow-sm transition-all"
                                 placeholder="Системээс хайх (Утас, Нэр, №)"
                                 type="text"
                             />
