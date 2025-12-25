@@ -144,7 +144,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
             onClick={() => navigate('/pos/receive')}
           />
           <NavButton
-            label={<>Буцаалт<br />олгох / авах</>}
+            label={<>Буцаалт<br />хийх / олгох</>}
             icon="keyboard_return"
             // variant="yellow"
             active={isActive('/pos/returns')}
@@ -154,7 +154,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
             label={<>Ачилт<br />хийх / авах</>}
             icon="local_shipping"
             // variant="yellow"
-            active={isActive('/pos/shipments')}
+            active={location.pathname.startsWith('/pos/shipments')}
             onClick={() => navigate('/pos/shipments')}
           />
           <NavButton

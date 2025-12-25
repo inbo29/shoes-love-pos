@@ -328,7 +328,7 @@ const Step5OrderSummary: React.FC = () => {
                                     onClick={() => setShowPointPopup(false)}
                                     className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors"
                                 >
-                                    Цуцлах
+                                    Буцах
                                 </button>
                                 <button
                                     onClick={handleConfirmPoints}

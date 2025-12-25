@@ -202,7 +202,7 @@ const OrderListScreen: React.FC = () => {
             <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20 overflow-visible">
                 {/* 1. Header & Global Actions */}
                 <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6 shrink-0">
-                    <div className="flex flex-col sm:flex-row lg:flex-col gap-4 sm:items-center lg:items-start">
+                    <div className="flex flex-col gap-4 w-full lg:w-auto">
                         <div className="flex items-center gap-3">
                             <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                             <h2 className="text-[18px] font-bold text-[#374151]">
@@ -211,9 +211,9 @@ const OrderListScreen: React.FC = () => {
                         </div>
                         <button
                             onClick={() => navigate('/pos/orders/new/step/1')}
-                            className="bg-secondary hover:bg-yellow-400 text-gray-900 px-8 h-[48px] rounded-2xl shadow-lg shadow-secondary/20 flex items-center gap-2 transition-all font-black uppercase tracking-wide active:scale-95 w-fit shrink-0 whitespace-nowrap"
+                            className="bg-[#FFD400] hover:bg-[#eec600] text-gray-900 px-6 py-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center gap-2 transition-all font-black uppercase text-[11px] tracking-wider hover:-translate-y-0.5 active:scale-95 w-fit shrink-0 whitespace-nowrap"
                         >
-                            <span className="material-icons-round">add_circle</span>
+                            <span className="material-icons-round text-lg">add_circle</span>
                             Шинэ захиалга авах
                         </button>
                     </div>

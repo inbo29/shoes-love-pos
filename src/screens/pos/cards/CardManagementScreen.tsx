@@ -443,7 +443,7 @@ const CardManagementScreen: React.FC = () => {
                                 className="w-full sm:flex-1 lg:flex-none h-[52px] px-6 lg:px-8 bg-gray-100 text-gray-500 rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
                             >
                                 <span className="material-icons-round">close</span>
-                                Цуцлах
+                                Буцах
                             </button>
 
                             {!selectedCard && (

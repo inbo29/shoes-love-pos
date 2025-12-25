@@ -86,24 +86,24 @@ const ShipmentListScreen: React.FC = () => {
 
                 {/* Header */}
                 <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6 shrink-0">
-                    <div className="flex flex-col sm:flex-row lg:flex-col gap-5 sm:items-center lg:items-start w-full lg:w-auto">
+                    <div className="flex flex-col gap-4 w-full lg:w-auto">
                         <div className="flex items-center gap-3">
                             <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                             <h2 className="text-[18px] font-bold text-[#374151]">
                                 Ачилтын жагсаалт
                             </h2>
                         </div>
-                        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
+                        <div className="flex items-center gap-3">
                             <button
-                                // onClick={() => navigate('new')} 
-                                className="px-5 sm:px-6 py-3 bg-[#40C1C7] text-white rounded-2xl font-bold uppercase text-[10px] sm:text-xs tracking-wider hover:bg-[#3bb1b7] hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap"
+                                onClick={() => navigate('new')}
+                                className="bg-[#40C1C7] hover:bg-[#3bb1b7] text-white px-6 py-3 rounded-2xl shadow-lg shadow-cyan-500/10 flex items-center gap-2 transition-all font-black uppercase text-[11px] tracking-wider hover:-translate-y-0.5 active:scale-95 w-fit shrink-0 whitespace-nowrap"
                             >
                                 <span className="material-icons-round text-lg">add_circle</span>
                                 Ачилт хийх
                             </button>
                             <button
-                                // onClick={() => navigate('receive')}
-                                className="px-5 sm:px-6 py-3 bg-[#FFD400] text-gray-900 rounded-2xl font-bold uppercase text-[10px] sm:text-xs tracking-wider hover:bg-[#eec600] hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap"
+                                onClick={() => navigate('receive')}
+                                className="bg-[#FFD400] hover:bg-[#eec600] text-gray-900 px-6 py-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center gap-2 transition-all font-black uppercase text-[11px] tracking-wider hover:-translate-y-0.5 active:scale-95 w-fit shrink-0 whitespace-nowrap"
                             >
                                 <span className="material-icons-round text-lg">download</span>
                                 Ачилт авах

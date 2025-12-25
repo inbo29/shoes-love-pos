@@ -180,7 +180,7 @@ const PosDateRangePicker: React.FC<PosDateRangePickerProps> = ({
                                 onClick={() => setIsOpen(false)}
                                 className="flex-1 py-2.5 rounded-xl border border-gray-200 text-gray-500 font-bold text-xs hover:bg-gray-50 transition-all"
                             >
-                                Цуцлах
+                                Буцах
                             </button>
                             <button
                                 onClick={() => {

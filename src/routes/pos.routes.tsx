@@ -10,6 +10,10 @@ import CardManagementScreen from '../screens/pos/cards/CardManagementScreen';
 import ReceiveListScreen from '../screens/pos/receive/ReceiveListScreen';
 import ReceiveFlowScreen from '../screens/pos/flow/ReceiveFlowScreen';
 import ShipmentListScreen from '../screens/pos/shipment/ShipmentListScreen';
+import ShipmentDispatchScreen from '../screens/pos/shipment/ShipmentDispatchScreen';
+import ShipmentReceiveScreen from '../screens/pos/shipment/ShipmentReceiveScreen';
+import ReturnListScreen from '../screens/pos/return/ReturnListScreen';
+import ReturnFlowScreen from '../screens/pos/return/ReturnFlowScreen';
 
 
 // Placeholder for screens moving to new structure
@@ -58,9 +62,17 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
 
             // ...
 
-            <Route path="returns/*" element={<PlaceholderScreen title="Returns" />} />
+            <Route path="returns">
+                <Route index element={<ReturnListScreen />} />
+                <Route path="new/step/:step" element={<ReturnFlowScreen />} />
+                <Route path=":id" element={<PlaceholderScreen title="Return Details" />} />
+            </Route>
 
-            <Route path="shipments" element={<ShipmentListScreen />} />
+            <Route path="shipments">
+                <Route index element={<ShipmentListScreen />} />
+                <Route path="new" element={<ShipmentDispatchScreen />} />
+                <Route path="receive" element={<ShipmentReceiveScreen />} />
+            </Route>
 
             <Route path="cards/*" element={<CardManagementScreen />} />
             <Route path="cash-report/*" element={<PlaceholderScreen title="Cash Report" />} />
