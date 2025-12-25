@@ -8,7 +8,7 @@ const StatCard: React.FC<{
     iconBg: string;
     isRevenue?: boolean;
 }> = ({ title, value, icon, colorClass, iconBg, isRevenue }) => (
-    <div className={`bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-transparent flex items-center gap-4 md:gap-6 h-auto min-h-[100px] md:h-36 transition-transform hover:scale-[1.02] ${isRevenue ? 'border-l-[8px] border-[#FFD400]' : 'border border-gray-50'}`}>
+    <div className={`bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-gray-50 flex items-center gap-4 md:gap-6 h-auto min-h-[100px] md:h-36 transition-transform hover:scale-[1.02]`}>
         <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl ${iconBg} flex items-center justify-center ${colorClass} shadow-inner shrink-0`}>
             <span className="material-icons-round text-2xl md:text-3xl">{icon}</span>
         </div>
@@ -69,6 +69,28 @@ const DashboardScreen: React.FC = () => {
                     icon="person_add"
                     colorClass="text-purple-500"
                     iconBg="bg-purple-50"
+                />
+                {/* Product Module Stats */}
+                <StatCard
+                    title="Өнөөдрийн борлуулалт"
+                    value="56"
+                    icon="point_of_sale"
+                    colorClass="text-teal-500"
+                    iconBg="bg-teal-50"
+                />
+                <StatCard
+                    title="Бараа шилжүүлэг"
+                    value="8"
+                    icon="swap_horiz"
+                    colorClass="text-indigo-500"
+                    iconBg="bg-indigo-50"
+                />
+                <StatCard
+                    title="Бараа татан авалт"
+                    value="12"
+                    icon="inventory_2"
+                    colorClass="text-pink-500"
+                    iconBg="bg-pink-50"
                 />
             </div>
         </div>
