@@ -311,8 +311,8 @@ const OrderListScreen: React.FC = () => {
                             <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[10px] font-black tracking-widest items-center">
                                 <div className="w-[150px] shrink-0">Захиалгын №</div>
                                 <div className="w-[180px] shrink-0 px-2">Үйлчлүүлэгч</div>
-                                <div className="w-[300px] shrink-0 px-2">Үйлчилгээ (товч)</div>
                                 <div className="w-[120px] shrink-0 px-2">Утас</div>
+                                <div className="w-[300px] shrink-0 px-2">Үйлчилгээ (товч)</div>
                                 <div className="w-[150px] shrink-0 px-2">Огноо</div>
                                 <div className="w-[140px] shrink-0 px-2 text-center">Төлөв</div>
                                 <div className="w-[130px] shrink-0 px-2 text-right">Үлдэгдэл дүн</div>

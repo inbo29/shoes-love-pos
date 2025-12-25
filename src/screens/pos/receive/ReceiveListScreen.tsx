@@ -78,6 +78,42 @@ const INITIAL_DATA = [
         branch: 'Төв салбар',
         serviceType: 'Гутал'
     },
+    {
+        id: '#ORD-2310-062',
+        customer: 'Т. Тэмүүлэн',
+        phone: '9900-8877',
+        services: 'Гутал цэвэрлэгээ ×1',
+        finishDate: '2023-10-22',
+        totalAmount: '15,000₮',
+        remainingAmount: '5,000₮',
+        status: 'Хүлээлгэн өгөхөд бэлэн',
+        branch: 'Хүүхдийн 100',
+        serviceType: 'Гутал'
+    },
+    {
+        id: '#ORD-2310-071',
+        customer: 'С. Солонго',
+        phone: '8811-2233',
+        services: 'Пальто угаалга ×1',
+        finishDate: '2023-10-21',
+        totalAmount: '35,000₮',
+        remainingAmount: '0₮',
+        status: 'Хүлээлгэн өгсөн',
+        branch: 'Зайсан салбар',
+        serviceType: 'Хими'
+    },
+    {
+        id: '#ORD-2310-085',
+        customer: 'М. Мөнх',
+        phone: '9494-0000',
+        services: 'Хивс цэвэрлэгээ 20м2',
+        finishDate: '2023-10-20',
+        totalAmount: '20,000₮',
+        remainingAmount: '0₮',
+        status: 'Хүлээлгэн өгсөн',
+        branch: 'Төв салбар',
+        serviceType: 'Хивс'
+    },
 ];
 
 const ReceiveListScreen: React.FC = () => {
@@ -268,13 +304,14 @@ const ReceiveListScreen: React.FC = () => {
                         <div className="min-w-[1250px] flex flex-col h-full uppercase">
                             {/* Header */}
                             <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[10px] font-black tracking-widest items-center">
-                                <div className="w-[120px] shrink-0">Захиалгын №</div>
+                                <div className="w-[120px] shrink-0 px-4">Захиалгын №</div>
                                 <div className="w-[160px] shrink-0 px-4">Үйлчлүүлэгч</div>
                                 <div className="w-[120px] shrink-0 px-4">Утас</div>
                                 <div className="w-[280px] shrink-0 px-4">Үйлчилгээ (товч)</div>
-                                <div className="w-[130px] shrink-0 px-4 text-right">Нийт дүн</div>
-                                <div className="w-[150px] shrink-0 px-4 text-right">Үлдэгдэл дүн</div>
-                                <div className="w-[200px] shrink-0 px-4 text-center">Төлөв</div>
+                                <div className="w-[110px] shrink-0 text-center">Огноо</div>
+                                <div className="w-[180px] shrink-0 px-4 text-center">Төлөв</div>
+                                <div className="w-[130px] shrink-0 px-4 text-right">Үлдэгдэл дүн</div>
+                                <div className="w-[120px] shrink-0 px-4 text-right">Нийт дүн</div>
                                 <div className="w-8 shrink-0"></div>
                             </div>
 
@@ -289,18 +326,19 @@ const ReceiveListScreen: React.FC = () => {
                                         }}
                                         className="flex px-6 py-5 border-b border-gray-50 hover:bg-primary/5 cursor-pointer transition-colors items-center text-[13px] group"
                                     >
-                                        <div className="w-[120px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline truncate">{item.id}</div>
+                                        <div className="w-[120px] shrink-0 px-4 font-extrabold text-[#40C1C7] group-hover:underline truncate">{item.id}</div>
                                         <div className="w-[160px] shrink-0 px-4 font-bold text-gray-800 truncate">{maskName(item.customer)}</div>
                                         <div className="w-[120px] shrink-0 px-4 text-gray-500 font-medium">{maskPhone(item.phone)}</div>
                                         <div className="w-[280px] shrink-0 px-4 text-gray-600 truncate">{item.services}</div>
-                                        <div className="w-[130px] shrink-0 px-4 text-right font-black text-gray-900">{item.totalAmount}</div>
-                                        <div className="w-[150px] shrink-0 px-4 text-right font-black text-red-500">{item.remainingAmount}</div>
-                                        <div className="w-[200px] shrink-0 px-4 flex justify-center">
+                                        <div className="w-[110px] shrink-0 text-center text-gray-400 font-bold text-[11px]">{item.finishDate}</div>
+                                        <div className="w-[180px] shrink-0 px-4 flex justify-center">
                                             <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap justify-center ${getStatusStyles(item.status)}`}>
                                                 <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Хүлээлгэн өгөхөд бэлэн' ? 'bg-green-500' : 'bg-blue-500'}`}></span>
                                                 {item.status}
                                             </span>
                                         </div>
+                                        <div className="w-[130px] shrink-0 px-4 text-right font-black text-red-500">{item.remainingAmount}</div>
+                                        <div className="w-[120px] shrink-0 px-4 text-right font-black text-gray-900">{item.totalAmount}</div>
                                         <div className="w-8 shrink-0 flex justify-end text-gray-300 group-hover:text-primary transition-colors">
                                             <span className="material-icons-round">chevron_right</span>
                                         </div>
