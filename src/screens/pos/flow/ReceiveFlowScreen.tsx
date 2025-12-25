@@ -123,13 +123,6 @@ const ReceiveFlowScreen: React.FC = () => {
             return (
                 <div className="flex items-center gap-3">
                     <button
-                        onClick={() => handleNext()} // Skip acts same as Next (Finish Step 3)
-                        className="px-6 py-3 rounded-2xl border-2 border-gray-100 bg-white text-gray-400 font-black text-xs uppercase tracking-widest hover:bg-gray-50 hover:text-gray-600 transition-all flex items-center gap-2"
-                    >
-                        <span className="material-icons-round text-sm">skip_next</span>
-                        Алгасах
-                    </button>
-                    <button
                         onClick={handleComplaint}
                         className="px-6 py-3 rounded-2xl border-2 border-yellow-300 bg-yellow-300 text-yellow-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-400 hover:border-yellow-400 transition-all flex items-center gap-2 shadow-sm"
                     >
@@ -138,14 +131,6 @@ const ReceiveFlowScreen: React.FC = () => {
                     </button>
                 </div>
             );
-        }
-        if (currentStep === 2) {
-            return (
-                <button className="px-6 py-3 rounded-2xl border-2 border-gray-100 bg-white text-gray-500 font-black text-xs uppercase tracking-widest hover:bg-gray-50 hover:border-gray-200 transition-all active:scale-95 flex items-center gap-2">
-                    <span className="material-icons-round text-lg">receipt</span>
-                    Баримт харах
-                </button>
-            )
         }
         return null;
     };
@@ -172,6 +157,9 @@ const ReceiveFlowScreen: React.FC = () => {
 
     const nextLabel = currentStep === 3 ? 'Дуусгах' : 'Дараах';
 
+    // State to track if No VAT was selected in Step 2
+    const [noVatSelected, setNoVatSelected] = useState(false);
+
     return (
         <StepLayout
             steps={4}
@@ -183,13 +171,17 @@ const ReceiveFlowScreen: React.FC = () => {
             nextDisabled={currentStep === 1 && !step1Valid}
             footerLeft={renderFooterLeft()}
             isLastStep={currentStep === 4}
+            hideNext={currentStep === 2}
         >
             {currentStep === 1 && <Step1Info onValidationChange={setStep1Valid} />}
-            {currentStep === 2 && <Step2Payment onPaymentComplete={(isComplete) => {
-                if (isComplete) handleStepComplete(2, 'ACTIVE');
-                setStep2Complete(isComplete);
-            }} />}
-            {currentStep === 3 && <Step3Survey />}
+            {currentStep === 2 && <Step2Payment
+                onPaymentComplete={(isComplete) => {
+                    if (isComplete) handleStepComplete(2, 'ACTIVE');
+                    setStep2Complete(isComplete);
+                }}
+                onNoVatChange={setNoVatSelected}
+            />}
+            {currentStep === 3 && <Step3Survey noVat={noVatSelected} />}
             {currentStep === 4 && (isComplaintMode ? <Step4Complaint /> : <Step4Complete />)}
         </StepLayout>
     );

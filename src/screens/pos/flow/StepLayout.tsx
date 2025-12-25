@@ -15,6 +15,9 @@ interface StepLayoutProps {
     onNext: () => void;
     onStepClick?: (step: number) => void;
     nextDisabled?: boolean;
+    nextLabel?: string;
+    hideNext?: boolean;
+    isLastStep?: boolean;
     headerLeft?: React.ReactNode;
     footerLeft?: React.ReactNode;
 }
@@ -31,6 +34,7 @@ const StepLayout: React.FC<StepLayoutProps> = ({
     onStepClick,
     nextLabel,
     nextDisabled,
+    hideNext,
     isLastStep,
     headerLeft,
     footerLeft
@@ -97,21 +101,23 @@ const StepLayout: React.FC<StepLayoutProps> = ({
                          Let's update the shared StepFooter later if needed, for now I'll inline the footer logic to be flexible as per plan.
                      */}
 
-                    <button
-                        onClick={onNext}
-                        disabled={nextDisabled}
-                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-xl  ${nextDisabled
+                    {!hideNext && (
+                        <button
+                            onClick={onNext}
+                            disabled={nextDisabled}
+                            className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-xl  ${nextDisabled
                                 ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                                 : isLastStep
                                     ? 'bg-green-500 text-white shadow-green-200 active:scale-95 shadow-green-200'
                                     : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400] active:scale-95 shadow-yellow-200/50'
-                            }`}
-                    >
-                        {isLastStep ? 'ДУУСГАХ' : (nextLabel || 'ДАРААГИЙН АЛХАМ')}
-                        <span className="material-icons-round text-lg">
-                            {isLastStep ? 'check_circle' : 'east'}
-                        </span>
-                    </button>
+                                }`}
+                        >
+                            {isLastStep ? 'ДУУСГАХ' : (nextLabel || 'ДАРААГИЙН АЛХАМ')}
+                            <span className="material-icons-round text-lg">
+                                {isLastStep ? 'check_circle' : 'east'}
+                            </span>
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

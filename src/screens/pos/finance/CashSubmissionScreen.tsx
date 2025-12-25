@@ -58,6 +58,7 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
             <div className="flex-1 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden flex flex-col min-h-[400px]">
                 <div className="p-4 md:p-6 bg-gray-50/50 border-b border-gray-100 flex items-center justify-between">
                     <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                         <h2 className="text-sm md:text-base font-black text-gray-800 uppercase tracking-tight">Мөнгөний жагсаалт</h2>
                     </div>
                     <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
@@ -107,7 +108,7 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
                 {/* Statistics Card */}
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
                     <div className="p-6 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
-                        <span className="material-icons-round text-primary text-xl">payments</span>
+                        <div className="h-8 w-1.5 bg-[#FFD400] rounded-sm"></div>
                         <h3 className="text-sm font-black text-gray-800 uppercase tracking-tighter">Нийт дүн</h3>
                     </div>
 

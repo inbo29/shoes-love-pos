@@ -16,24 +16,29 @@ import ErrorModal from '../shared/components/ErrorModal/ErrorModal';
 const LayoutWrapper: React.FC<{
   children: React.ReactNode;
   userName: string;
+  selectedBranch: string;
   onLogout: () => void;
-}> = ({ children, userName, onLogout }) => {
+}> = ({ children, userName, selectedBranch, onLogout }) => {
   return (
     // @ts-ignore
-    <Layout userName={userName} onLogout={onLogout}>
+    <Layout userName={userName} branchName={selectedBranch} onLogout={onLogout}>
       {children}
     </Layout>
   );
 };
 
 // Wrapper for Login to handle navigation after successful login
-const LoginScreenWrapper: React.FC<{ onLogin: (id: string, pw: string) => boolean }> = ({ onLogin }) => {
+const LoginScreenWrapper: React.FC<{ onLogin: (id: string, pw: string) => boolean; userName: string }> = ({ onLogin, userName }) => {
   const navigate = useNavigate();
 
   const handleLoginSubmit = (id: string, pw: string) => {
     const success = onLogin(id, pw);
     if (success) {
-      navigate('/role-select');
+      if (id.toLowerCase() === 'worker') {
+        navigate('/pos/dashboard');
+      } else {
+        navigate('/role-select');
+      }
     }
   };
 
@@ -42,6 +47,7 @@ const LoginScreenWrapper: React.FC<{ onLogin: (id: string, pw: string) => boolea
 
 const App: React.FC = () => {
   const [userName, setUserName] = useState('Админ');
+  const [selectedBranch, setSelectedBranch] = useState('Төв сал발');
   const [error, setError] = useState<{ message: string; system?: 'POS' | 'ERP' | 'RMS' } | null>(null);
 
   const handleLogin = (id: string, pw: string) => {
@@ -69,14 +75,14 @@ const App: React.FC = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={
-          <LoginScreenWrapper onLogin={handleLogin} />
+          <LoginScreenWrapper onLogin={handleLogin} userName={userName} />
         } />
-        <Route path="/role-select" element={<RoleSelectScreen onLogout={handleLogout} />} />
+        <Route path="/role-select" element={<RoleSelectScreen userName={userName} selectedBranch={selectedBranch} onBranchChange={setSelectedBranch} onLogout={handleLogout} />} />
 
         {/* POS Module via PosRoutes */}
         <Route path="/pos/*" element={
-          <LayoutWrapper userName={userName} onLogout={handleLogout}>
-            <PosRoutes />
+          <LayoutWrapper userName={userName} selectedBranch={selectedBranch} onLogout={handleLogout}>
+            <PosRoutes userName={userName} selectedBranch={selectedBranch} />
           </LayoutWrapper>
         } />
 

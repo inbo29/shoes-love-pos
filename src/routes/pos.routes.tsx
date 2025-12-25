@@ -22,7 +22,7 @@ const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
     </div>
 );
 
-const PosRoutes: React.FC = () => {
+const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ userName, selectedBranch }) => {
     return (
         <Routes>
             <Route index element={<Navigate to="dashboard" />} />
@@ -41,7 +41,7 @@ const PosRoutes: React.FC = () => {
             </Route>
 
             <Route path="cash-submit" element={<CashSubmissionScreen />} />
-            <Route path="cash-report" element={<CashReportScreen />} />
+            <Route path="cash-report" element={<CashReportScreen userName={userName} initialBranch={selectedBranch} />} />
 
             {/* Placeholders for other features as per rule.md */}
             {/* 수령 (Handover) */}

@@ -185,9 +185,12 @@ const Step3ServiceDetails: React.FC<Step3ServiceDetailsProps> = ({ onValidationC
             <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-8">
                 {/* Header */}
                 <div className="border-b border-gray-100 pb-4 mb-6">
-                    <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide">
-                        Сонгосон үйлчилгээний дэлгэрэнгүй
-                    </h2>
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
+                        <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide">
+                            Сонгосон үйлчилгээний дэлгэрэнгүй
+                        </h2>
+                    </div>
                     <p className="text-sm text-gray-500 mt-1">
                         Бараа тус бүрд тохирох ажлын төрөл, үнийн дэлгэрэнгүйг сонгоно уу.
                     </p>

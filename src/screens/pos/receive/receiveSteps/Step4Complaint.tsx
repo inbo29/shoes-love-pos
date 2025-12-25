@@ -49,7 +49,10 @@ const Step4Complaint: React.FC = () => {
 
                 {/* 0. Order Info Header (From Mockup) */}
                 <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6">
-                    <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Захиалгын мэдээлэл</h3>
+                    <div className="flex items-center gap-3 mb-4">
+                        <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                        <h3 className="text-xs font-black text-gray-400 uppercase tracking-widest">Захиалгын мэдээлэл</h3>
+                    </div>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                         <div>
                             <span className="text-[10px] font-bold text-gray-400 block mb-1">Захиалгын №</span>
@@ -89,9 +92,12 @@ const Step4Complaint: React.FC = () => {
                 {/* 1. Claim Target */}
                 <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-50 flex items-center justify-between bg-white">
-                        <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight flex items-center gap-2">
-                            Ямар бараанд хамаарах вэ?
-                        </h3>
+                        <div className="flex items-center gap-3">
+                            <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                            <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight flex items-center gap-2">
+                                Ямар бараанд хамаарах вэ?
+                            </h3>
+                        </div>
                         {selectedTargets.length > 0 && <span className="text-[10px] font-bold text-primary">{selectedTargets.length} бараа сонгогдсон</span>}
                     </div>
                     <div className="p-6">
@@ -111,8 +117,8 @@ const Step4Complaint: React.FC = () => {
 
                             {ORDER_ITEMS.map(item => (
                                 <label key={item.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all group ${selectedTargets.includes(item.id)
-                                        ? 'bg-primary/5 border-primary/20'
-                                        : 'border-gray-100 hover:bg-gray-50'
+                                    ? 'bg-primary/5 border-primary/20'
+                                    : 'border-gray-100 hover:bg-gray-50'
                                     }`}>
                                     <div className="flex items-center gap-3">
                                         <input
@@ -140,9 +146,12 @@ const Step4Complaint: React.FC = () => {
                 <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
                     <div className="p-6 space-y-6">
                         <div>
-                            <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight mb-4 flex items-center gap-1">
-                                Гомдлын агуулга <span className="text-red-500">*</span>
-                            </h3>
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                                <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight flex items-center gap-1">
+                                    Гомдлын агуулга <span className="text-red-500">*</span>
+                                </h3>
+                            </div>
                             <textarea
                                 className="w-full h-32 p-4 rounded-xl border border-gray-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all resize-none placeholder-gray-300"
                                 placeholder="Хэрэглэгчийн гомдлын дэлгэрэнгүйг энд бичнэ үү..."
@@ -156,8 +165,8 @@ const Step4Complaint: React.FC = () => {
                             <div className="flex flex-wrap gap-2">
                                 {CLAIM_TYPES.map(type => (
                                     <label key={type.id} className={`px-4 py-2 rounded-full border text-xs font-bold cursor-pointer transition-all ${selectedType === type.id
-                                            ? 'bg-gray-800 border-gray-800 text-white'
-                                            : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                                        ? 'bg-gray-800 border-gray-800 text-white'
+                                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
                                         }`}>
                                         <input
                                             type="radio"
@@ -177,10 +186,13 @@ const Step4Complaint: React.FC = () => {
                 {/* 4. Photos */}
                 <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-50 bg-gray-50/30">
-                        <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight flex items-center gap-2">
-                            <span className="material-icons-round text-gray-400 text-lg">photo_camera</span>
-                            4. Зураг / Нотлох баримт (Сонголтоор)
-                        </h3>
+                        <div className="flex items-center gap-3">
+                            <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                            <h3 className="text-sm font-black text-gray-800 uppercase tracking-tight flex items-center gap-2">
+                                <span className="material-icons-round text-gray-400 text-lg">photo_camera</span>
+                                4. Зураг / Нотлох баримт (Сонголтоор)
+                            </h3>
+                        </div>
                     </div>
                     <div className="p-6">
                         <div className="grid grid-cols-5 gap-3">
@@ -205,7 +217,10 @@ const Step4Complaint: React.FC = () => {
                 {/* Financial Impact (From Mockup) */}
                 <div className="bg-white rounded-[24px] shadow-xl border border-blue-100 overflow-hidden sticky top-4">
                     <div className="p-5 border-b border-blue-50 bg-blue-50/30">
-                        <h2 className="text-xs font-black text-gray-600 uppercase">Санхүүгийн нөлөө (Автомат)</h2>
+                        <div className="flex items-center gap-3">
+                            <div className="h-5 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                            <h2 className="text-xs font-black text-gray-600 uppercase">Санхүүгийн нөлөө (Автомат)</h2>
+                        </div>
                     </div>
                     <div className="p-6 bg-blue-50/10">
                         <div className="space-y-4">
@@ -226,12 +241,15 @@ const Step4Complaint: React.FC = () => {
 
                     {/* Action Selection */}
                     <div className="p-6 border-t border-gray-100">
-                        <h3 className="text-xs font-bold text-gray-500 uppercase mb-4">Шийдвэрлэлт сонгох</h3>
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="h-5 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                            <h3 className="text-xs font-bold text-gray-500 uppercase">Шийдвэрлэлт сонгох</h3>
+                        </div>
                         <div className="space-y-2">
                             {ACTION_OPTIONS.map(opt => (
                                 <label key={opt.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedAction === opt.id
-                                        ? 'bg-gray-50 border-gray-400'
-                                        : 'border-gray-100 hover:bg-gray-50'
+                                    ? 'bg-gray-50 border-gray-400'
+                                    : 'border-gray-100 hover:bg-gray-50'
                                     }`}>
                                     <span className={`text-xs font-bold ${selectedAction === opt.id ? 'text-gray-900' : 'text-gray-600'}`}>
                                         {opt.label}

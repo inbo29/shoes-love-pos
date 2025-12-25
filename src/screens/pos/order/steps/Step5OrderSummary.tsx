@@ -26,6 +26,28 @@ const Step5OrderSummary: React.FC = () => {
         address: 'ХУД, 11-р хороо, Зайсан 45-2'
     };
 
+    // Masking helpers
+    const maskName = (name: string) => {
+        if (!name) return '';
+        if (name.length <= 1) return name;
+        if (name.length === 2) return name[0] + '*';
+        let masked = name[0];
+        for (let i = 1; i < name.length - 1; i++) {
+            masked += (name[i] === ' ' || name[i] === '-') ? name[i] : '*';
+        }
+        masked += name[name.length - 1];
+        return masked;
+    };
+
+    const maskPhone = (phone: string) => {
+        if (!phone) return '';
+        const parts = phone.split('-');
+        if (parts.length === 2) {
+            return parts[0].substring(0, 2) + '**' + '-' + '****';
+        }
+        return phone.substring(0, 2) + '****' + phone.substring(phone.length - 2);
+    };
+
     const orderItems: SummaryItem[] = [
         {
             id: 1,
@@ -98,7 +120,10 @@ const Step5OrderSummary: React.FC = () => {
         <div className="w-full p-4 md:p-6 h-full flex flex-col lg:flex-row gap-6 overflow-y-auto no-scrollbar overflow-visible">
             {/* Left Column: Summary (65%) */}
             <div className="lg:w-[65%] flex flex-col gap-6 overflow-visible pr-2 pb-20">
-                <h1 className="text-xl font-bold text-gray-800 uppercase tracking-tight">Захиалгын хураангуй</h1>
+                <div className="flex items-center gap-3 mb-6">
+                    <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
+                    <h1 className="text-xl font-bold text-gray-800 uppercase tracking-tight">Захиалгын хураангуй</h1>
+                </div>
 
                 {/* Customer Info */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
@@ -106,11 +131,11 @@ const Step5OrderSummary: React.FC = () => {
                     <div className="grid grid-cols-3 gap-4">
                         <div>
                             <p className="text-[10px] text-gray-400 mb-1">Нэр</p>
-                            <p className="text-sm font-bold text-gray-800">{customerInfo.name}</p>
+                            <p className="text-sm font-bold text-gray-800">{maskName(customerInfo.name)}</p>
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 mb-1">Утас</p>
-                            <p className="text-sm font-bold text-gray-800">{customerInfo.phone}</p>
+                            <p className="text-sm font-bold text-gray-800">{maskPhone(customerInfo.phone)}</p>
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 mb-1">Хаяг</p>
@@ -137,19 +162,6 @@ const Step5OrderSummary: React.FC = () => {
                                     </div>
                                 </div>
                                 {/* Status Badge */}
-                                <div className={`px-3 py-1.5 rounded-lg border flex items-center gap-2 ${item.status === 'completed' ? 'bg-green-50 border-green-100 text-green-600' :
-                                    item.status === 'ready' ? 'bg-yellow-50 border-yellow-100 text-yellow-600' :
-                                        'bg-gray-50 border-gray-100 text-gray-400'
-                                    }`}>
-                                    <div className={`w-2 h-2 rounded-full ${item.status === 'completed' ? 'bg-green-500' :
-                                        item.status === 'ready' ? 'bg-yellow-500' :
-                                            'bg-gray-400'
-                                        }`} />
-                                    <span className="text-[10px] font-black uppercase tracking-wider">
-                                        {item.status === 'completed' ? 'Бүрэн гүйцэтгэсэн' :
-                                            item.status === 'ready' ? 'Хүлээлгэн өгөхөд бэлэн' : 'Тодорхойгүй'}
-                                    </span>
-                                </div>
                             </div>
 
                             <div className="p-5 space-y-6">
@@ -274,60 +286,62 @@ const Step5OrderSummary: React.FC = () => {
             </div>
 
             {/* Point Usage Popup */}
-            {showPointPopup && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-in fade-in zoom-in duration-200">
-                        <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-                            <h3 className="text-sm font-bold text-gray-800">Пойнт ашиглах</h3>
-                            <button onClick={() => setShowPointPopup(false)} className="text-gray-400 hover:text-gray-600">
-                                <span className="material-icons-round">close</span>
-                            </button>
-                        </div>
-                        <div className="p-6 space-y-5">
-                            <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">Ашиглах пойнт</label>
-                                <input
-                                    type="number"
-                                    placeholder="0"
-                                    value={pointInput}
-                                    onChange={(e) => setPointInput(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400"
-                                />
-                                <div className="mt-2 flex justify-between text-[9px] font-medium">
-                                    <span className="text-gray-400">Боломжит: <span className="text-teal-600">₮ 50,000</span></span>
-                                    <button onClick={() => setPointInput('50000')} className="text-blue-500 hover:underline">Бүгдийг ашиглах</button>
+            {
+                showPointPopup && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+                        <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+                            <div className="p-6 border-b border-gray-50 flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-gray-800">Пойнт ашиглах</h3>
+                                <button onClick={() => setShowPointPopup(false)} className="text-gray-400 hover:text-gray-600">
+                                    <span className="material-icons-round">close</span>
+                                </button>
+                            </div>
+                            <div className="p-6 space-y-5">
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">Ашиглах пойнт</label>
+                                    <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={pointInput}
+                                        onChange={(e) => setPointInput(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm font-bold focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400"
+                                    />
+                                    <div className="mt-2 flex justify-between text-[9px] font-medium">
+                                        <span className="text-gray-400">Боломжит: <span className="text-teal-600">₮ 50,000</span></span>
+                                        <button onClick={() => setPointInput('50000')} className="text-blue-500 hover:underline">Бүгдийг ашиглах</button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">Пин код</label>
+                                    <input
+                                        type="password"
+                                        placeholder="****"
+                                        value={passwordInput}
+                                        onChange={(e) => setPasswordInput(e.target.value)}
+                                        className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400"
+                                    />
                                 </div>
                             </div>
-
-                            <div>
-                                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1.5 block">Пин код</label>
-                                <input
-                                    type="password"
-                                    placeholder="****"
-                                    value={passwordInput}
-                                    onChange={(e) => setPasswordInput(e.target.value)}
-                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl text-sm tracking-[0.5em] focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-400"
-                                />
+                            <div className="p-6 bg-gray-50 flex gap-3">
+                                <button
+                                    onClick={() => setShowPointPopup(false)}
+                                    className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors"
+                                >
+                                    Цуцлах
+                                </button>
+                                <button
+                                    onClick={handleConfirmPoints}
+                                    className="flex-1 py-3 bg-teal-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-teal-500/30 hover:bg-teal-600 transition-all active:scale-95"
+                                >
+                                    Баталгаажуулах
+                                </button>
                             </div>
                         </div>
-                        <div className="p-6 bg-gray-50 flex gap-3">
-                            <button
-                                onClick={() => setShowPointPopup(false)}
-                                className="flex-1 py-3 bg-white border border-gray-200 rounded-xl text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors"
-                            >
-                                Цуцлах
-                            </button>
-                            <button
-                                onClick={handleConfirmPoints}
-                                className="flex-1 py-3 bg-teal-500 rounded-xl text-xs font-bold text-white shadow-lg shadow-teal-500/30 hover:bg-teal-600 transition-all active:scale-95"
-                            >
-                                Баталгаажуулах
-                            </button>
-                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

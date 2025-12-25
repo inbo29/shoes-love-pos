@@ -120,8 +120,8 @@ const DayManagementScreen: React.FC = () => {
                 </div>
 
                 {/* 2. Filter Bar (Compact Flex Layout) */}
-                <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-6 flex flex-wrap md:flex-nowrap items-end gap-4 lg:gap-6 relative z-[10] overflow-visible">
-                    <div className="w-full md:w-auto md:flex-1 min-w-[260px]">
+                <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-6 flex flex-wrap lg:flex-nowrap items-end gap-4 lg:gap-6 relative z-[10] overflow-visible">
+                    <div className="w-full sm:w-auto flex-1 min-w-[240px]">
                         <PosDateRangePicker
                             label="Шүүх хугацаа"
                             start={startDate}
@@ -134,7 +134,7 @@ const DayManagementScreen: React.FC = () => {
                         />
                     </div>
 
-                    <div className="flex flex-col gap-1.5 w-full md:w-[280px] lg:w-[320px] shrink-0">
+                    <div className="flex flex-col gap-1.5 w-full sm:w-[280px] lg:w-[320px] shrink-0">
                         <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан хайх</label>
                         <div className="relative">
                             <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
@@ -150,7 +150,7 @@ const DayManagementScreen: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="h-[44px] w-full md:w-auto shrink-0">
+                    <div className="h-[44px] w-full lg:w-auto shrink-0">
                         <PosExcelButton />
                     </div>
                 </div>
@@ -237,31 +237,32 @@ const DayManagementScreen: React.FC = () => {
 
                 {/* 4. Action Card (Bottom) */}
                 <div className="bg-white rounded-[32px] shadow-2xl border border-gray-100 p-10 shrink-0">
-                    <div className="mb-8">
+                    <div className="flex items-center gap-3 mb-8">
+                        <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                         <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">ӨДӨР НЭЭХ / ХААХ</h3>
-                        {/* <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ATTENDANCE ACTION</p> */}
                     </div>
+                    {/* <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ATTENDANCE ACTION</p> */}
 
                     <div className="flex flex-col lg:flex-row items-end gap-10">
                         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Одоогийн огноо</label>
                                 <div className="h-[56px] px-6 bg-gray-50 rounded-2xl border border-gray-200 text-[14px] font-bold text-gray-700 flex items-center gap-4">
-                                    <span className="material-icons-round text-gray-300">calendar_today</span>
+                                    {/* <span className="material-icons-round text-gray-300">calendar_today</span> */}
                                     {todayStr}
                                 </div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Системийн цаг</label>
                                 <div className="h-[56px] px-6 bg-[#40C1C7]/5 rounded-2xl border border-[#40C1C7]/10 text-[20px] font-black text-[#40C1C7] flex items-center gap-4 italic shadow-inner">
-                                    <span className="material-icons-round text-[#40C1C7]/30">timer</span>
+                                    {/* <span className="material-icons-round text-[#40C1C7]/30">timer</span> */}
                                     {formatTime(currentTime)}
                                 </div>
                             </div>
                             <div className="space-y-3">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан</label>
                                 <div className="h-[56px] px-6 bg-gray-50 rounded-2xl border border-gray-100 text-[14px] font-bold text-gray-700 flex items-center gap-4">
-                                    <span className="material-icons-round text-gray-300">person</span>
+                                    {/* <span className="material-icons-round text-gray-300">person</span> */}
                                     {userName}
                                 </div>
                             </div>

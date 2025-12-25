@@ -8,15 +8,19 @@ const EMOJI_RATINGS = [
     { value: 5, icon: '😍', label: 'Маш сайн' },
 ];
 
-const Step3Survey: React.FC = () => {
+interface Step3SurveyProps {
+    noVat?: boolean;
+}
+
+const Step3Survey: React.FC<Step3SurveyProps> = ({ noVat }) => {
     const [rating, setRating] = useState<number | null>(null);
     const [wantsServiceAgain, setWantsServiceAgain] = useState(false);
     const [comment, setComment] = useState('');
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 pb-12 overflow-visible relative">
-            {/* Left Column (Main Content) - 64% */}
-            <div className="w-full lg:w-[64%] flex flex-col items-center pt-8 overflow-visible min-w-0">
+            {/* Left Column (Main Content) - Should be centered if no sidebar */}
+            <div className={`flex flex-col items-center pt-8 overflow-visible min-w-0 transition-all duration-500 ${noVat ? 'w-full' : 'w-full lg:w-[64%]'}`}>
 
                 {/* Main Survey Card */}
                 <div className="w-full max-w-xl bg-white rounded-[32px] border border-gray-100 shadow-xl p-8 md:p-12 flex flex-col items-center text-center relative overflow-hidden">
@@ -48,8 +52,8 @@ const Step3Survey: React.FC = () => {
                                         }`}
                                 >
                                     <div className={`w-14 h-14 md:w-16 md:h-16 rounded-2xl flex items-center justify-center text-3xl md:text-4xl shadow-sm transition-all border-2 ${isSelected
-                                            ? 'bg-yellow-50 border-yellow-400 shadow-yellow-200'
-                                            : 'bg-white border-gray-100 group-hover:border-gray-200'
+                                        ? 'bg-yellow-50 border-yellow-400 shadow-yellow-200'
+                                        : 'bg-white border-gray-100 group-hover:border-gray-200'
                                         }`}>
                                         {item.icon}
                                     </div>
@@ -99,33 +103,44 @@ const Step3Survey: React.FC = () => {
                 </div>
             </div>
 
-            {/* Right Column: Order Summary (Sticky) - 36% */}
-            {/* Keeping it simple as per "Sticky Rule" but simplified content since this is Survey Step */}
-            <div className="w-full lg:w-[36%] shrink-0 flex flex-col gap-6">
-                <div className="bg-white rounded-[32px] shadow-xl border border-primary/5 overflow-hidden sticky top-4 opacity-80 hover:opacity-100 transition-opacity">
-                    <div className="p-8">
-                        <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-6 border-l-4 border-gray-200 pl-3">
-                            Захиалгын мэдээлэл
-                        </h3>
+            {/* Right Column: Order Summary (Sticky) - 36% - Hidden if noVat */}
+            {!noVat && (
+                <div className="w-full lg:w-[36%] shrink-0 flex flex-col gap-6 animate-in fade-in slide-in-from-right-8 duration-500">
+                    <div className="bg-white rounded-[32px] shadow-xl border border-primary/5 overflow-hidden sticky top-4">
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">
+                                    Захиалгын мэдээлэл
+                                </h3>
+                            </div>
 
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-400 font-bold">Захиалгын №</span>
-                                <span className="text-gray-800 font-black">#ORD-2310-001</span>
-                            </div>
-                            <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-400 font-bold">Нийт дүн</span>
-                                <span className="text-gray-800 font-black">₮ 38,900</span>
-                            </div>
-                            <div className="h-px bg-gray-50 my-4" />
-                            <div className="flex items-center gap-3 text-green-500 bg-green-50 p-3 rounded-xl border border-green-100">
-                                <span className="material-icons-round text-lg">check_circle</span>
-                                <span className="text-xs font-bold">Төлбөр төлөгдсөн</span>
+                            <div className="space-y-4">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Захиалгын №</span>
+                                    <span className="text-gray-800 font-black">#ORD-2310-001</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Нийт дүн</span>
+                                    <span className="text-gray-800 font-black">₮ 38,900</span>
+                                </div>
+                                <div className="h-px bg-gray-50 my-4" />
+                                <div className="flex items-center gap-3 text-green-500 bg-green-50 p-3 rounded-xl border border-green-100">
+                                    <span className="material-icons-round text-lg">check_circle</span>
+                                    <span className="text-xs font-bold">Төлбөр төлөгдсөн</span>
+                                </div>
+
+                                <div className="pt-6">
+                                    <button className="w-full py-4 bg-white border-2 border-gray-100 hover:border-primary hover:bg-primary/5 rounded-2xl flex items-center justify-center gap-3 text-gray-700 hover:text-primary transition-all active:scale-95 group">
+                                        <span className="material-icons-round text-xl group-hover:rotate-12 transition-transform">print</span>
+                                        <span className="text-[11px] font-black uppercase tracking-widest">Төлбөрийн баримт хэвлэх</span>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 };

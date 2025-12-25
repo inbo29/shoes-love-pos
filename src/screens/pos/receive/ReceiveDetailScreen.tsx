@@ -187,7 +187,7 @@ const ReceiveDetailScreen: React.FC = () => {
             <div className="lg:col-span-4 flex flex-col gap-6">
                 <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
                     <div className="flex items-center gap-3 mb-8 border-b border-gray-50 pb-4">
-                        <span className="material-icons-round text-primary">person_outline</span>
+                        <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
                         <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Хэрэглэгчийн мэдээлэл</h3>
                     </div>
                     <div className="space-y-6">
@@ -207,7 +207,7 @@ const ReceiveDetailScreen: React.FC = () => {
                 </div>
                 <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
                     <div className="flex items-center gap-3 mb-8 border-b border-gray-50 pb-4">
-                        <span className="material-icons-round text-primary">account_balance_wallet</span>
+                        <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
                         <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Төлбөрийн мэдээлэл</h3>
                     </div>
                     <div className="space-y-6">
@@ -232,7 +232,7 @@ const ReceiveDetailScreen: React.FC = () => {
                 <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 overflow-visible">
                     <div className="p-8 border-b border-gray-50 bg-gray-50/30 flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <span className="material-icons-round text-primary">view_list</span>
+                            <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
                             <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Захиалгын задаргаа</h3>
                         </div>
                     </div>
@@ -310,7 +310,10 @@ const ReceiveDetailScreen: React.FC = () => {
         <div className="max-w-[1440px] mx-auto w-full flex flex-col lg:flex-row gap-8 pb-32 animate-in fade-in duration-500 overflow-visible">
             {/* Left Column: Payment Methods (60%) */}
             <div className="lg:w-[60%] flex flex-col gap-6 overflow-visible">
-                <h1 className="text-xl font-black text-gray-800 uppercase tracking-tight">Төлбөрийн хэрэгсэл</h1>
+                <div className="flex items-center gap-3 mb-4">
+                    <div className="h-7 w-1.5 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                    <h1 className="text-xl font-black text-gray-800 uppercase tracking-tight">Төлбөрийн хэрэгсэл</h1>
+                </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 p-1">
                     {PAYMENT_METHODS.map((method) => (
@@ -380,7 +383,10 @@ const ReceiveDetailScreen: React.FC = () => {
             <div className="lg:w-[40%] flex flex-col gap-6">
                 <div className="bg-white rounded-[32px] shadow-xl border border-primary/5 overflow-hidden">
                     <div className="p-8">
-                        <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-8">Төлбөрийн хураангуй</h3>
+                        <div className="flex items-center gap-3 mb-8">
+                            <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн хураангуй</h3>
+                        </div>
 
                         <div className="space-y-8">
                             <div className="flex justify-between items-end pb-8 border-b border-gray-50">

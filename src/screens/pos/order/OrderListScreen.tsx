@@ -201,8 +201,8 @@ const OrderListScreen: React.FC = () => {
         <div className="flex-1 flex flex-col h-full bg-[#F8F9FA] overflow-y-auto no-scrollbar overflow-visible">
             <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20 overflow-visible">
                 {/* 1. Header & Global Actions */}
-                <div className="flex flex-col md:flex-row justify-between items-end gap-4 shrink-0">
-                    <div className="flex flex-col gap-5">
+                <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6 shrink-0">
+                    <div className="flex flex-col sm:flex-row lg:flex-col gap-4 sm:items-center lg:items-start">
                         <div className="flex items-center gap-3">
                             <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                             <h2 className="text-[18px] font-bold text-[#374151]">
@@ -211,15 +211,15 @@ const OrderListScreen: React.FC = () => {
                         </div>
                         <button
                             onClick={() => navigate('/pos/orders/new/step/1')}
-                            className="bg-secondary hover:bg-yellow-400 text-gray-900 px-8 h-[48px] rounded-2xl shadow-lg shadow-secondary/20 flex items-center gap-2 transition-all font-black uppercase tracking-wide active:scale-95 w-fit"
+                            className="bg-secondary hover:bg-yellow-400 text-gray-900 px-8 h-[48px] rounded-2xl shadow-lg shadow-secondary/20 flex items-center gap-2 transition-all font-black uppercase tracking-wide active:scale-95 w-fit shrink-0 whitespace-nowrap"
                         >
                             <span className="material-icons-round">add_circle</span>
                             Шинэ захиалга авах
                         </button>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative w-full md:w-[400px]">
+                    <div className="flex items-center gap-3 w-full lg:w-auto">
+                        <div className="relative flex-1 lg:w-[400px]">
                             <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
                                 <span className="material-icons-round text-xl">search</span>
                             </span>
@@ -236,8 +236,8 @@ const OrderListScreen: React.FC = () => {
                 </div>
 
                 {/* 2. Standardized Filter bar */}
-                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-wrap md:flex-nowrap items-end gap-3 lg:gap-5 shrink-0 overflow-visible relative z-[30]">
-                    <div className="w-full md:w-auto md:flex-1 min-w-[260px]">
+                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-wrap lg:flex-nowrap items-end gap-4 shrink-0 overflow-visible relative z-[30]">
+                    <div className="w-full sm:w-auto flex-1 min-w-[240px]">
                         <PosDateRangePicker
                             start={startDate}
                             end={endDate}
@@ -263,7 +263,7 @@ const OrderListScreen: React.FC = () => {
                             { label: 'Захиалсан', value: 'Захиалсан' },
                             { label: 'Хүлээлгэн өгсөн', value: 'Хүлээлгэн өгсөн' },
                         ]}
-                        className="w-full md:w-[150px] shrink-0"
+                        className="w-full sm:w-[150px] shrink-0"
                     />
 
                     <PosDropdown
@@ -280,7 +280,7 @@ const OrderListScreen: React.FC = () => {
                             { label: 'Төлөгдөөгүй', value: 'unpaid' },
                             { label: 'Төлөгдөж байгаа', value: 'partial' },
                         ]}
-                        className="w-full md:w-[130px] shrink-0"
+                        className="w-full sm:w-[130px] shrink-0"
                     />
 
                     <PosDropdown
@@ -294,10 +294,10 @@ const OrderListScreen: React.FC = () => {
                             { label: 'Дүн (Өндөрөөс)', value: 'amount-high' },
                             { label: 'Дүн (Багаас)', value: 'amount-low' },
                         ]}
-                        className="w-full md:w-[160px] shrink-0"
+                        className="w-full sm:w-[160px] shrink-0"
                     />
 
-                    <button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all font-bold text-sm active:scale-95 group w-full md:w-auto md:ml-auto shrink-0">
+                    <button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all font-bold text-sm active:scale-95 group w-full lg:w-auto lg:ml-auto shrink-0">
                         <span className="material-icons-round text-lg group-hover:rotate-180 transition-transform duration-700">sync</span>
                         Шүүх
                     </button>
@@ -310,8 +310,8 @@ const OrderListScreen: React.FC = () => {
                             {/* Header */}
                             <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[10px] font-black tracking-widest items-center">
                                 <div className="w-[150px] shrink-0">Захиалгын №</div>
-                                <div className="w-[180px] shrink-0 px-2">Хэрэглэгчийн нэр</div>
-                                <div className="w-[300px] shrink-0 px-2">Үйлчилгээ</div>
+                                <div className="w-[180px] shrink-0 px-2">Үйлчлүүлэгч</div>
+                                <div className="w-[300px] shrink-0 px-2">Үйлчилгээ (товч)</div>
                                 <div className="w-[120px] shrink-0 px-2">Утас</div>
                                 <div className="w-[150px] shrink-0 px-2">Огноо</div>
                                 <div className="w-[140px] shrink-0 px-2 text-center">Төлөв</div>
@@ -333,8 +333,8 @@ const OrderListScreen: React.FC = () => {
                                     >
                                         <div className="w-[150px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline">{item.id}</div>
                                         <div className="w-[180px] shrink-0 px-2 font-bold text-gray-800 truncate">{maskNameSmart(item.customer)}</div>
-                                        <div className="w-[300px] shrink-0 px-2 font-bold text-gray-500 truncate">{formatServiceItems(item.items)}</div>
                                         <div className="w-[120px] shrink-0 px-2 text-gray-500 font-medium">{maskPhone(item.phone)}</div>
+                                        <div className="w-[300px] shrink-0 px-2 font-bold text-gray-500 truncate">{formatServiceItems(item.items)}</div>
                                         <div className="w-[150px] shrink-0 px-2 text-gray-400 text-xs font-medium">{item.date}</div>
                                         <div className="w-[140px] shrink-0 px-2 flex justify-center">
                                             <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap ${getStatusStyles(item.status)}`}>

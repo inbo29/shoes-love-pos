@@ -310,7 +310,7 @@ const CardManagementScreen: React.FC = () => {
                     <div className="flex items-center gap-3">
                         <div className="h-8 w-1.5 bg-[#FFD400] rounded-sm"></div>
                         <div>
-                            <h2 className="text-[18px] font-bold text-[#374151] tracking-tight uppercase">Гишүүнчлэлийн мэдээлэл</h2>
+                            <h2 className="text-[18px] font-bold text-[#374151] tracking-tight uppercase">Гишүүний мэдээлэл</h2>
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Customer Details</p>
                         </div>
                     </div>
@@ -429,10 +429,10 @@ const CardManagementScreen: React.FC = () => {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3 w-full sm:w-auto">
+                        <div className="flex items-center gap-3 w-full lg:w-auto flex-wrap lg:flex-nowrap">
                             <button
                                 onClick={handleNewCard}
-                                className="flex-1 sm:flex-none h-[52px] px-8 bg-white border-2 border-primary/20 text-primary rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-primary/5 transition-all flex items-center justify-center gap-2"
+                                className="w-full sm:flex-1 lg:flex-none h-[52px] px-6 lg:px-8 bg-white border-2 border-primary/20 text-primary rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest hover:bg-primary/5 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
                             >
                                 <span className="material-icons-round">add</span>
                                 Шинэ бүртгэл
@@ -440,7 +440,7 @@ const CardManagementScreen: React.FC = () => {
                             {/* Cancel button always available to reset form */}
                             <button
                                 onClick={handleClose}
-                                className="flex-1 sm:flex-none h-[52px] px-8 bg-gray-100 text-gray-500 rounded-2xl text-[11px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center justify-center gap-2"
+                                className="w-full sm:flex-1 lg:flex-none h-[52px] px-6 lg:px-8 bg-gray-100 text-gray-500 rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest hover:bg-gray-200 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
                             >
                                 <span className="material-icons-round">close</span>
                                 Цуцлах
@@ -449,7 +449,7 @@ const CardManagementScreen: React.FC = () => {
                             {!selectedCard && (
                                 <button
                                     onClick={handleRequest}
-                                    className="flex-1 sm:flex-none h-[52px] px-12 bg-primary text-white rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                    className="w-full sm:flex-1 lg:flex-none h-[52px] px-8 lg:px-12 bg-primary text-white rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all active:scale-95 flex items-center justify-center gap-2 whitespace-nowrap"
                                 >
                                     <span className="material-icons-round">send</span>
                                     Хүсэлт илгээх

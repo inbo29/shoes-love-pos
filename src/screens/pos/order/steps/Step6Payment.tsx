@@ -134,14 +134,17 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
                                 </div>
                                 <button className="flex items-center gap-2 px-6 py-3.5 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95 shrink-0">
                                     <span className="material-icons-round text-lg">print</span>
-                                    Баримт хэвлэх
+                                    Капитанз хэвлэх
                                 </button>
                             </div>
                         )}
 
                         {/* Payment Methods Section */}
                         <div className="flex flex-col gap-6">
-                            <h1 className="text-xl font-black text-gray-800 uppercase tracking-tight">Төлбөр хийх</h1>
+                            <div className="flex items-center gap-3 mb-2">
+                                <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
+                                <h1 className="text-xl font-black text-gray-800 uppercase tracking-tight">Төлбөр хийх</h1>
+                            </div>
 
                             <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 p-1">
                                 {PAYMENT_METHODS.map((method) => (
@@ -176,7 +179,10 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
             <div className="w-full lg:w-[36%] shrink-0 flex flex-col gap-6">
                 <div className="bg-white rounded-[32px] shadow-xl border border-primary/5 overflow-hidden sticky top-4">
                     <div className="p-8">
-                        <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest mb-8">Төлбөрийн тооцоо</h3>
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="h-4 w-1 bg-[#FFD400] rounded-sm"></div>
+                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн тооцоо</h3>
+                        </div>
 
                         <div className="space-y-4">
                             <div className="flex justify-between text-sm">
@@ -292,7 +298,7 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
                                     onClick={() => setBillingType('individual')}
                                     className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                                 >
-                                    Хувь
+                                    Хувь хүн
                                 </button>
                                 <button
                                     onClick={() => {

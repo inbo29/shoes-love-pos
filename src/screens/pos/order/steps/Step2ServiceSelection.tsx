@@ -49,7 +49,8 @@ const Step2ServiceSelection: React.FC<Step2ServiceSelectionProps> = ({ onValidat
         <div className="w-full p-4 md:p-6 h-full overflow-y-auto no-scrollbar">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 {/* Header */}
-                <div className="border-b border-gray-100 pb-4 mb-6">
+                <div className="border-b border-gray-100 pb-4 mb-6 flex items-center gap-3">
+                    <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                     <h2 className="text-lg font-bold text-gray-800 uppercase tracking-wide">
                         Үйлчилгээний ангилал
                     </h2>

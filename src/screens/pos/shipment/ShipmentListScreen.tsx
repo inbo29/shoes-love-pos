@@ -85,25 +85,25 @@ const ShipmentListScreen: React.FC = () => {
             <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20 overflow-visible">
 
                 {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-end gap-4 shrink-0">
-                    <div className="flex flex-col gap-5">
+                <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6 shrink-0">
+                    <div className="flex flex-col sm:flex-row lg:flex-col gap-5 sm:items-center lg:items-start w-full lg:w-auto">
                         <div className="flex items-center gap-3">
                             <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                             <h2 className="text-[18px] font-bold text-[#374151]">
                                 Ачилтын жагсаалт
                             </h2>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 flex-wrap sm:flex-nowrap">
                             <button
                                 // onClick={() => navigate('new')} 
-                                className="px-6 py-3 bg-[#40C1C7] text-white rounded-2xl font-bold uppercase text-xs tracking-wider hover:bg-[#3bb1b7] hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                                className="px-5 sm:px-6 py-3 bg-[#40C1C7] text-white rounded-2xl font-bold uppercase text-[10px] sm:text-xs tracking-wider hover:bg-[#3bb1b7] hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap"
                             >
                                 <span className="material-icons-round text-lg">add_circle</span>
                                 Ачилт хийх
                             </button>
                             <button
                                 // onClick={() => navigate('receive')}
-                                className="px-6 py-3 bg-[#FFD400] text-gray-900 rounded-2xl font-bold uppercase text-xs tracking-wider hover:bg-[#eec600] hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2"
+                                className="px-5 sm:px-6 py-3 bg-[#FFD400] text-gray-900 rounded-2xl font-bold uppercase text-[10px] sm:text-xs tracking-wider hover:bg-[#eec600] hover:shadow-lg hover:-translate-y-0.5 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap"
                             >
                                 <span className="material-icons-round text-lg">download</span>
                                 Ачилт авах
@@ -111,8 +111,8 @@ const ShipmentListScreen: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative w-full md:w-[400px]">
+                    <div className="flex items-center gap-3 w-full lg:w-auto">
+                        <div className="relative flex-1 lg:w-[400px]">
                             <span className="absolute top-1/2 left-4 -translate-y-1/2 flex items-center pointer-events-none text-gray-400">
                                 <span className="material-icons-round text-xl">search</span>
                             </span>
@@ -129,8 +129,8 @@ const ShipmentListScreen: React.FC = () => {
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-wrap md:flex-nowrap items-end gap-3 lg:gap-5 shrink-0 overflow-visible relative z-[30]">
-                    <div className="w-full md:w-auto md:flex-1 min-w-[260px]">
+                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-wrap lg:flex-nowrap items-end gap-4 shrink-0 overflow-visible relative z-[30]">
+                    <div className="w-full sm:w-auto flex-1 min-w-[240px]">
                         <PosDateRangePicker
                             start={startDate}
                             end={endDate}
@@ -150,7 +150,7 @@ const ShipmentListScreen: React.FC = () => {
                         ]}
                         value={branch}
                         onChange={setBranch}
-                        className="w-full md:w-[150px] shrink-0"
+                        className="w-full sm:w-[150px] shrink-0"
                     />
                     <PosDropdown
                         label="Хүлээн авах үйлдвэр"
@@ -161,7 +161,7 @@ const ShipmentListScreen: React.FC = () => {
                         ]}
                         value={factory}
                         onChange={setFactory}
-                        className="w-full md:w-[160px] shrink-0"
+                        className="w-full sm:w-[160px] shrink-0"
                     />
                     <PosDropdown
                         label="Төлөв"
@@ -174,10 +174,10 @@ const ShipmentListScreen: React.FC = () => {
                         ]}
                         value={status}
                         onChange={setStatus}
-                        className="w-full md:w-[140px] shrink-0"
+                        className="w-full sm:w-[140px] shrink-0"
                     />
 
-                    <button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all font-bold text-sm active:scale-95 group w-full md:w-auto md:ml-auto shrink-0">
+                    <button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all font-bold text-sm active:scale-95 group w-full lg:w-auto lg:ml-auto shrink-0">
                         <span className="material-icons-round text-lg group-hover:rotate-180 transition-transform duration-700">sync</span>
                         Шүүх
                     </button>

@@ -7,6 +7,7 @@ interface PosLayoutProps {
   currentView?: View | any;
   setView?: (view: View) => void;
   userName: string;
+  branchName?: string;
   onLogout: () => void;
 }
 
@@ -55,7 +56,7 @@ const NavButton: React.FC<{
   );
 };
 
-const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) => {
+const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 'Төв салбар', onLogout }) => {
   const [time, setTime] = useState(new Date());
   const navigate = useNavigate();
   const location = useLocation();
@@ -93,7 +94,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
 
         <div className="flex items-center space-x-4">
           <div className="flex items-center gap-4">
-            <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/20 pb-0.5">Төв салбар</span>
+            <span className="text-white/80 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/20 pb-0.5">{branchName}</span>
             <div className="bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-xl text-white font-bold tracking-wider flex items-center gap-3 border border-white/10 shadow-inner">
               <span className="text-[10px] font-andale opacity-80">{formatDate(time)}</span>
               <span className="opacity-20 text-xs">|</span>

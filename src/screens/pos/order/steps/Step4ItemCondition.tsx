@@ -204,7 +204,10 @@ const Step4ItemCondition: React.FC<Step4ItemConditionProps> = ({ onValidationCha
 
     return (
         <div className="w-full p-4 md:p-6 h-full overflow-y-auto no-scrollbar">
-            <h1 className="text-xl font-bold text-gray-800 mb-6">Одоогийн байдал бүртгэх</h1>
+            <div className="flex items-center gap-3 mb-6">
+                <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
+                <h1 className="text-xl font-bold text-gray-800">Одоогийн байдал бүртгэх</h1>
+            </div>
 
             <div className="space-y-6 pb-20">
                 {items.map((item, itemIdx) => {

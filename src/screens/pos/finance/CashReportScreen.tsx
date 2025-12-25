@@ -2,14 +2,48 @@ import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { mockCashReportData, PaymentBreakdown } from '../../../services/mockCashReportData';
 import Popup from '../../../shared/components/Popup/Popup';
+import PosDateRangePicker from '../../../shared/components/PosDateRangePicker';
+import PosDropdown from '../../../shared/components/PosDropdown';
 
-const CashReportScreen: React.FC = () => {
+interface CashReportScreenProps {
+    userName: string;
+    initialBranch: string;
+}
+
+const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBranch }) => {
     const navigate = useNavigate();
     const [expandedMethod, setExpandedMethod] = useState<string | null>(null);
     const [expandedService, setExpandedService] = useState<{ method: string; service: string } | null>(null);
     const [showConfirm, setShowConfirm] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+
+    // Filter states
+    const [startDate, setStartDate] = useState<Date | null>(new Date('2025-12-24'));
+    const [endDate, setEndDate] = useState<Date | null>(new Date('2025-12-24'));
+    const [selectedBranch, setSelectedBranch] = useState(initialBranch);
+
+    const isAdmin = userName === 'Админ';
+
+    const branchOptions = [
+        { label: 'Төв салбар', value: 'Төв салбар' },
+        { label: 'Салбар 1', value: 'Салбар 1' },
+        { label: 'Салбар 2', value: 'Салбар 2' },
+    ];
+
+    // Helpers
+    const maskName = (name: string) => {
+        if (!name) return '';
+        if (name.length <= 1) return name;
+        if (name.length === 2) return name[0] + '*';
+
+        let masked = name[0];
+        for (let i = 1; i < name.length - 1; i++) {
+            masked += '*';
+        }
+        masked += name[name.length - 1];
+        return masked;
+    };
 
     // Mock constants for summary
     const totalSales = 1500000;
@@ -55,37 +89,57 @@ const CashReportScreen: React.FC = () => {
     };
 
     return (
-        <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 h-full overflow-hidden bg-gray-50/30">
+        <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 h-full overflow-y-auto lg:overflow-hidden no-scrollbar bg-gray-50/30">
             {/* Header Summary */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-wrap items-center justify-between gap-6 shrink-0">
                 <div className="flex items-center gap-4">
-                    <div>
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
                         <h1 className="text-xl font-black text-gray-800 tracking-tight uppercase">Кассын тайлан</h1>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Өдрийн эцсийн нэгтгэл</p>
                     </div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-1">Өдрийн эцсийн нэгтгэл</p>
                 </div>
 
-                <div className="flex items-center gap-8">
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Огноо</p>
-                        <p className="text-sm font-bold text-gray-700">2025.12.24</p>
+                <div className="flex flex-wrap items-end gap-x-8 gap-y-4">
+                    <div className="min-w-[260px]">
+                        <PosDateRangePicker
+                            label="Огноо"
+                            start={startDate}
+                            end={endDate}
+                            onChange={(s, e) => { setStartDate(s); setEndDate(e); }}
+                        />
                     </div>
-                    <div className="w-px h-8 bg-gray-100 hidden sm:block" />
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Салбар</p>
-                        <p className="text-sm font-bold text-gray-700">Shoes Love Төв</p>
-                    </div>
-                    <div className="w-px h-8 bg-gray-100 hidden sm:block" />
-                    <div className="space-y-1">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ажилтан</p>
-                        <p className="text-sm font-bold text-gray-700">Админ</p>
+                    {isAdmin && (
+                        <div className="w-[200px]">
+                            <PosDropdown
+                                label="Салбар"
+                                icon="storefront"
+                                options={branchOptions}
+                                value={selectedBranch}
+                                onChange={setSelectedBranch}
+                            />
+                        </div>
+                    )}
+                    {!isAdmin && (
+                        <div className="space-y-1 pb-1">
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Салбар</p>
+                            <p className="h-[44px] flex items-center px-4 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-bold text-gray-600">
+                                {selectedBranch}
+                            </p>
+                        </div>
+                    )}
+                    <div className="space-y-1 pb-1">
+                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан</p>
+                        <p className="h-[44px] flex items-center px-4 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-bold text-gray-700">
+                            {userName}
+                        </p>
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 flex flex-col lg:flex-row gap-6 overflow-hidden">
+            <div className="flex flex-col lg:flex-row gap-6 lg:overflow-hidden min-h-0">
                 {/* Left Column: Breakdown */}
-                <div className="flex-1 overflow-y-auto no-scrollbar space-y-4 pb-6">
+                <div className="flex-1 lg:overflow-y-auto lg:no-scrollbar space-y-4 pb-0 lg:pb-6">
                     <div className="flex items-center justify-between ml-1">
                         <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн дэлгэрэнгүй (Задгай)</h3>
                         <span className="text-[9px] font-bold text-gray-300 uppercase tracking-tighter">Дарж дэлгэрэнгүйг харна уу</span>
@@ -155,7 +209,7 @@ const CashReportScreen: React.FC = () => {
                                                             <div key={order.id} className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between shadow-sm hover:border-primary/30 transition-colors cursor-pointer group">
                                                                 <div className="flex items-center gap-3">
                                                                     <span className="text-[10px] font-black text-gray-400 tracking-tighter group-hover:text-primary transition-colors">{order.id}</span>
-                                                                    <span className="text-xs font-bold text-gray-600">{order.customer}</span>
+                                                                    <span className="text-xs font-bold text-gray-600">{maskName(order.customer)}</span>
                                                                 </div>
                                                                 <span className="font-black text-gray-900 text-xs tracking-tighter">{order.amount.toLocaleString()} ₮</span>
                                                             </div>
@@ -172,7 +226,7 @@ const CashReportScreen: React.FC = () => {
                 </div>
 
                 {/* Right Column: Summaries & Action */}
-                <div className="w-full lg:w-[320px] xl:w-96 flex flex-col gap-6 shrink-0 overflow-y-auto no-scrollbar pb-6 lg:pb-0">
+                <div className="w-full lg:w-[320px] xl:w-96 flex flex-col gap-6 shrink-0 lg:overflow-y-auto lg:no-scrollbar pb-6">
 
                     {/* Service Breakdown Summary */}
                     <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden shrink-0">

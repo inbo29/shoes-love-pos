@@ -8,14 +8,15 @@ const StatCard: React.FC<{
     iconBg: string;
     isRevenue?: boolean;
 }> = ({ title, value, icon, colorClass, iconBg, isRevenue }) => (
-    <div className={`bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-transparent flex items-center gap-4 md:gap-6 h-auto min-h-[120px] md:h-40 transition-transform hover:scale-[1.02] ${isRevenue ? 'border-l-[8px] border-[#FFD400]' : 'border border-gray-50'}`}>
-        <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl ${iconBg} flex items-center justify-center ${colorClass} shadow-inner shrink-0`}>
-            <span className="material-icons-round text-2xl md:text-3xl">{icon}</span>
+    <div className={`bg-white rounded-3xl p-4 lg:p-6 shadow-sm border border-gray-50 flex items-center gap-4 lg:gap-6 h-auto min-h-[120px] lg:h-40 transition-transform hover:scale-[1.02] relative overflow-hidden`}>
+        {isRevenue && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-[#FFD400]"></div>}
+        <div className={`w-12 h-12 lg:w-16 lg:h-16 rounded-2xl lg:rounded-3xl ${iconBg} flex items-center justify-center ${colorClass} shadow-inner shrink-0`}>
+            <span className="material-icons-round text-2xl lg:text-3xl">{icon}</span>
         </div>
-        <div className="flex flex-col min-w-0">
-            <span className="text-gray-400 text-[11px] md:text-[13px] font-black uppercase tracking-widest mb-1.5 leading-tight">{title}</span>
-            <span className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight break-words">
-                {isRevenue && <span className="mr-1 text-gray-400 font-light">₮</span>}
+        <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-gray-400 text-[11px] lg:text-[13px] font-black uppercase tracking-widest mb-1.5 leading-tight">{title}</span>
+            <span className="text-2xl lg:text-4xl font-black text-gray-800 tracking-tight break-words">
+                {isRevenue && <span className="mr-1 text-gray-400 font-light text-xl lg:text-2xl">₮</span>}
                 {value}
             </span>
         </div>
