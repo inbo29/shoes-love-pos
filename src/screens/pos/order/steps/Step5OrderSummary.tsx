@@ -205,7 +205,7 @@ const Step5OrderSummary: React.FC = () => {
             </div>
 
             {/* Right Column: Payment & Points (35%) */}
-            <div className="lg:w-[35%] flex flex-col gap-6">
+            <div className="lg:w-[35%] flex flex-col gap-6 lg:sticky lg:top-0 h-fit">
                 <div className="bg-white rounded-2xl shadow-xl border border-teal-50/50 overflow-hidden">
                     <div className="p-6">
                         <h2 className="text-sm font-bold text-gray-800 uppercase mb-6 flex items-center gap-2 border-l-4 border-yellow-400 pl-3">
@@ -218,13 +218,9 @@ const Step5OrderSummary: React.FC = () => {
                                 <span>Үйлчилгээний дүн</span>
                                 <span className="font-medium text-gray-800">₮ {serviceTotal.toLocaleString()}</span>
                             </div>
-                            <div className="flex justify-between text-xs text-green-500 font-bold italic">
-                                <span>Хөнгөлөлт (10%)</span>
-                                <span>- ₮ {discount.toLocaleString()}</span>
-                            </div>
                             <div className="flex justify-between text-xs text-gray-400">
                                 <span>НӨАТ (10%)</span>
-                                <span>₮ {vat.toLocaleString()}</span>
+                                <span>₮ {(serviceTotal * 0.1).toLocaleString()}</span>
                             </div>
                             {appliedPoints > 0 && (
                                 <div className="flex justify-between text-xs text-blue-500 font-bold italic">
@@ -237,7 +233,7 @@ const Step5OrderSummary: React.FC = () => {
                         {/* Total Highlight */}
                         <div className="p-4 bg-teal-50/30 rounded-2xl border border-teal-50 flex justify-between items-center mb-8">
                             <span className="text-xs font-bold text-gray-600 uppercase">Нийт төлөх дүн</span>
-                            <span className="text-xl font-black text-teal-600">₮ {finalTotal.toLocaleString()}</span>
+                            <span className="text-xl font-black text-teal-600">₮ {(serviceTotal * 1.1 - appliedPoints).toLocaleString()}</span>
                         </div>
 
                         {/* Point Usage Checkbox */}

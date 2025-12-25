@@ -1,7 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { lookupCustomerByPhone, Customer } from '../../../../services/mockCustomerService';
 
-const Step1Info: React.FC = () => {
+interface Step1InfoProps {
+    onValidationChange?: (isValid: boolean) => void;
+}
+
+const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange }) => {
     const [phone, setPhone] = useState('');
     const [customerName, setCustomerName] = useState('');
     const [address, setAddress] = useState('');
@@ -10,6 +14,29 @@ const Step1Info: React.FC = () => {
 
     // Auto-fill current date
     const currentDate = new Date().toLocaleDateString('en-CA').replace(/-/g, '.');
+
+    // Phone formatting helper
+    const formatPhone = (value: string) => {
+        const numbers = value.replace(/\D/g, '');
+        if (numbers.length <= 4) return numbers;
+        return `${numbers.slice(0, 4)}-${numbers.slice(4, 8)}`;
+    };
+
+    // Validation Effect
+    useEffect(() => {
+        // Validate required fields
+        const isPhoneValid = phone.trim().length > 0;
+        const isNameValid = customerName.trim().length > 0;
+
+        // Date and Employee are currently hardcoded/readonly so they are assumed valid for now 
+        // (If they become editable, add checks)
+
+        const isValid = isPhoneValid && isNameValid;
+
+        if (onValidationChange) {
+            onValidationChange(isValid);
+        }
+    }, [phone, customerName, onValidationChange]);
 
     const handlePhoneLookup = () => {
         const customer = lookupCustomerByPhone(phone);
@@ -51,10 +78,11 @@ const Step1Info: React.FC = () => {
                                 </div>
                                 <input
                                     className="block w-full rounded-lg border-gray-300 dark:border-gray-600 pl-10 focus:border-primary focus:ring-primary dark:bg-gray-700 dark:text-white sm:text-sm py-3"
-                                    placeholder="9999-9999"
+                                    placeholder="0000-0000"
                                     type="tel"
                                     value={phone}
-                                    onChange={(e) => setPhone(e.target.value)}
+                                    onChange={(e) => setPhone(formatPhone(e.target.value))}
+                                    maxLength={9}
                                     onBlur={handlePhoneLookup}
                                 />
                             </div>

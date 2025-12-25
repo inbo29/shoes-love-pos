@@ -24,55 +24,51 @@ interface Transaction {
     isMinus: boolean;
 }
 
-const Step6Payment: React.FC = () => {
-    const navigate = useNavigate();
+interface Step6PaymentProps {
+    onValidationChange?: (isValid: boolean) => void;
+}
+
+const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
     const [selectedMethod, setSelectedMethod] = useState<string>('cash');
     const [amountStr, setAmountStr] = useState<string>('');
     const [isProcessing, setIsProcessing] = useState(false);
 
+    // New states for tax and billing
+    const [noVat, setNoVat] = useState(false);
+    const [billingType, setBillingType] = useState<'individual' | 'company'>('individual');
+    const [showCompanyPopup, setShowCompanyPopup] = useState(false);
+    const [bizNumber, setBizNumber] = useState('');
+    const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+
+    // Mock company data
+    const MOCK_COMPANIES: Record<string, string> = {
+        '6677207': 'ITWizard LLC'
+    };
+
     // Mock Data (Should come from Context/Props)
-    const serviceTotal = 43900;
-    const discount = 4390; // 10% example
-    const pointsUsedPrevious = 0; // Usually 0 for new order unless applied in prev step
+    const serviceTotal = 58900;
+    const vat = noVat ? 0 : Math.round(serviceTotal * 0.1);
+    const pointsUsedPrevious = 15000;
 
     // Payment History State (Starts empty for new order)
     const [history, setHistory] = useState<Transaction[]>([]);
 
+    const totalToPay = serviceTotal + vat - pointsUsedPrevious;
     const totalPaid = history.reduce((acc, curr) => acc + curr.amount, 0);
-    const remaining = Math.max(0, serviceTotal - discount - pointsUsedPrevious - totalPaid);
+    const remaining = Math.max(0, totalToPay - totalPaid);
+
+    // Notify parent of validation state (Finish button)
+    React.useEffect(() => {
+        if (onValidationChange) {
+            onValidationChange(totalPaid > 0);
+        }
+    }, [totalPaid, onValidationChange]);
 
     // Current Input
     const inputValue = amountStr === '' ? '' : parseInt(amountStr);
 
-    // Validation: 
-    // - Must select method
-    // - Amount > 0
-    // - Amount <= Remaining (Excess check) 
+    // Validation
     const validToPay = selectedMethod && inputValue && inputValue > 0 && inputValue <= remaining;
-
-    // Completion Logic:
-    // User can finish if:
-    // 1. Fully Paid (Remaining = 0)
-    // 2. Partially Paid (But clicked "Finish") -> Wait, UI needs to allow this.
-    // User Request: "Not mandatory to pay full... can pay partial... or Skip with Barter".
-    // So "Next/Finish" button in Footer (managed by parent Layout) or here?
-    // In Receive flow, we used inline button for "Confirm Payment".
-    // AND a separate "Finish" in Footer?
-    // Receive Flow: Step 2 Payment -> Next -> Step 3 Survey.
-    // Order Flow: Step 6 Payment -> Finish (Create Order).
-
-    // So we need TWO actions potentially:
-    // 1. "Register Payment" (Add to history, update balance).
-    // 2. "Complete Order" (Finalize).
-
-    // If I pay 20k cash:
-    // 1. Enter 20k -> Click "Register Payment".
-    // 2. History updates. Remaining becomes 23,900.
-    // 3. User clicks "Complete Order" (Footer Button or a main button here?).
-
-    // "Settlement Hub" concept implies we can do multiple payments.
-    // So we should keep the "Register Payment" button.
-    // And allow "Complete Order" even if Remaining > 0.
 
     const handleRegisterPayment = () => {
         if (!validToPay) return;
@@ -80,8 +76,8 @@ const Step6Payment: React.FC = () => {
         setTimeout(() => {
             const newTx: Transaction = {
                 id: Date.now(),
-                date: new Date().toLocaleDateString('en-GB').replace(/\//g, '.'),
-                type: PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label.split(' ')[0] || 'Payment',
+                date: new Date().toLocaleTimeString('mn-MN', { hour: '2-digit', minute: '2-digit' }),
+                type: PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label || 'Төлбөр',
                 description: 'Урьдчилгаа',
                 amount: inputValue as number,
                 isMinus: false
@@ -89,127 +85,89 @@ const Step6Payment: React.FC = () => {
             setHistory(prev => [...prev, newTx]);
             setAmountStr('');
             setIsProcessing(false);
-        }, 1000);
+        }, 600);
     };
 
-    // This screen is usually the LAST step in Order flow.
-    // The "Next" button in Layout calls `handleNext` in parent, which navigates away.
-    // We might need to intercept that to "Save Order".
-    // But for this UI task, I am focusing on the "Settlement Hub" inside the step.
+    const handleCompanyLookup = () => {
+        const company = MOCK_COMPANIES[bizNumber];
+        if (company) {
+            setSelectedCompany(company);
+        } else {
+            alert('Байгууллага олдсонгүй');
+        }
+    };
 
     return (
         <div className="flex flex-col lg:flex-row gap-8 pb-12 overflow-visible relative">
 
             {/* Left Column (Main Content) - 64% */}
             <div className="w-full lg:w-[64%] flex flex-col gap-8 overflow-visible min-w-0">
-                {/* Payment History Timeline */}
-                <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
-                    <div className="flex items-center gap-3 mb-6">
-                        <span className="material-icons-round text-primary">history</span>
-                        <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Төлбөрийн түүх</h3>
-                    </div>
-
-                    <div className="relative pl-4 space-y-6 before:absolute before:inset-y-0 before:left-0 before:w-0.5 before:bg-gray-100">
-                        {/* Static Entries */}
-                        <div className="relative pl-8">
-                            <div className="absolute left-[-5px] top-1.5 w-3 h-3 rounded-full bg-gray-200 ring-4 ring-white" />
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <p className="text-[10px] font-bold text-gray-400">Өнөөдөр</p>
-                                    <p className="text-sm font-bold text-gray-800">🎁 Хөнгөлөлт (Discount)</p>
-                                </div>
-                                <span className="text-sm font-black text-green-500">- {discount.toLocaleString()}₮</span>
-                            </div>
+                {remaining === 0 ? (
+                    /* Full Payment Success State */
+                    <div className="p-16 bg-green-50 rounded-[40px] border border-green-100 flex flex-col items-center text-center shadow-sm animate-in fade-in zoom-in-95">
+                        <div className="w-24 h-24 rounded-full bg-green-100 flex items-center justify-center mb-8 text-green-600">
+                            <span className="material-icons-round text-5xl">check_circle</span>
                         </div>
+                        <h2 className="text-3xl font-black text-gray-800 uppercase mb-4 tracking-tight">Төлбөр бүрэн хийгдлээ</h2>
+                        <p className="text-gray-500 text-sm font-bold mb-10 max-w-sm leading-relaxed">Таны захиалга баталгаажлаа. Та захиалгаа дуусгах боломжтой.</p>
 
-                        {history.length === 0 && (
-                            <div className="relative pl-8 opacity-50">
-                                <p className="text-[11px] text-gray-400 italic">Төлбөрийн түүх хоосон байна...</p>
+                        <button className="flex items-center gap-3 px-10 py-5 bg-white border-2 border-gray-100 rounded-3xl font-black text-xs uppercase tracking-[0.2em] text-gray-800 hover:bg-gray-50 hover:border-gray-200 transition-all shadow-md active:scale-95 group">
+                            <span className="material-icons-round text-xl group-hover:rotate-12 transition-transform">print</span>
+                            Төлбөрийн баримт хэвлэх
+                        </button>
+                    </div>
+                ) : (
+                    <div className="flex flex-col gap-8">
+                        {/* Partial Payment Banner */}
+                        {totalPaid > 0 && (
+                            <div className="p-8 bg-blue-50/80 backdrop-blur-sm rounded-[32px] border border-blue-100 flex flex-col md:flex-row items-center justify-between gap-6 animate-in slide-in-from-top-4">
+                                <div className="flex items-center gap-5">
+                                    <div className="w-14 h-14 rounded-full bg-blue-100/50 flex items-center justify-center text-blue-600 shrink-0 shadow-inner">
+                                        <span className="material-icons-round text-2xl">info</span>
+                                    </div>
+                                    <div className="text-left">
+                                        <h3 className="text-lg font-black text-gray-800 uppercase leading-none mb-1.5 tracking-tight">Төлбөр бүртгэгдлээ</h3>
+                                        <p className="text-blue-600/80 text-[11px] font-black uppercase tracking-wider">
+                                            Та бараагаа авахдаа үлдэгдэл төлбөрөө төлнө үү.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button className="flex items-center gap-2 px-6 py-3.5 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95 shrink-0">
+                                    <span className="material-icons-round text-lg">print</span>
+                                    Баримт хэвлэх
+                                </button>
                             </div>
                         )}
 
-                        {history.map(tx => (
-                            <div key={tx.id} className="relative pl-8 animate-in fade-in slide-in-from-left-4">
-                                <div className="absolute left-[-5px] top-1.5 w-3 h-3 rounded-full bg-primary ring-4 ring-white" />
-                                <div className="flex justify-between items-start">
-                                    <div>
-                                        <p className="text-[10px] font-bold text-gray-400">{tx.date}</p>
-                                        <p className="text-sm font-bold text-gray-800">{tx.type} — {tx.description}</p>
-                                    </div>
-                                    <span className="text-sm font-black text-gray-800">+ {tx.amount.toLocaleString()}₮</span>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                        {/* Payment Methods Section */}
+                        <div className="flex flex-col gap-6">
+                            <h1 className="text-xl font-black text-gray-800 uppercase tracking-tight">Төлбөр хийх</h1>
 
-                {/* Current Payment Section */}
-                {remaining > 0 ? (
-                    <div className="flex flex-col gap-6">
-                        <h1 className="text-xl font-black text-gray-800 uppercase tracking-tight">Төлбөр хийх</h1>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 p-1">
-                            {PAYMENT_METHODS.map((method) => (
-                                <button
-                                    key={method.id}
-                                    onClick={() => setSelectedMethod(method.id)}
-                                    className={`p-6 rounded-[24px] border-2 transition-all flex flex-col items-center gap-4 relative overflow-hidden group ${selectedMethod === method.id
-                                        ? 'border-primary bg-primary/5 shadow-md scale-[1.02]'
-                                        : 'border-gray-100 bg-white hover:border-primary/30 hover:shadow-sm'
-                                        }`}
-                                >
-                                    <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white ${method.color} shadow-sm group-hover:scale-110 transition-transform`}>
-                                        <span className="material-icons-round text-2xl">{method.icon}</span>
-                                    </div>
-                                    <span className={`text-[11px] font-black uppercase tracking-wider ${selectedMethod === method.id ? 'text-primary' : 'text-gray-500'}`}>
-                                        {method.label}
-                                    </span>
-                                    {selectedMethod === method.id && (
-                                        <div className="absolute top-3 right-3">
-                                            <span className="material-icons-round text-primary text-base">check_circle</span>
-                                        </div>
-                                    )}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
-                            <div className="space-y-3">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Төлөх дүн</label>
-                                <div className="relative">
-                                    <input
-                                        type="number"
-                                        placeholder={remaining.toString()}
-                                        value={amountStr}
-                                        max={remaining}
-                                        onChange={(e) => {
-                                            const val = parseInt(e.target.value);
-                                            if (isNaN(val)) setAmountStr('');
-                                            else if (val <= remaining) setAmountStr(e.target.value);
-                                        }}
-                                        className="w-full text-3xl font-black bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all tracking-tighter"
-                                    />
-                                    <div className="absolute right-5 top-1/2 -translate-y-1/2 text-gray-300 font-black text-xl">₮</div>
-                                </div>
-                                <div className="flex justify-between items-center mt-2">
-                                    <span className="text-[10px] font-bold text-gray-400 uppercase">Үлдэгдэл: {remaining.toLocaleString()}₮</span>
+                            <div className="grid grid-cols-2 sm:grid-cols-3 gap-5 p-1">
+                                {PAYMENT_METHODS.map((method) => (
                                     <button
-                                        onClick={() => setAmountStr(remaining.toString())}
-                                        className="text-[10px] font-bold text-primary uppercase hover:underline"
+                                        key={method.id}
+                                        onClick={() => setSelectedMethod(method.id)}
+                                        className={`p-6 rounded-[24px] border-2 transition-all flex flex-col items-center gap-4 relative overflow-hidden group ${selectedMethod === method.id
+                                            ? 'border-secondary bg-secondary/5 shadow-md scale-[1.02]'
+                                            : 'border-gray-100 bg-white hover:border-secondary/30 hover:shadow-sm'
+                                            }`}
                                     >
-                                        Бүгдийг төлөх
+                                        <div className={`w-14 h-14 rounded-full flex items-center justify-center text-white ${method.color} shadow-sm group-hover:scale-110 transition-transform`}>
+                                            <span className="material-icons-round text-2xl">{method.icon}</span>
+                                        </div>
+                                        <span className={`text-[11px] font-black uppercase tracking-wider ${selectedMethod === method.id ? 'text-gray-900' : 'text-gray-500'}`}>
+                                            {method.label}
+                                        </span>
+                                        {selectedMethod === method.id && (
+                                            <div className="absolute top-3 right-3">
+                                                <span className="material-icons-round text-secondary text-base">check_circle</span>
+                                            </div>
+                                        )}
                                     </button>
-                                </div>
+                                ))}
                             </div>
                         </div>
-                    </div>
-                ) : (
-                    <div className="p-12 bg-green-50 rounded-[32px] border border-green-100 flex flex-col items-center text-center">
-                        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6 text-green-600">
-                            <span className="material-icons-round text-4xl">check_circle</span>
-                        </div>
-                        <h2 className="text-2xl font-black text-gray-800 uppercase mb-2">Төлбөр бүрэн хийгдлээ</h2>
-                        <p className="text-gray-500 text-sm font-bold">Та захиалгаа дуусгах боломжтой.</p>
                     </div>
                 )}
             </div>
@@ -222,61 +180,212 @@ const Step6Payment: React.FC = () => {
 
                         <div className="space-y-4">
                             <div className="flex justify-between text-sm">
-                                <span className="font-bold text-gray-500">Үйлчилгээний нийт</span>
-                                <span className="font-black text-gray-800">{serviceTotal.toLocaleString()} ₮</span>
+                                <span className="font-bold text-gray-500">Үйлчилгээний дүн</span>
+                                <span className="font-black text-gray-800 tracking-tight">{serviceTotal.toLocaleString()} ₮</span>
                             </div>
-                            <div className="w-full h-px bg-gray-100" />
+
+                            {!noVat && (
+                                <div className="flex justify-between text-sm animate-in fade-in slide-in-from-top-1">
+                                    <span className="font-bold text-gray-500">НӨАТ (10%)</span>
+                                    <span className="font-black text-gray-800 tracking-tight">{vat.toLocaleString()} ₮</span>
+                                </div>
+                            )}
+
+                            <div className="w-full h-px bg-gray-50" />
 
                             <div className="flex justify-between text-sm">
-                                <span className="font-bold text-gray-500">Хөнгөлөлт</span>
-                                <span className="font-black text-red-500">- {discount.toLocaleString()} ₮</span>
-                            </div>
-                            <div className="w-full h-px bg-gray-100" />
-
-                            <div className="flex justify-between text-sm">
-                                <span className="font-bold text-gray-500">Төлсөн</span>
-                                <span className="font-black text-red-500">- {totalPaid.toLocaleString()} ₮</span>
+                                <span className="font-bold text-gray-500">Пойнт ашиглалт</span>
+                                <span className="font-black text-blue-500">- {pointsUsedPrevious.toLocaleString()} ₮</span>
                             </div>
 
-                            <div className="w-full h-px bg-gray-200" />
+                            {/* Payment History Integrated Here */}
+                            {history.map(tx => (
+                                <div key={tx.id} className="flex justify-between text-sm animate-in fade-in slide-in-from-right-4">
+                                    <span className="font-bold text-gray-500 flex items-center gap-1.5">
+                                        <span className="text-[10px] text-primary">●</span>
+                                        {tx.type} ({tx.date})
+                                    </span>
+                                    <span className="font-black text-green-600">- {tx.amount.toLocaleString()} ₮</span>
+                                </div>
+                            ))}
 
-                            <div className="flex justify-between items-end pt-2">
-                                <span className="font-black text-gray-800 uppercase tracking-widest">Үлдэгдэл</span>
-                                <span className="text-3xl font-black text-primary tracking-tighter">{remaining.toLocaleString()} ₮</span>
+                            <div className="w-full h-px bg-gray-200 mt-2" />
+
+                            <div className="flex justify-between items-end pt-4">
+                                <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">Үлдэгдэл</span>
+                                <span className="text-3xl font-black text-primary tracking-tighter leading-none">{remaining.toLocaleString()} ₮</span>
                             </div>
                         </div>
 
                         {remaining > 0 && (
-                            <button
-                                disabled={!validToPay || isProcessing}
-                                onClick={handleRegisterPayment}
-                                className={`w-full mt-10 py-6 rounded-2xl text-base font-black tracking-tight shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4 ${validToPay && !isProcessing
-                                    ? 'bg-[#FFD400] text-gray-900 shadow-yellow-200/50 hover:bg-[#FFC400] cursor-pointer'
-                                    : 'bg-gray-100 text-gray-300 border-gray-50 cursor-not-allowed shadow-none'
-                                    }`}
-                            >
-                                {isProcessing ? (
-                                    <span className="material-icons-round animate-spin text-2xl">sync</span>
-                                ) : (
-                                    <>
-                                        <span className="material-icons-round">add_circle</span>
-                                        ТӨЛБӨР БҮРТГЭХ
-                                    </>
-                                )}
-                            </button>
+                            <div className="mt-8 space-y-6">
+                                {/* Amount Input moved to sidebar */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Төлөх дүн</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number"
+                                            placeholder={remaining.toString()}
+                                            value={amountStr}
+                                            max={remaining}
+                                            onChange={(e) => {
+                                                const val = parseInt(e.target.value);
+                                                if (isNaN(val)) setAmountStr('');
+                                                else if (val <= remaining) setAmountStr(e.target.value);
+                                            }}
+                                            className="w-full text-2xl font-black bg-gray-50 border-2 border-gray-100 rounded-2xl px-4 py-3 focus:outline-none focus:border-primary focus:bg-white transition-all tracking-tighter text-gray-800"
+                                        />
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-300 font-black text-lg">₮</div>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[9px] font-bold text-gray-400 uppercase">Сонгосон: {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label}</span>
+                                        <button
+                                            onClick={() => setAmountStr(remaining.toString())}
+                                            className="text-[9px] font-bold text-primary uppercase hover:underline"
+                                        >
+                                            Бүгдийг төлөх
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <button
+                                    disabled={!validToPay || isProcessing}
+                                    onClick={handleRegisterPayment}
+                                    className={`w-full py-6 rounded-2xl text-base font-black tracking-tight shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4 ${validToPay && !isProcessing
+                                        ? 'bg-secondary text-gray-900 shadow-secondary/50 hover:bg-yellow-400 cursor-pointer'
+                                        : 'bg-gray-100 text-gray-300 border-gray-50 cursor-not-allowed shadow-none'
+                                        }`}
+                                >
+                                    {isProcessing ? (
+                                        <span className="material-icons-round animate-spin text-2xl">sync</span>
+                                    ) : (
+                                        <>
+                                            <span className="material-icons-round">add_circle</span>
+                                            ТӨЛБӨР БҮРТГЭХ
+                                        </>
+                                    )}
+                                </button>
+                            </div>
                         )}
 
-                        {/* Info Note about skipped payment */}
+                        {/* Toggles / Options Section moved below payment input */}
+                        <div className="mt-6 pt-6 border-t border-gray-50 space-y-4">
+                            {/* No VAT Toggle */}
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={noVat}
+                                        onChange={(e) => setNoVat(e.target.checked)}
+                                        className="sr-only"
+                                    />
+                                    <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${noVat ? 'border-secondary bg-secondary' : 'border-gray-200 bg-white group-hover:border-secondary/50'}`}>
+                                        {noVat && <span className="material-icons-round text-gray-900 text-[14px]">done</span>}
+                                    </div>
+                                </div>
+                                <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">Нөатгүй</span>
+                            </label>
+
+                            {/* Billing Type Toggle */}
+                            <div className="flex bg-gray-50 p-1 rounded-xl">
+                                <button
+                                    onClick={() => setBillingType('individual')}
+                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Хувь
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setBillingType('company');
+                                        if (!selectedCompany) setShowCompanyPopup(true);
+                                    }}
+                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'company' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Байгууллага
+                                </button>
+                            </div>
+
+                            {billingType === 'company' && selectedCompany && (
+                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 animate-in fade-in zoom-in-95">
+                                    <div className="flex justify-between items-center">
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-bold text-gray-900 uppercase">Сонгосон байгууллага</p>
+                                            <p className="text-xs font-black text-gray-800">{selectedCompany}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowCompanyPopup(true)}
+                                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm hover:scale-110 transition-transform"
+                                        >
+                                            <span className="material-icons-round text-base">edit</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Info Note */}
                         {remaining > 0 && (
-                            <div className="mt-6 px-6 py-4 bg-blue-50/50 rounded-2xl border border-blue-100/50">
-                                <p className="text-[10px] text-blue-600 font-bold leading-relaxed text-center">
-                                    Санамж: Та одоо заавал бүх төлбөрөө хийх албагүй. Үлдэгдэлтэйгээр захиалгыг дуусгаж болно.
+                            <div className="mt-6 px-4 py-3 bg-blue-50/50 rounded-2xl border border-blue-100/50">
+                                <p className="text-[9px] text-blue-600 font-bold leading-relaxed text-center">
+                                    Санамж: Та одоо заавал бүх төлбөрөө 30% хүртэл төлсөн тохиолдолд захиалгыг дуусгаж болно.
                                 </p>
                             </div>
                         )}
                     </div>
                 </div>
             </div>
+
+            {/* Company Search Popup */}
+            {showCompanyPopup && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8">
+                        <div className="p-8">
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Байгууллагын мэдээлэл</h3>
+                                <button onClick={() => setShowCompanyPopup(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <span className="material-icons-round">close</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Регистрийн №</label>
+                                    <div className="flex gap-3">
+                                        <input
+                                            type="number"
+                                            value={bizNumber}
+                                            onChange={(e) => setBizNumber(e.target.value)}
+                                            placeholder="Регистрийн дугаар..."
+                                            className="flex-1 bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all font-black text-gray-800"
+                                        />
+                                        <button
+                                            onClick={handleCompanyLookup}
+                                            className="px-6 rounded-2xl bg-secondary text-gray-900 font-black text-xs uppercase shadow-lg shadow-secondary/30 active:scale-95 transition-all hover:bg-yellow-400"
+                                        >
+                                            Шалгах
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Татвар төлөгчийн нэр</label>
+                                    <div className="bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 font-black text-gray-800 min-h-[60px] flex items-center">
+                                        {selectedCompany || <span className="text-gray-300">Байгууллагын нэр энд гарна...</span>}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowCompanyPopup(false)}
+                                    disabled={!selectedCompany}
+                                    className={`w-full py-5 rounded-2xl text-sm font-black uppercase tracking-wider transition-all shadow-xl active:scale-95 ${selectedCompany ? 'bg-secondary text-gray-900 shadow-secondary/50 hover:bg-yellow-400' : 'bg-gray-100 text-gray-400 border-gray-50 cursor-not-allowed shadow-none'}`}
+                                >
+                                    Баталгаажуулах
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

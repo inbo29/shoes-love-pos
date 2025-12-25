@@ -9,7 +9,11 @@ interface ItemConditionState {
     warnings: string[];
 }
 
-const Step4ItemCondition: React.FC = () => {
+interface Step4ItemConditionProps {
+    onValidationChange?: (isValid: boolean) => void;
+}
+
+const Step4ItemCondition: React.FC<Step4ItemConditionProps> = ({ onValidationChange }) => {
     // Mock: assume we have 2 Гутал items from Step 2
     const [items] = useState([
         { category: 'Гутал', index: 1 },
@@ -20,17 +24,27 @@ const Step4ItemCondition: React.FC = () => {
         items.map(item => ({
             itemIndex: item.index,
             category: item.category,
-            selections: {
-                7: 2, // Бага зэрэг (Shoes default for demo)
-                8: [3], // Цус (Shoes default for demo)
-                9: [3], // Дотор урагдсан
-                10: 2, // Үгүй
-            },
+            selections: {}, // Start empty for validation
             photos: [],
             warnings: [],
             comment: '',
         }))
     );
+
+    // Validation Effect
+    React.useEffect(() => {
+        const isValid = itemStates.every(state => {
+            const hasStyle = state.selections[1] !== undefined;
+            const hasColor = state.selections[2] !== undefined;
+            const hasWear = state.selections[7] !== undefined;
+            const hasPhoto = state.photos.length > 0;
+            return hasStyle && hasColor && hasWear && hasPhoto;
+        });
+
+        if (onValidationChange) {
+            onValidationChange(isValid);
+        }
+    }, [itemStates, onValidationChange]);
 
     const handleSelection = (itemIdx: number, groupCode: number, optionId: number, multiSelect: boolean) => {
         setItemStates(prev => prev.map((state, idx) => {
@@ -43,7 +57,10 @@ const Step4ItemCondition: React.FC = () => {
                     : [...current, optionId];
                 return { ...state, selections: { ...state.selections, [groupCode]: newSelection } };
             } else {
-                return { ...state, selections: { ...state.selections, [groupCode]: optionId } };
+                // If clicking same chip, deselect it (toggle)
+                const current = state.selections[groupCode];
+                const newSelection = current === optionId ? undefined : optionId;
+                return { ...state, selections: { ...state.selections, [groupCode]: newSelection } };
             }
         }));
     };
@@ -55,10 +72,18 @@ const Step4ItemCondition: React.FC = () => {
     };
 
     const handlePhotoUpload = (itemIdx: number, files: FileList | null) => {
-        if (!files) return;
+        if (!files || files.length === 0) return;
         setItemStates(prev => prev.map((state, idx) =>
             idx === itemIdx
                 ? { ...state, photos: [...state.photos, ...Array.from(files)].slice(0, 6) }
+                : state
+        ));
+    };
+
+    const handleRemovePhoto = (itemIdx: number, photoIdx: number) => {
+        setItemStates(prev => prev.map((state, idx) =>
+            idx === itemIdx
+                ? { ...state, photos: state.photos.filter((_, i) => i !== photoIdx) }
                 : state
         ));
     };
@@ -232,21 +257,63 @@ const Step4ItemCondition: React.FC = () => {
                                         <label className="text-[11px] font-bold text-gray-800">
                                             Зураг оруулах <span className="text-red-500">*</span>
                                         </label>
-                                        <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded text-[10px] text-orange-600 font-bold border border-orange-100">
-                                            <span className="material-icons-round text-xs">warning</span>
-                                            Ядаж 1 зураг оруулах шаардлагатай
-                                        </div>
+                                        {state.photos.length === 0 ? (
+                                            <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded text-[10px] text-orange-600 font-bold border border-orange-100">
+                                                <span className="material-icons-round text-xs">warning</span>
+                                                Ядаж 1 зураг оруулах шаардлагатай
+                                            </div>
+                                        ) : (
+                                            <div className="flex items-center gap-1 bg-green-50 px-2 py-1 rounded text-[10px] text-green-600 font-bold border border-green-100">
+                                                <span className="material-icons-round text-xs">check_circle</span>
+                                                {state.photos.length} зураг оруулсан
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="grid grid-cols-5 gap-4">
-                                        {PHOTO_LABELS.map((label, pIdx) => (
-                                            <div key={label} className="flex flex-col gap-2">
-                                                <div className="aspect-[4/3] bg-gray-50/50 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-primary transition-colors group">
-                                                    <span className="material-icons-round text-gray-300 group-hover:text-primary transition-colors">photo_camera</span>
-                                                    <span className="text-[10px] text-gray-400 mt-2">{label}</span>
+                                        {PHOTO_LABELS.map((label, pIdx) => {
+                                            const photo = state.photos[pIdx];
+                                            return (
+                                                <div key={label} className="flex flex-col gap-2 relative group">
+                                                    <input
+                                                        type="file"
+                                                        id={`photo-${itemIdx}-${pIdx}`}
+                                                        className="hidden"
+                                                        accept="image/*"
+                                                        onChange={(e) => handlePhotoUpload(itemIdx, e.target.files)}
+                                                    />
+                                                    <label
+                                                        htmlFor={`photo-${itemIdx}-${pIdx}`}
+                                                        className={`aspect-[4/3] rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer transition-colors relative overflow-hidden ${photo ? 'border-primary bg-primary/5' : 'border-gray-200 bg-gray-50/50 hover:border-primary'
+                                                            }`}
+                                                    >
+                                                        {photo ? (
+                                                            <>
+                                                                <img
+                                                                    src={URL.createObjectURL(photo)}
+                                                                    alt={label}
+                                                                    className="w-full h-full object-cover"
+                                                                />
+                                                                <button
+                                                                    onClick={(e) => {
+                                                                        e.preventDefault();
+                                                                        handleRemovePhoto(itemIdx, pIdx);
+                                                                    }}
+                                                                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                                                >
+                                                                    <span className="material-icons-round text-xs">close</span>
+                                                                </button>
+                                                            </>
+                                                        ) : (
+                                                            <>
+                                                                <span className="material-icons-round text-gray-300 group-hover:text-primary transition-colors">photo_camera</span>
+                                                                <span className="text-[10px] text-gray-400 mt-2">{label}</span>
+                                                            </>
+                                                        )}
+                                                    </label>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 </div>
 

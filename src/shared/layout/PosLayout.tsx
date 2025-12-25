@@ -157,7 +157,7 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, onLogout }) =
             onClick={() => navigate('/pos/shipments')}
           />
           <NavButton
-            label={<>Картын<br />хүсэлт</>}
+            label={<>Гишүүнчлэл</>}
             icon="credit_card"
             // variant="yellow"
             active={isActive('/pos/cards')}

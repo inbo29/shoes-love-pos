@@ -119,9 +119,9 @@ const DayManagementScreen: React.FC = () => {
                     </div>
                 </div>
 
-                {/* 2. Filter Card (Static Position & Overflow Visible) */}
-                <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-8 flex flex-col xl:flex-row items-end justify-between gap-6 relative z-[10] overflow-visible">
-                    <div className="flex flex-col sm:flex-row items-end gap-8 flex-nowrap shrink-0 overflow-visible">
+                {/* 2. Filter Bar (Compact Flex Layout) */}
+                <div className="bg-white rounded-[32px] shadow-xl border border-gray-100 p-6 flex flex-wrap md:flex-nowrap items-end gap-4 lg:gap-6 relative z-[10] overflow-visible">
+                    <div className="w-full md:w-auto md:flex-1 min-w-[260px]">
                         <PosDateRangePicker
                             label="Шүүх хугацаа"
                             start={startDate}
@@ -132,25 +132,25 @@ const DayManagementScreen: React.FC = () => {
                                 setCurrentPage(1);
                             }}
                         />
+                    </div>
 
-                        <div className="flex flex-col gap-1.5 shrink-0 w-full sm:w-[320px]">
-                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан хайх</label>
-                            <div className="relative">
-                                <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
-                                    <span className="material-icons-round text-lg">search</span>
-                                </span>
-                                <input
-                                    type="text"
-                                    placeholder="Нэрээр хайх..."
-                                    value={searchTerm}
-                                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
-                                    className="w-full h-[44px] pl-11 pr-4 bg-white border border-gray-200 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all hover:border-primary/50"
-                                />
-                            </div>
+                    <div className="flex flex-col gap-1.5 w-full md:w-[280px] lg:w-[320px] shrink-0">
+                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Ажилтан хайх</label>
+                        <div className="relative">
+                            <span className="absolute inset-y-0 left-0 pl-4 flex items-center text-gray-400">
+                                <span className="material-icons-round text-lg">search</span>
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Нэрээр хайх..."
+                                value={searchTerm}
+                                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                                className="w-full h-[44px] pl-11 pr-4 bg-white border border-gray-200 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all hover:border-primary/50"
+                            />
                         </div>
                     </div>
 
-                    <div className="shrink-0 h-[44px]">
+                    <div className="h-[44px] w-full md:w-auto shrink-0">
                         <PosExcelButton />
                     </div>
                 </div>
@@ -225,7 +225,7 @@ const DayManagementScreen: React.FC = () => {
                         </table>
                     </div>
 
-                    <div className="p-6 border-t border-gray-50 flex justify-center">
+                    <div className="p-6 border-t border-gray-50 flex justify-start">
                         <PosPagination
                             totalItems={filteredRecords.length}
                             itemsPerPage={itemsPerPage}
@@ -238,8 +238,8 @@ const DayManagementScreen: React.FC = () => {
                 {/* 4. Action Card (Bottom) */}
                 <div className="bg-white rounded-[32px] shadow-2xl border border-gray-100 p-10 shrink-0">
                     <div className="mb-8">
-                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">ӨДӨР НЭЭХ</h3>
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ATTENDANCE ACTION</p>
+                        <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight italic">ӨДӨР НЭЭХ / ХААХ</h3>
+                        {/* <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">ATTENDANCE ACTION</p> */}
                     </div>
 
                     <div className="flex flex-col lg:flex-row items-end gap-10">
@@ -252,7 +252,7 @@ const DayManagementScreen: React.FC = () => {
                                 </div>
                             </div>
                             <div className="space-y-3">
-                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Систе미йн цаг</label>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Системийн цаг</label>
                                 <div className="h-[56px] px-6 bg-[#40C1C7]/5 rounded-2xl border border-[#40C1C7]/10 text-[20px] font-black text-[#40C1C7] flex items-center gap-4 italic shadow-inner">
                                     <span className="material-icons-round text-[#40C1C7]/30">timer</span>
                                     {formatTime(currentTime)}

@@ -15,6 +15,11 @@ const OrderFlowScreen: React.FC = () => {
     const currentStep = parseInt(step || '1', 10);
     const totalSteps = 6;
     const [showPopup, setShowPopup] = useState(false);
+    const [step1Valid, setStep1Valid] = useState(false);
+    const [step2Valid, setStep2Valid] = useState(false);
+    const [step3Valid, setStep3Valid] = useState(false);
+    const [step4Valid, setStep4Valid] = useState(false);
+    const [step6Valid, setStep6Valid] = useState(false);
 
     // Decide if New or Edit mode based on ID
     const isEditMode = !!id;
@@ -53,12 +58,12 @@ const OrderFlowScreen: React.FC = () => {
     // Render Step Content
     const renderStepContent = () => {
         switch (currentStep) {
-            case 1: return <Step1Info />;
-            case 2: return <Step2ServiceSelection />;
-            case 3: return <Step3ServiceDetails />;
-            case 4: return <Step4ItemCondition />;
+            case 1: return <Step1Info onValidationChange={setStep1Valid} />;
+            case 2: return <Step2ServiceSelection onValidationChange={setStep2Valid} />;
+            case 3: return <Step3ServiceDetails onValidationChange={setStep3Valid} />;
+            case 4: return <Step4ItemCondition onValidationChange={setStep4Valid} />;
             case 5: return <Step5OrderSummary />;
-            case 6: return <Step6Payment />;
+            case 6: return <Step6Payment onValidationChange={setStep6Valid} />;
             default: return <Step1Info />;
         }
     };
@@ -73,6 +78,13 @@ const OrderFlowScreen: React.FC = () => {
                 onTempSave={handleTempSave}
                 onStepClick={handleStepClick}
                 isLastStep={currentStep === totalSteps}
+                nextDisabled={
+                    (currentStep === 1 && !step1Valid) ||
+                    (currentStep === 2 && !step2Valid) ||
+                    (currentStep === 3 && !step3Valid) ||
+                    (currentStep === 4 && !step4Valid) ||
+                    (currentStep === 6 && !step6Valid)
+                }
             >
                 {renderStepContent()}
             </StepLayout>

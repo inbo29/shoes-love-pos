@@ -42,11 +42,15 @@ interface ItemSection {
     index: number;
 }
 
-const Step3ServiceDetails: React.FC = () => {
-    // Mock items from Step 2 (shoe: 1, bag: 1)
+interface Step3ServiceDetailsProps {
+    onValidationChange?: (isValid: boolean) => void;
+}
+
+const Step3ServiceDetails: React.FC<Step3ServiceDetailsProps> = ({ onValidationChange }) => {
+    // Mock items from Step 2 (shoe: 1, bag: 1) -> Updated to Shoes & Cloth (Chemical) as per request to fix "Bag" mismatch
     const [items] = useState<ItemSection[]>([
         { itemType: 'SHOES', label: 'Гутал', index: 1 },
-        { itemType: 'BAG', label: 'Цүнх', index: 1 },
+        { itemType: 'CLOTH', label: 'Хими', index: 1 },
     ]);
 
     const [selections, setSelections] = useState<Step3Selection[]>(
@@ -153,6 +157,13 @@ const Step3ServiceDetails: React.FC = () => {
     const allItemsValid = selections.every(sel =>
         sel.typeSelections.some(ts => ts.services.length > 0)
     );
+
+    // Validation Effect
+    React.useEffect(() => {
+        if (onValidationChange) {
+            onValidationChange(allItemsValid);
+        }
+    }, [allItemsValid, onValidationChange]);
 
     const toggleHandlingType = (itemIdx: number, type: OrderHandlingType) => {
         setSelections(prev => prev.map((sel, idx) => {

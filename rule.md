@@ -131,7 +131,7 @@ src/
 │  │  │  │  └─ Step3_Confirm.tsx
 │  │  │  └─ ShipmentDoneScreen.tsx
 │  │  │
-│  │  ├─ card/                 ← Картын хүсэлт
+│  │  ├─ card/                 ← Гишүүнчлэл
 │  │  │  ├─ CardRequestListScreen.tsx
 │  │  │  └─ CardRequestDetailScreen.tsx
 │  │  │

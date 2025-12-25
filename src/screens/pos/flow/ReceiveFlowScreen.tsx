@@ -180,6 +180,7 @@ const ReceiveFlowScreen: React.FC = () => {
             onBack={handleBack}
             onNext={handleNext}
             nextLabel={currentStep === 4 ? (isComplaintMode ? 'Бүртгэх' : 'ДУУСГАХ') : nextLabel}
+            nextDisabled={currentStep === 1 && !step1Valid}
             footerLeft={renderFooterLeft()}
             isLastStep={currentStep === 4}
         >

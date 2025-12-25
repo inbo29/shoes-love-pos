@@ -141,8 +141,9 @@ const ReceiveListScreen: React.FC = () => {
                 {/* 1. Header Section */}
                 <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-4 shrink-0">
                     <div className="flex items-center gap-3">
-                        <h2 className="text-2xl font-black text-gray-800 flex items-center gap-3">
-                            Хүлээлгэн өгөх бэлэн захиалгууд
+                        <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
+                        <h2 className="text-[18px] font-bold text-[#374151]">
+                            Хүлээлгэн өгөх жагсаалт
                         </h2>
                     </div>
 
@@ -164,8 +165,8 @@ const ReceiveListScreen: React.FC = () => {
                 </div>
 
                 {/* 2. Filter Bar */}
-                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-col md:grid md:grid-cols-2 lg:flex lg:flex-row lg:items-end gap-5 shrink-0 overflow-visible relative z-[10]">
-                    <div className="md:col-span-2 lg:col-span-1">
+                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-wrap md:flex-nowrap items-end gap-3 lg:gap-5 shrink-0 overflow-visible relative z-[30]">
+                    <div className="w-full md:w-auto md:flex-1 min-w-[260px]">
                         <PosDateRangePicker
                             start={startDate}
                             end={endDate}
@@ -191,10 +192,11 @@ const ReceiveListScreen: React.FC = () => {
                             { label: 'Зайсан салбар', value: 'Зайсан салбар' },
                             { label: 'Хүүхдийн 100', value: 'Хүүхдийн 100' },
                         ]}
+                        className="w-full md:w-[150px] shrink-0"
                     />
 
                     <PosDropdown
-                        label="Үйлчилгээний төрөл"
+                        label="Төрөл"
                         icon="category"
                         value={selectedServiceType}
                         onChange={(val) => {
@@ -209,6 +211,7 @@ const ReceiveListScreen: React.FC = () => {
                             { label: 'Ариутгал', value: 'Ариутгал' },
                             { label: 'Clean Service', value: 'Clean Service' },
                         ]}
+                        className="w-full md:w-[160px] shrink-0"
                     />
 
                     <PosDropdown
@@ -222,67 +225,74 @@ const ReceiveListScreen: React.FC = () => {
                             { label: 'Дүн (Өндөрөөс)', value: 'amount-high' },
                             { label: 'Дүн (Багаас)', value: 'amount-low' },
                         ]}
+                        className="w-full md:w-[150px] shrink-0"
                     />
 
-                    <button className="bg-primary hover:bg-primary/90 text-white px-8 h-[44px] rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all font-bold text-sm active:scale-95 group md:col-span-2 lg:ml-auto">
+                    <button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-xl shadow-lg shadow-primary/20 flex items-center justify-center gap-2 transition-all font-bold text-sm active:scale-95 group w-full md:w-auto md:ml-auto shrink-0">
                         <span className="material-icons-round text-lg group-hover:rotate-180 transition-transform duration-700">sync</span>
                         Шүүх
                     </button>
                 </div>
 
                 {/* 3. Data Table */}
-                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-visible flex-1 flex flex-col relative z-[1]">
-                    <div className="bg-gray-50/50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[10px] font-black uppercase tracking-widest items-center">
-                        <div className="w-[120px] shrink-0">Захиалгын №</div>
-                        <div className="flex-1 min-w-[120px] px-2">Хэрэглэгч</div>
-                        <div className="w-[100px] shrink-0 px-2 hidden md:block">Утас</div>
-                        <div className="flex-[1.5] min-w-[150px] px-2 hidden lg:block">Үйлчилгээ (товч)</div>
-                        <div className="w-[100px] shrink-0 px-2 text-right">Нийт дүн</div>
-                        <div className="w-[120px] shrink-0 px-2 text-center">Төлөв</div>
-                        <div className="w-8 shrink-0"></div>
-                    </div>
-
-                    <div className="overflow-y-auto flex-1 no-scrollbar">
-                        {paginatedData.length > 0 ? paginatedData.map((item, idx) => (
-                            <div
-                                key={idx}
-                                onClick={() => {
-                                    const pureId = item.id.replace('#', '');
-                                    navigate(`/pos/receive/${pureId}`);
-                                }}
-                                className="flex px-6 py-5 border-b border-gray-50 hover:bg-primary/5 cursor-pointer transition-colors items-center text-[13px] group"
-                            >
-                                <div className="w-[120px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline truncate">{item.id}</div>
-                                <div className="flex-1 min-w-[120px] px-2 font-bold text-gray-800 truncate">{item.customer}</div>
-                                <div className="w-[100px] shrink-0 px-2 text-gray-500 font-medium hidden md:block">{item.phone}</div>
-                                <div className="flex-[1.5] min-w-[150px] px-2 text-gray-600 truncate hidden lg:block">{item.services}</div>
-                                <div className="w-[100px] shrink-0 px-2 text-right font-black text-gray-900">{item.totalAmount}</div>
-                                <div className="w-[120px] shrink-0 px-2 flex justify-center">
-                                    <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap min-w-[90px] justify-center ${getStatusStyles(item.status)}`}>
-                                        <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Бэлэн' ? 'bg-green-500' :
-                                            item.status === 'Хүлээлгэн өгөх' ? 'bg-yellow-500' : 'bg-red-500'
-                                            }`}></span>
-                                        {item.status}
-                                    </span>
-                                </div>
-                                <div className="w-8 shrink-0 flex justify-end text-gray-300 group-hover:text-primary transition-colors">
-                                    <span className="material-icons-round">chevron_right</span>
-                                </div>
+                <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex-1 flex flex-col relative z-[1] min-h-0">
+                    <div className="flex-1 overflow-x-auto">
+                        <div className="min-w-[1250px] flex flex-col h-full uppercase">
+                            {/* Header */}
+                            <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[10px] font-black tracking-widest items-center">
+                                <div className="w-[120px] shrink-0">Захиалгын №</div>
+                                <div className="w-[180px] shrink-0 px-2">Хэрэглэгч</div>
+                                <div className="w-[120px] shrink-0 px-2">Утас</div>
+                                <div className="w-[300px] shrink-0 px-2">Үйлчилгээ (товч)</div>
+                                <div className="w-[120px] shrink-0 px-2 text-right">Нийт дүн</div>
+                                <div className="w-[130px] shrink-0 px-2 text-center">Төлөв</div>
+                                <div className="w-8 shrink-0"></div>
                             </div>
-                        )) : (
-                            <div className="flex flex-col items-center justify-center py-20 text-gray-300">
-                                <span className="material-icons-round text-6xl mb-4 opacity-20">search_off</span>
-                                <p className="font-bold text-lg">Мэдээлэл олдсонгүй</p>
-                            </div>
-                        )}
-                    </div>
 
-                    <PosPagination
-                        totalItems={filteredAndSortedData.length}
-                        itemsPerPage={itemsPerPage}
-                        currentPage={currentPage}
-                        onPageChange={setCurrentPage}
-                    />
+                            {/* Content */}
+                            <div className="overflow-y-auto flex-1 no-scrollbar bg-white">
+                                {paginatedData.length > 0 ? paginatedData.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        onClick={() => {
+                                            const pureId = item.id.replace('#', '');
+                                            navigate(`/pos/receive/${pureId}`);
+                                        }}
+                                        className="flex px-6 py-5 border-b border-gray-50 hover:bg-primary/5 cursor-pointer transition-colors items-center text-[13px] group"
+                                    >
+                                        <div className="w-[120px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline truncate">{item.id}</div>
+                                        <div className="w-[180px] shrink-0 px-2 font-bold text-gray-800 truncate">{item.customer}</div>
+                                        <div className="w-[120px] shrink-0 px-2 text-gray-500 font-medium">{item.phone}</div>
+                                        <div className="w-[300px] shrink-0 px-2 text-gray-600 truncate">{item.services}</div>
+                                        <div className="w-[120px] shrink-0 px-2 text-right font-black text-gray-900">{item.totalAmount}</div>
+                                        <div className="w-[130px] shrink-0 px-2 flex justify-center">
+                                            <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap min-w-[90px] justify-center ${getStatusStyles(item.status)}`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Бэлэн' ? 'bg-green-500' :
+                                                    item.status === 'Хүлээлгэн өгөх' ? 'bg-yellow-500' : 'bg-red-500'
+                                                    }`}></span>
+                                                {item.status}
+                                            </span>
+                                        </div>
+                                        <div className="w-8 shrink-0 flex justify-end text-gray-300 group-hover:text-primary transition-colors">
+                                            <span className="material-icons-round">chevron_right</span>
+                                        </div>
+                                    </div>
+                                )) : (
+                                    <div className="flex flex-col items-center justify-center py-20 text-gray-300">
+                                        <span className="material-icons-round text-6xl mb-4 opacity-20">search_off</span>
+                                        <p className="font-bold text-lg">Мэдээлэл олдсонгүй</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <PosPagination
+                                totalItems={filteredAndSortedData.length}
+                                itemsPerPage={itemsPerPage}
+                                currentPage={currentPage}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

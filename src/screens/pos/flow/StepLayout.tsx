@@ -14,8 +14,7 @@ interface StepLayoutProps {
     onTempSave?: () => void;
     onNext: () => void;
     onStepClick?: (step: number) => void;
-    nextLabel?: string;
-    isLastStep?: boolean;
+    nextDisabled?: boolean;
     headerLeft?: React.ReactNode;
     footerLeft?: React.ReactNode;
 }
@@ -31,6 +30,7 @@ const StepLayout: React.FC<StepLayoutProps> = ({
     onNext,
     onStepClick,
     nextLabel,
+    nextDisabled,
     isLastStep,
     headerLeft,
     footerLeft
@@ -99,9 +99,12 @@ const StepLayout: React.FC<StepLayoutProps> = ({
 
                     <button
                         onClick={onNext}
-                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-yellow-200/50 ${isLastStep
-                            ? 'bg-green-500 text-white shadow-green-200'
-                            : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400]'
+                        disabled={nextDisabled}
+                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all flex items-center gap-2 shadow-xl  ${nextDisabled
+                                ? 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
+                                : isLastStep
+                                    ? 'bg-green-500 text-white shadow-green-200 active:scale-95 shadow-green-200'
+                                    : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400] active:scale-95 shadow-yellow-200/50'
                             }`}
                     >
                         {isLastStep ? 'ДУУСГАХ' : (nextLabel || 'ДАРААГИЙН АЛХАМ')}

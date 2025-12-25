@@ -8,14 +8,14 @@ const StatCard: React.FC<{
     iconBg: string;
     isRevenue?: boolean;
 }> = ({ title, value, icon, colorClass, iconBg, isRevenue }) => (
-    <div className={`bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-transparent flex items-center gap-4 md:gap-6 h-auto min-h-[100px] md:h-36 transition-transform hover:scale-[1.02] ${isRevenue ? 'border-l-[8px] border-[#FFD400]' : 'border border-gray-50'}`}>
+    <div className={`bg-white rounded-3xl p-4 md:p-6 shadow-sm border border-transparent flex items-center gap-4 md:gap-6 h-auto min-h-[120px] md:h-40 transition-transform hover:scale-[1.02] ${isRevenue ? 'border-l-[8px] border-[#FFD400]' : 'border border-gray-50'}`}>
         <div className={`w-12 h-12 md:w-16 md:h-16 rounded-2xl md:rounded-3xl ${iconBg} flex items-center justify-center ${colorClass} shadow-inner shrink-0`}>
             <span className="material-icons-round text-2xl md:text-3xl">{icon}</span>
         </div>
-        <div className="flex flex-col overflow-hidden">
-            <span className="text-gray-400 text-[10px] md:text-xs font-black uppercase tracking-widest mb-1 truncate">{title}</span>
-            <span className="text-2xl md:text-3xl font-black text-gray-800 tracking-tight truncate">
-                {isRevenue && <span className="mr-1 text-gray-500 font-light">₮</span>}
+        <div className="flex flex-col min-w-0">
+            <span className="text-gray-400 text-[11px] md:text-[13px] font-black uppercase tracking-widest mb-1.5 leading-tight">{title}</span>
+            <span className="text-2xl md:text-4xl font-black text-gray-800 tracking-tight break-words">
+                {isRevenue && <span className="mr-1 text-gray-400 font-light">₮</span>}
                 {value}
             </span>
         </div>
@@ -26,7 +26,7 @@ const PosDashboardScreen: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col p-4 md:p-8 gap-6 md:gap-12 overflow-y-auto bg-[#F1F3F4]">
             {/* Stats Grid - Responsive grid: 1 col on mobile, 2 on tablet, 3 on desktop */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-8">
                 <StatCard
                     title="Өнөөдөр авсан захиалга"
                     value="120"

@@ -7,7 +7,11 @@ interface ServiceItem {
     quantity: number;
 }
 
-const Step2ServiceSelection: React.FC = () => {
+interface Step2ServiceSelectionProps {
+    onValidationChange?: (isValid: boolean) => void;
+}
+
+const Step2ServiceSelection: React.FC<Step2ServiceSelectionProps> = ({ onValidationChange }) => {
     const [services, setServices] = useState<ServiceItem[]>([
         { id: 'shoe', name: 'Гутал', icon: 'sports_handball', quantity: 0 },
         { id: 'chemical', name: 'Хими', icon: 'science', quantity: 0 },
@@ -15,6 +19,15 @@ const Step2ServiceSelection: React.FC = () => {
         { id: 'sanitize', name: 'Ариутгал', icon: 'clean_hands', quantity: 0 },
         { id: 'clean', name: 'Clean Service', icon: 'cleaning_services', quantity: 0 },
     ]);
+
+    // Validation Effect
+    React.useEffect(() => {
+        const totalCount = services.reduce((sum, s) => sum + s.quantity, 0);
+        const isValid = totalCount > 0;
+        if (onValidationChange) {
+            onValidationChange(isValid);
+        }
+    }, [services, onValidationChange]);
 
     const handleIncrement = (id: string) => {
         setServices(services.map(service =>

@@ -9,6 +9,7 @@ import CashReportScreen from '../screens/pos/finance/CashReportScreen';
 import CardManagementScreen from '../screens/pos/cards/CardManagementScreen';
 import ReceiveListScreen from '../screens/pos/receive/ReceiveListScreen';
 import ReceiveFlowScreen from '../screens/pos/flow/ReceiveFlowScreen';
+import ShipmentListScreen from '../screens/pos/shipment/ShipmentListScreen';
 
 
 // Placeholder for screens moving to new structure
@@ -51,8 +52,16 @@ const PosRoutes: React.FC = () => {
                 <Route path=":id" element={<Navigate to="step/1" replace />} />
             </Route>
 
+
+
+            // ... (existing imports)
+
+            // ...
+
             <Route path="returns/*" element={<PlaceholderScreen title="Returns" />} />
-            <Route path="shipments/*" element={<PlaceholderScreen title="Shipments" />} />
+
+            <Route path="shipments" element={<ShipmentListScreen />} />
+
             <Route path="cards/*" element={<CardManagementScreen />} />
             <Route path="cash-report/*" element={<PlaceholderScreen title="Cash Report" />} />
 
