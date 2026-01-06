@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import StepLayout from './StepLayout';
 import Step1Info from '../receive/receiveSteps/Step1Info';
@@ -7,16 +7,111 @@ import Step3Survey from '../receive/receiveSteps/Step3Survey';
 import Step4Complete from '../receive/receiveSteps/Step4Complete';
 import Step4Complaint from '../receive/receiveSteps/Step4Complaint';
 
+// TYPES
+export interface OrderItem {
+    id: number;
+    name: string;
+    services: string[];
+    quantity: number;
+    cleanliness: string;
+    damage: { hasDamage: boolean; desc?: string };
+    photos: string[];
+    price: number;
+    status: 'COMPLETED' | 'CANCELLED';
+}
+
+export interface OrderData {
+    id: string;
+    finishedDate: string;
+    customer: {
+        name: string;
+        phone: string;
+        address: string;
+    };
+    payment: {
+        status: string;
+        method: string;
+        total: number;
+        paid: number;
+        remaining: number;
+    };
+    items: OrderItem[];
+}
+
+// MOCK DATA DICTIONARY
+const MOCK_ORDERS: Record<string, OrderData> = {
+    'ORD-2310-001': {
+        id: '#ORD-2310-001',
+        finishedDate: '2023.10.27',
+        customer: { name: 'Б. Болд', phone: '9911-2345', address: 'УБ, Сүхбаатар дүүрэг' },
+        payment: { status: 'Хүлээж авсан', method: 'Бэлэн', total: 45000, paid: 30000, remaining: 15000 },
+        items: [
+            {
+                id: 1, name: 'Гутал (Nike Air Max)', services: ['Гутал цэвэрлэгээ'], quantity: 2,
+                cleanliness: 'Дунд', damage: { hasDamage: false }, photos: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200'],
+                price: 30000, status: 'COMPLETED'
+            },
+            {
+                id: 2, name: 'Засвар', services: ['Ул солих'], quantity: 1,
+                cleanliness: 'Хэвийн', damage: { hasDamage: false }, photos: ['https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200'],
+                price: 15000, status: 'COMPLETED'
+            }
+        ]
+    },
+    'ORD-2310-002': { // THE MIXED CASE
+        id: '#ORD-2310-002',
+        finishedDate: '2023.10.27',
+        customer: { name: 'Ч. Бат', phone: '9900-1122', address: 'УБ, Баянзүрх дүүрэг' },
+        payment: { status: 'Хүлээлгэн өгсөн', method: 'QPay / Банкны апп', total: 55000, paid: 55000, remaining: 0 },
+        items: [
+            {
+                id: 1, name: 'Гутал (Nike Air Max)', services: ['Гутал цэвэрлэгээ'], quantity: 2,
+                cleanliness: 'Дунд', damage: { hasDamage: false }, photos: ['https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200'],
+                price: 30000, status: 'COMPLETED'
+            },
+            {
+                id: 2, name: 'Гутал (Timberland)', services: ['Илгэн цэвэрлэгээ'], quantity: 1,
+                cleanliness: 'Их', damage: { hasDamage: true, desc: 'Тийм (Өсгий)' }, photos: ['https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=200'],
+                price: 15000, status: 'CANCELLED'
+            },
+            {
+                id: 3, name: 'Хими цэвэрлэгээ', services: ['Хими'], quantity: 1,
+                cleanliness: 'Бага', damage: { hasDamage: false }, photos: ['https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=200'],
+                price: 10000, status: 'CANCELLED'
+            }
+        ]
+    },
+    'ORD-2310-022': {
+        id: '#ORD-2310-022',
+        finishedDate: '2023.10.25',
+        customer: { name: 'А. Анар', phone: '9988-7766', address: 'УБ, Хан-Уул дүүрэг' },
+        payment: { status: 'Хүлээлгэн өгсөн', method: 'Дансаар', total: 60000, paid: 60000, remaining: 0 },
+        items: [
+            {
+                id: 1, name: 'Ариутгал (Гэр)', services: ['Гэр ариутгал'], quantity: 1,
+                cleanliness: 'Бага', damage: { hasDamage: false }, photos: ['https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=200'],
+                price: 60000, status: 'CANCELLED'
+            }
+        ]
+    }
+};
+
 const ReceiveFlowScreen: React.FC = () => {
     const { id, step } = useParams();
     const navigate = useNavigate();
     const currentStep = parseInt(step || '1', 10);
 
+    // Select Order based on ID
+    const selectedOrder = useMemo(() => {
+        const cleanId = (id || '').toUpperCase();
+        return MOCK_ORDERS[cleanId] || MOCK_ORDERS['ORD-2310-002']; // Default to mixed for testing if id not found
+    }, [id]);
+
     // Validation States
     const [step1Valid, setStep1Valid] = useState(false);
     const [step2Complete, setStep2Complete] = useState(false);
 
-    // Stepper Status State (User Logic: stepStatus drives the UI)
+    // Stepper Status State
     const [stepStatuses, setStepStatuses] = useState<Record<number, 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'WARNING'>>({
         1: 'ACTIVE',
         2: 'PENDING',
@@ -24,8 +119,27 @@ const ReceiveFlowScreen: React.FC = () => {
         4: 'PENDING'
     });
 
-    // Helper to update status and navigate
-    // This is the "Trigger" the user asked for.
+    // CALCULATIONS
+    const calculations = useMemo(() => {
+        const originalTotal = selectedOrder.items.reduce((acc, item) => acc + item.price, 0);
+        const cancelledTotal = selectedOrder.items
+            .filter(item => item.status === 'CANCELLED')
+            .reduce((acc, item) => acc + item.price, 0);
+        const revisedTotal = originalTotal - cancelledTotal;
+
+        return {
+            originalTotal,
+            cancelledTotal,
+            revisedTotal,
+            vat: revisedTotal * 0.1,
+            finalTotal: revisedTotal,
+            remaining: Math.max(0, revisedTotal - selectedOrder.payment.paid),
+            paidAmount: selectedOrder.payment.paid,
+            discount: 0,
+            pointsUsed: 0
+        };
+    }, [selectedOrder]);
+
     const handleStepComplete = (step: number, nextStepStatus: 'ACTIVE' | 'WARNING' = 'ACTIVE') => {
         setStepStatuses(prev => ({
             ...prev,
@@ -41,47 +155,34 @@ const ReceiveFlowScreen: React.FC = () => {
     };
 
     const handleNext = () => {
-        // Step 1 Validation
         if (currentStep === 1) {
             if (step1Valid) {
                 handleStepComplete(1, 'ACTIVE');
             } else {
-                // Trigger validation shake or alert? 
-                // For now, simple return, but ideally should show error.
-                // Step1Info needs to expose validation state or handle its own next.
-                // Current logic relies on StepLayout footer button.
                 alert('Харилцагчийн мэдээллийг гүйцэд оруулна уу');
             }
             return;
         }
 
-        // Step 2 Logic (If balance 0, can skip/complete?)
-        // If "Payment Confirm" was done, Step2Payment should have called something? 
-        // But here we are in the Footer Next button.
-        // If user clicks "Next" on Step 2, we assume they are done verifying.
         if (currentStep === 2) {
             handleStepComplete(2, 'ACTIVE');
             return;
         }
 
-        // Step 3 (Skip/Finish)
         if (currentStep === 3) {
-            handleStepComplete(3, 'ACTIVE'); // Go to Step 4 Complete (Default)
+            handleStepComplete(3, 'ACTIVE');
             return;
         }
 
-        // Step 4
         if (currentStep === 4) {
             navigate('/pos/receive');
         }
     };
 
-    // Complaint Logic
     const [isComplaintMode, setIsComplaintMode] = useState(false);
 
     const handleComplaint = () => {
         setIsComplaintMode(true);
-        // Mark Step 3 as Completed, Step 4 as WARNING (Active but Warning color)
         setStepStatuses(prev => ({
             ...prev,
             [3]: 'COMPLETED',
@@ -93,19 +194,10 @@ const ReceiveFlowScreen: React.FC = () => {
     const handleBack = () => {
         if (currentStep > 1) {
             const prevStep = currentStep - 1;
-
-            // Should we mark current as PENDING/ACTIVE? 
-            // User says: "ACTIVE is only 1".
-            // So if we go back, previous becomes ACTIVE. Current becomes PENDING? 
-            // Or remains COMPLETED if it was completed? 
-            // If we go back to edit 2, we are making 2 ACTIVE. 
-            // 3 Should probably become PENDING to force re-verification?
-            // Or keep 3 as PENDING.
-
             setStepStatuses(prev => ({
                 ...prev,
                 [prevStep]: 'ACTIVE',
-                [currentStep]: 'PENDING' // Reset current to Pending when going back?
+                [currentStep]: 'PENDING'
             }));
 
             if (currentStep === 4 && isComplaintMode) {
@@ -117,7 +209,6 @@ const ReceiveFlowScreen: React.FC = () => {
         }
     };
 
-    // We can show a custom footer left button for Step 2 (Receipt Preview)
     const renderFooterLeft = () => {
         if (currentStep === 3) {
             return (
@@ -135,12 +226,6 @@ const ReceiveFlowScreen: React.FC = () => {
         return null;
     };
 
-    // Initialize state on mount/param change if needed? 
-    // Ideally state should sync with URL if deep linking. 
-    // For now we trust the default state + user interaction.
-    // To support refresh: useEffect to set stepStatuses based on 'step' param?
-    // User asked to decouple, but we need initial consistency.
-    // If I load /step/3 directly, I should probably show 1,2 as COMPLETED?
     React.useEffect(() => {
         if (currentStep > 1) {
             setStepStatuses(prev => {
@@ -154,10 +239,7 @@ const ReceiveFlowScreen: React.FC = () => {
         }
     }, [currentStep, isComplaintMode]);
 
-
     const nextLabel = currentStep === 3 ? 'Дуусгах' : 'Дараах';
-
-    // State to track if No VAT was selected in Step 2
     const [noVatSelected, setNoVatSelected] = useState(false);
 
     return (
@@ -168,20 +250,28 @@ const ReceiveFlowScreen: React.FC = () => {
             onBack={handleBack}
             onNext={handleNext}
             nextLabel={currentStep === 4 ? (isComplaintMode ? 'Бүртгэх' : 'ДУУСГАХ') : nextLabel}
-            nextDisabled={currentStep === 1 && !step1Valid}
+            nextDisabled={(currentStep === 1 && !step1Valid) || (currentStep === 2 && !step2Complete)}
             footerLeft={renderFooterLeft()}
             isLastStep={currentStep === 4}
-            hideNext={currentStep === 2}
         >
-            {currentStep === 1 && <Step1Info onValidationChange={setStep1Valid} />}
+            {currentStep === 1 && <Step1Info
+                onValidationChange={setStep1Valid}
+                orderData={selectedOrder}
+                calculations={calculations}
+            />}
             {currentStep === 2 && <Step2Payment
                 onPaymentComplete={(isComplete) => {
-                    if (isComplete) handleStepComplete(2, 'ACTIVE');
                     setStep2Complete(isComplete);
                 }}
                 onNoVatChange={setNoVatSelected}
+                orderData={selectedOrder}
+                calculations={calculations}
             />}
-            {currentStep === 3 && <Step3Survey noVat={noVatSelected} />}
+            {currentStep === 3 && <Step3Survey
+                noVat={noVatSelected}
+                orderData={selectedOrder}
+                calculations={calculations}
+            />}
             {currentStep === 4 && (isComplaintMode ? <Step4Complaint /> : <Step4Complete />)}
         </StepLayout>
     );

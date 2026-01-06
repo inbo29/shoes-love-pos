@@ -23,6 +23,23 @@ const INITIAL_DATA = [
         serviceType: 'Гутал'
     },
     {
+        id: '#ORD-2310-002', // Mixed status example
+        customer: 'Ч. Бат',
+        phone: '9900-1122',
+        services: 'Гутал 2, Хими 1',
+        serviceItems: [
+            { name: 'Гутал', count: 2, status: 'DONE' },
+            { name: 'Гутал', count: 1, status: 'CANCEL' }, // Mixed state
+            { name: 'Хими', count: 1, status: 'CANCEL' }
+        ],
+        finishDate: '2023-10-27',
+        totalAmount: '55,000₮',
+        remainingAmount: '0₮',
+        status: 'Хүлээлгэн өгсөн',
+        branch: 'Зайсан салбар',
+        serviceType: 'Гутал'
+    },
+    {
         id: '#ORD-2310-008',
         customer: 'Д. Сараа',
         phone: '8800-1234',
@@ -228,10 +245,9 @@ const ReceiveListScreen: React.FC = () => {
         }
     };
 
-    const renderServiceBadges = (serviceItems: any[]) => {
+    const renderServiceSummary = (serviceItems: any[]) => {
         if (!serviceItems) return null;
 
-        // Grouping logic: { "Name_Status": { name, status, count } }
         const groups: Record<string, { name: string; status: string; count: number; unit?: string }> = {};
         serviceItems.forEach(item => {
             const key = `${item.name}_${item.status}`;
@@ -243,18 +259,20 @@ const ReceiveListScreen: React.FC = () => {
         });
 
         return (
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-col gap-1.5 justify-center items-center">
                 {Object.values(groups).map((group, idx) => {
                     const isDone = group.status === 'DONE';
                     return (
-                        <span
+                        <div
                             key={idx}
-                            className={`flex items-center gap-1 px-2 py-0.5 rounded-lg border text-[11px] font-black uppercase tracking-tight whitespace-nowrap ${isDone ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-500 border-red-100'
+                            className={`px-3 py-1 rounded-full border flex items-center gap-1.5 text-[10px] font-black uppercase tracking-tight whitespace-nowrap ${isDone
+                                    ? 'bg-green-50 text-green-600 border-green-100'
+                                    : 'bg-red-50 text-red-500 border-red-100'
                                 }`}
                         >
-                            <span className={`w-1 h-1 rounded-full ${isDone ? 'bg-green-500' : 'bg-red-500'}`}></span>
-                            {group.name} {group.count > 1 ? group.count : ''}{group.unit || ''} ({isDone ? 'Болсон' : 'Буцаагдсан'})
-                        </span>
+                            <span className={`w-1.5 h-1.5 rounded-full ${isDone ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                            {group.name} {group.count > 1 ? group.count : ''}{group.unit || ''} ({isDone ? 'БОЛСОН' : 'БУЦААГДСАН'})
+                        </div>
                     );
                 })}
             </div>
@@ -368,7 +386,7 @@ const ReceiveListScreen: React.FC = () => {
                                 <div className="w-[130px] shrink-0 px-4">Захиалгын №</div>
                                 <div className="w-[140px] shrink-0 px-4">Үйлчлүүлэгч</div>
                                 <div className="w-[110px] shrink-0 px-4">Утас</div>
-                                <div className="w-[240px] shrink-0 px-4">Мөрийн төлөв</div>
+                                <div className="w-[200px] shrink-0 px-4 text-center">Мөрийн төлөв</div>
                                 <div className="w-[140px] shrink-0 px-4 text-center">Төлөв</div>
                                 <div className="w-[100px] shrink-0 text-center">Огноо</div>
                                 <div className="w-[150px] shrink-0 px-4 text-right">Үлдэгдэл дүн</div>
@@ -383,15 +401,15 @@ const ReceiveListScreen: React.FC = () => {
                                         key={idx}
                                         onClick={() => {
                                             const pureId = item.id.replace('#', '');
-                                            navigate(`/pos/receive/${pureId}`);
+                                            navigate(`/pos/receive/${pureId}/step/1`);
                                         }}
                                         className="flex px-6 py-5 border-b border-gray-50 hover:bg-primary/5 cursor-pointer transition-colors items-center text-[13px] group"
                                     >
                                         <div className="w-[130px] shrink-0 px-4 font-extrabold text-[#40C1C7] group-hover:underline truncate">{item.id}</div>
                                         <div className="w-[140px] shrink-0 px-4 font-bold text-gray-800 truncate">{maskName(item.customer)}</div>
                                         <div className="w-[110px] shrink-0 px-4 text-gray-500 font-medium">{maskPhone(item.phone)}</div>
-                                        <div className="w-[240px] shrink-0 px-4">
-                                            {renderServiceBadges((item as any).serviceItems)}
+                                        <div className="w-[200px] shrink-0 px-4">
+                                            {renderServiceSummary((item as any).serviceItems)}
                                         </div>
                                         <div className="w-[140px] shrink-0 px-4 flex justify-center">
                                             <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap justify-center ${getStatusStyles(item.status)}`}>

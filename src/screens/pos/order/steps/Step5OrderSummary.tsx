@@ -169,12 +169,15 @@ const Step5OrderSummary: React.FC = () => {
                                 <div>
                                     <h4 className="text-[10px] font-black text-teal-500 uppercase mb-3 tracking-wider opacity-70">1. Үйлчилгээний дэлгэрэнгүй</h4>
                                     <div className="flex flex-wrap gap-2">
-                                        {item.services.map(s => (
-                                            <span key={s} className="px-3 py-1.5 bg-white border-2 border-primary/5 text-primary text-[11px] font-bold rounded-lg shadow-sm flex items-center gap-2">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                                {s}
-                                            </span>
-                                        ))}
+                                        {item.services.map((s, sIdx) => {
+                                            const priceDetail = item.priceDetails.find(p => s.includes(p.label.split(' ')[0]) || p.label.includes(s));
+                                            return (
+                                                <span key={s} className="px-3 py-1.5 bg-white border-2 border-primary/5 text-primary text-[11px] font-bold rounded-lg shadow-sm flex items-center gap-2">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                                    {s} {priceDetail && <span className="opacity-60 ml-1">{priceDetail.price.toLocaleString()}₮</span>}
+                                                </span>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 

@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockCashReportData, PaymentMethodData, CancellationData } from '../../../services/mockCashReportData';
+import { mockCashReportData, PaymentMethodData, CancellationData } from './../../../services/mockCashReportData';
 import Popup from '../../../shared/components/Popup/Popup';
 import PosDateRangePicker from '../../../shared/components/PosDateRangePicker';
 import PosDropdown from '../../../shared/components/PosDropdown';
@@ -152,7 +152,7 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
 
     // Use full window scrolling -> remove h-full/overflow on container props if this is the main screen
     return (
-        <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 w-full bg-gray-50/30">
+        <div className="flex-1 flex flex-col p-4 md:p-6 gap-6 w-full bg-gray-50/30 overflow-y-auto no-scrollbar">
             {/* Header Summary */}
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-wrap items-center justify-between gap-6 shrink-0">
                 <div className="flex items-center gap-4">
@@ -196,39 +196,6 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                         <p className="h-[44px] flex items-center px-4 bg-gray-50/50 border border-gray-100 rounded-xl text-sm font-bold text-gray-700">
                             {userName}
                         </p>
-                    </div>
-                </div>
-            </div>
-
-            {/* Top Summary Card (Global Net Values) */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 shrink-0">
-                <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm flex items-center justify-between group hover:shadow-md transition-all">
-                    <div className="space-y-2">
-                        <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em]">Нийт орлого (Цэвэр)</p>
-                        <h2 className="text-3xl font-black text-gray-800 tracking-tighter">{calculations.totalNetRevenue.toLocaleString()} ₮</h2>
-                    </div>
-                    <div className="w-14 h-14 rounded-2xl bg-primary/5 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                        <span className="material-icons-round text-3xl">account_balance_wallet</span>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-[28px] p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-teal-50 flex items-center justify-center text-teal-600">
-                        <span className="material-icons-round text-2xl">category</span>
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Үйлчилгээний орлого</p>
-                        <p className="text-lg font-black text-gray-800 tracking-tight">{calculations.totalNetService.toLocaleString()} ₮</p>
-                    </div>
-                </div>
-
-                <div className="bg-white rounded-[28px] p-6 border border-gray-100 shadow-sm flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600">
-                        <span className="material-icons-round text-2xl">shopping_cart</span>
-                    </div>
-                    <div>
-                        <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Барааны борлуулалт</p>
-                        <p className="text-lg font-black text-gray-800 tracking-tight">{calculations.totalNetProduct.toLocaleString()} ₮</p>
                     </div>
                 </div>
             </div>
@@ -282,8 +249,8 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                                     {/* Breakdown (Tier 2) */}
                                     {expandedMethod === data.method && (
                                         <div className="p-4 space-y-2 bg-gray-50/30 animate-in slide-in-from-top-4 duration-300">
-                                            {(Object.keys(originalData.serviceCategories) as Array<keyof typeof originalData.serviceCategories>).map((serviceKey) => {
-                                                const service = originalData.serviceCategories[serviceKey];
+                                            {(Object.keys(originalData.serviceCategories)).map((serviceKey) => {
+                                                const service = originalData.serviceCategories[serviceKey as keyof typeof originalData.serviceCategories];
                                                 if (!service || service.total === 0) return null;
 
                                                 const isExpanded = expandedService?.method === data.method && expandedService?.service === serviceKey;
@@ -297,7 +264,7 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                                                         >
                                                             <div className="flex items-center gap-3">
                                                                 <div className="w-2 h-2 rounded-full bg-primary/40" />
-                                                                <span className="font-bold text-gray-700">{labelMap[serviceKey]}</span>
+                                                                <span className="font-bold text-gray-700">{labelMap[serviceKey] || serviceKey}</span>
                                                             </div>
                                                             <div className="flex items-center gap-3">
                                                                 <span className="font-black text-gray-800 text-sm">{service.total.toLocaleString()} ₮</span>
@@ -385,7 +352,7 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                                     {expandedProductMethod === data.method && (
                                         <div className="p-4 space-y-2 bg-gray-50/30 animate-in slide-in-from-top-4 duration-300">
                                             {(Object.keys(originalData.productItems)).map((productKey) => {
-                                                const product = originalData.productItems[productKey];
+                                                const product = originalData.productItems[productKey as keyof typeof originalData.productItems];
                                                 const isExpanded = expandedProduct?.method === data.method && expandedProduct?.product === productKey;
 
                                                 return (

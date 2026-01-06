@@ -52,6 +52,7 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
     const [showCompanyPopup, setShowCompanyPopup] = useState(false);
     const [bizNumber, setBizNumber] = useState('');
     const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+    const [companyError, setCompanyError] = useState<string | null>(null);
 
     const MOCK_COMPANIES: Record<string, string> = {
         '6677207': 'ITWizard LLC'
@@ -96,11 +97,12 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
     };
 
     const handleCompanyLookup = () => {
+        setCompanyError(null);
         const company = MOCK_COMPANIES[bizNumber];
         if (company) {
             setSelectedCompany(company);
         } else {
-            alert('Байгууллага олдсонгүй');
+            setCompanyError('Байгууллага олдсонгүй');
         }
     };
 
@@ -231,61 +233,39 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                     <div className="p-8">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="h-4 w-1 bg-[#FFD400] rounded-sm shrink-0"></div>
-                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Захиалгын мэдээлэл</h3>
+                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest text-[#FFD400]">Төлбөрийн тооцоо</h3>
                         </div>
 
                         <div className="space-y-4">
                             <div className="flex justify-between items-center text-xs">
-                                <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Захиалгын №</span>
-                                <span className="text-gray-800 font-black">{orderData.id}</span>
-                            </div>
-
-                            <div className="flex justify-between items-center text-xs pb-4">
-                                <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Нийт дүн</span>
-                                <span className="text-gray-800 font-black">₮ {calculations.revisedTotal.toLocaleString()}</span>
-                            </div>
-
-                            <div className="h-px bg-gray-50 mb-6" />
-
-                            <div className="flex justify-between text-sm">
-                                <span className="font-bold text-gray-500">Үйлчилгээний дүн</span>
-                                <span className="font-black text-gray-800 tracking-tight">{calculations.originalTotal.toLocaleString()} ₮</span>
+                                <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">Үйлчилгээний дүн</span>
+                                <span className="text-gray-800 font-black">{calculations.originalTotal.toLocaleString()} ₮</span>
                             </div>
 
                             {!noVat && (
-                                <div className="flex justify-between text-sm animate-in fade-in slide-in-from-top-1">
-                                    <span className="font-bold text-gray-500">НӨАТ (10%)</span>
-                                    <span className="font-black text-gray-800 tracking-tight">{calculations.vat.toLocaleString()} ₮</span>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-gray-400 font-bold uppercase tracking-widest text-[9px]">НӨАТ (10%)</span>
+                                    <span className="text-gray-800 font-black">{calculations.vat.toLocaleString()} ₮</span>
                                 </div>
                             )}
 
-                            <div className="flex justify-between text-sm items-center">
-                                <span className="font-bold text-red-400 text-[10px] uppercase tracking-widest leading-none">- Цуцлагдсан</span>
-                                <span className="font-black text-red-500 tracking-tight text-xs">-{calculations.cancelledTotal.toLocaleString()} ₮</span>
+                            {calculations.cancelledTotal > 0 && (
+                                <div className="flex justify-between text-sm items-center">
+                                    <span className="font-bold text-red-400 text-[10px] uppercase tracking-widest leading-none">- Цуцлагдсан</span>
+                                    <span className="font-black text-red-500 tracking-tight text-xs">-{calculations.cancelledTotal.toLocaleString()} ₮</span>
+                                </div>
+                            )}
+
+                            <div className="flex justify-between text-xs items-center">
+                                <span className="text-blue-500 font-bold uppercase tracking-widest text-[9px]">Пойнт ашиглалт</span>
+                                <span className="text-blue-500 font-black text-gray-800">- {calculations.pointsUsed.toLocaleString()} ₮</span>
                             </div>
 
-                            <div className="flex justify-between text-sm">
-                                <span className="font-bold text-gray-500">Хөнгөлөлт</span>
-                                <span className="font-black text-red-500 tracking-tight">- {calculations.discount.toLocaleString()} ₮</span>
-                            </div>
+                            <div className="h-px bg-gray-50 my-6" />
 
-                            <div className="flex justify-between text-sm">
-                                <span className="font-bold text-gray-500">Пойнт ашиглалт</span>
-                                <span className="font-black text-blue-500">- {calculations.pointsUsed.toLocaleString()} ₮</span>
-                            </div>
-
-                            <div className="w-full h-px bg-gray-50 mt-2" />
-
-                            <div className="flex justify-between items-center text-sm pt-2">
-                                <span className="font-bold text-gray-400 italic">Төлсөн дүн</span>
-                                <span className="font-black text-gray-600 tracking-tight">- {totalPaidOverall.toLocaleString()} ₮</span>
-                            </div>
-
-                            <div className="w-full h-px bg-gray-200 mt-2" />
-
-                            <div className="flex justify-between items-end pt-4">
+                            <div className="flex justify-between items-center pt-2">
                                 <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">Үлдэгдэл</span>
-                                <span className="text-3xl font-black text-primary tracking-tighter leading-none">{currentRemaining.toLocaleString()} ₮</span>
+                                <span className="text-3xl font-black text-[#40C1C7] tracking-tighter leading-none">{currentRemaining.toLocaleString()} ₮</span>
                             </div>
                         </div>
 
@@ -311,9 +291,9 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                         <span className="text-[9px] font-bold text-gray-400 uppercase">Сонгосон: {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label}</span>
                                         <button
                                             onClick={() => setAmountStr(currentRemaining.toString())}
-                                            className="text-[9px] font-bold text-primary uppercase hover:underline"
+                                            className="text-[10px] font-extrabold text-[#40C1C7] uppercase hover:underline"
                                         >
-                                            Бүгдийг төлөх
+                                            бүгдийг төлөх
                                         </button>
                                     </div>
                                 </div>
@@ -322,7 +302,7 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                     disabled={!validToSubmit || isProcessing}
                                     onClick={handleRegisterPayment}
                                     className={`w-full py-6 rounded-2xl text-base font-black tracking-tight shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4 ${validToSubmit && !isProcessing
-                                        ? 'bg-secondary text-gray-900 shadow-secondary/50 hover:bg-yellow-400 cursor-pointer'
+                                        ? 'bg-[#FFD400] text-gray-900 shadow-yellow-200/50 hover:bg-[#FFC400] cursor-pointer'
                                         : 'bg-gray-100 text-gray-300 border-gray-50 cursor-not-allowed shadow-none'
                                         }`}
                                 >
@@ -352,11 +332,11 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                         }}
                                         className="sr-only"
                                     />
-                                    <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${noVat ? 'border-secondary bg-secondary' : 'border-gray-200 bg-white group-hover:border-secondary/50'}`}>
+                                    <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${noVat ? 'border-[#FFD400] bg-[#FFD400]' : 'border-gray-200 bg-white group-hover:border-[#FFD400]/50'}`}>
                                         {noVat && <span className="material-icons-round text-gray-900 text-[14px]">done</span>}
                                     </div>
                                 </div>
-                                <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">Нөатгүй</span>
+                                <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">НӨАТГҮЙ</span>
                             </label>
 
                             <div className="flex bg-gray-50 p-1 rounded-xl">
@@ -393,6 +373,13 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                     </div>
                                 </div>
                             )}
+
+                            <div className="p-4 bg-[#F2F8FF] rounded-2xl border border-[#E0F0FF] flex items-start gap-3">
+                                <span className="material-icons-round text-[#007AFF] text-sm mt-0.5">info</span>
+                                <p className="text-[9px] text-[#007AFF] leading-relaxed font-bold">
+                                    Санамж: Та одоо заавал бүх төлбөрөө 30% хүртэл төлсөн тохиолдолд захиалгыг дуусгаж болно.
+                                </p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -401,8 +388,8 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
             {/* Company Popup */}
             {showCompanyPopup && (
                 <div className="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-in fade-in">
-                    <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8">
-                        <div className="p-8">
+                    <div className="bg-white w-full max-w-md rounded-[40px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8">
+                        <div className="p-10">
                             <div className="flex justify-between items-center mb-8">
                                 <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Байгууллагын мэдээлэл</h3>
                                 <button onClick={() => setShowCompanyPopup(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
@@ -410,29 +397,38 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                 </button>
                             </div>
 
-                            <div className="space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Регистрийн №</label>
+                            <div className="space-y-8">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Регистрийн №</label>
                                     <div className="flex gap-3">
                                         <input
                                             type="number"
                                             value={bizNumber}
-                                            onChange={(e) => setBizNumber(e.target.value)}
+                                            onChange={(e) => {
+                                                setBizNumber(e.target.value);
+                                                setCompanyError(null);
+                                            }}
                                             placeholder="Регистрийн дугаар..."
-                                            className="flex-1 bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all font-black text-gray-800"
+                                            className={`flex-1 bg-gray-50 border-2 rounded-[20px] px-6 py-4 focus:outline-none transition-all font-black text-gray-800 ${companyError ? 'border-red-200 bg-red-50/30' : 'border-gray-100 focus:border-primary focus:bg-white'}`}
                                         />
                                         <button
                                             onClick={handleCompanyLookup}
-                                            className="px-6 rounded-2xl bg-secondary text-gray-900 font-black text-xs uppercase shadow-lg shadow-secondary/30 active:scale-95 transition-all hover:bg-yellow-400"
+                                            className="px-8 rounded-[20px] bg-[#FFD400] text-gray-900 font-black text-[11px] uppercase shadow-lg shadow-yellow-200/50 active:scale-95 transition-all hover:bg-[#FFC400]"
                                         >
                                             Шалгах
                                         </button>
                                     </div>
+                                    {companyError && (
+                                        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest ml-1 flex items-center gap-1.5 animate-in fade-in slide-in-from-top-1">
+                                            <span className="material-icons-round text-sm">error</span>
+                                            {companyError}
+                                        </p>
+                                    )}
                                 </div>
 
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Татвар төлөгчийн нэр</label>
-                                    <div className="bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 font-black text-gray-800 min-h-[60px] flex items-center">
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Татвар төлөгчийн нэр</label>
+                                    <div className="bg-gray-50 border-2 border-gray-100 rounded-[20px] px-6 py-5 font-black text-gray-800 min-h-[64px] flex items-center">
                                         {selectedCompany || <span className="text-gray-300">Байгууллагын нэр энд гарна...</span>}
                                     </div>
                                 </div>
@@ -440,7 +436,7 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                 <button
                                     onClick={() => setShowCompanyPopup(false)}
                                     disabled={!selectedCompany}
-                                    className={`w-full py-5 rounded-2xl text-sm font-black uppercase tracking-wider transition-all shadow-xl active:scale-95 ${selectedCompany ? 'bg-secondary text-gray-900 shadow-secondary/50 hover:bg-yellow-400' : 'bg-gray-100 text-gray-400 border-gray-50 cursor-not-allowed shadow-none'}`}
+                                    className={`w-full py-6 rounded-[24px] text-xs font-black uppercase tracking-[0.1em] transition-all shadow-xl active:scale-95 ${selectedCompany ? 'bg-[#FFD400] text-gray-900 shadow-yellow-200/50 hover:bg-[#FFC400]' : 'bg-gray-100 text-gray-300 border-gray-50 cursor-not-allowed shadow-none'}`}
                                 >
                                     Баталгаажуулах
                                 </button>

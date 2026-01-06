@@ -1,55 +1,17 @@
 import React, { useState } from 'react';
-
-// MOCK DATA (Ideally passed via props or context)
-const MOCK_ORDER = {
-    id: '#ORD-23910',
-    finishedDate: '2023.10.26',
-    customer: {
-        name: 'Б. Болд-Эрдэнэ',
-        phone: '8811-2233',
-        address: 'УБ, Хан-Уул, 19-р хороолол, 12-р байр'
-    },
-    payment: {
-        status: 'Хэсэгчлэн',
-        method: 'QPay / Банкны апп',
-        total: 45000,
-        paid: 30000,
-        remaining: 15000
-    },
-    items: [
-        {
-            id: 1,
-            name: 'Гутал (Nike Air Max)',
-            services: ['Гутал цэвэрлэгээ', 'Ус хамгаалалт'],
-            quantity: 1,
-            cleanliness: 'Дунд',
-            damage: { hasDamage: false },
-            photos: [
-                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
-                'https://images.unsplash.com/photo-1549298916-b41d501d377b?w=200',
-                'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200',
-            ]
-        },
-        {
-            id: 2,
-            name: 'Гутал (Timberland)',
-            services: ['Илгэн цэвэрлэгээ'],
-            quantity: 1,
-            cleanliness: 'Их',
-            damage: { hasDamage: true, desc: 'Тийм (Өсгий)' },
-            photos: [
-                'https://images.unsplash.com/photo-1520639889456-78443213ecdc?w=200',
-                'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=200',
-            ]
-        }
-    ]
-};
+import type { OrderData } from '../../flow/ReceiveFlowScreen';
 
 interface Step1InfoProps {
     onValidationChange: (isValid: boolean) => void;
+    orderData: OrderData;
+    calculations: {
+        originalTotal: number;
+        cancelledTotal: number;
+        revisedTotal: number;
+    };
 }
 
-const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange }) => {
+const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange, orderData, calculations }) => {
     const [checked1, setChecked1] = useState(false);
     const [checked2, setChecked2] = useState(false);
 
@@ -101,13 +63,13 @@ const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange }) => {
                         </div>
                         <div>
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Захиалгын №</p>
-                            <h2 className="text-3xl font-black text-gray-800 tracking-tighter uppercase">{MOCK_ORDER.id}</h2>
+                            <h2 className="text-3xl font-black text-gray-800 tracking-tighter uppercase">{orderData.id}</h2>
                         </div>
                     </div>
                     <div className="flex items-center gap-12">
                         <div className="text-right">
                             <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Дууссан огноо</p>
-                            <p className="text-lg font-black text-gray-800 tracking-tight">{MOCK_ORDER.finishedDate}</p>
+                            <p className="text-lg font-black text-gray-800 tracking-tight">{orderData.finishedDate}</p>
                         </div>
                         <div className="bg-green-50 px-6 py-2.5 rounded-full border border-green-100 flex items-center gap-3">
                             <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
@@ -117,7 +79,7 @@ const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange }) => {
                 </div>
             </div>
 
-            {/* Left Column: Customer & Item Detail (65% equivalent = 8 cols) */}
+            {/* Left Column: Customer & Item Detail */}
             <div className="lg:col-span-8 flex flex-col gap-8 pr-2">
                 <div className="flex items-center gap-3">
                     <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
@@ -130,90 +92,115 @@ const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange }) => {
                     <div className="grid grid-cols-3 gap-8">
                         <div>
                             <p className="text-[10px] text-gray-400 mb-1 font-black uppercase tracking-widest">Нэр</p>
-                            <p className="text-sm font-black text-gray-800">{maskName(MOCK_ORDER.customer.name)}</p>
+                            <p className="text-sm font-black text-gray-800">{maskName(orderData.customer.name)}</p>
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 mb-1 font-black uppercase tracking-widest">Утас</p>
-                            <p className="text-sm font-black text-primary underline underline-offset-4 decoration-dotted">{maskPhone(MOCK_ORDER.customer.phone)}</p>
+                            <p className="text-sm font-black text-primary underline underline-offset-4 decoration-dotted">{maskPhone(orderData.customer.phone)}</p>
                         </div>
                         <div>
                             <p className="text-[10px] text-gray-400 mb-1 font-black uppercase tracking-widest">Хаяг</p>
-                            <p className="text-xs font-black text-gray-600 leading-tight">{MOCK_ORDER.customer.address}</p>
+                            <p className="text-xs font-black text-gray-600 leading-tight">{orderData.customer.address}</p>
                         </div>
                     </div>
                 </div>
 
                 {/* Item Card Details */}
                 <div className="flex flex-col gap-8">
-                    {MOCK_ORDER.items.map((item, idx) => (
-                        <div key={item.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
-                            <div className="px-6 py-5 border-b border-gray-50 flex items-center justify-between bg-gray-50/30">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
-                                        <span className="material-icons-round text-lg">hiking</span>
-                                    </div>
-                                    <div>
-                                        <h3 className="text-base font-black text-gray-800 uppercase tracking-tight">{item.name}</h3>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID: {item.id}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-8 space-y-8">
-                                {/* 1. Services */}
-                                <div>
-                                    <h4 className="text-[10px] font-black text-teal-500 uppercase mb-4 tracking-widest opacity-80">1. Үйлчилгээний дэлгэрэнгүй</h4>
-                                    <div className="flex flex-wrap gap-2.5">
-                                        {item.services.map(s => (
-                                            <span key={s} className="px-4 py-2 bg-white border-2 border-primary/5 text-primary text-[11px] font-black rounded-xl shadow-sm flex items-center gap-2.5 hover:border-primary/20 transition-colors">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]"></span>
-                                                {s}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* 2. Conditions */}
-                                <div className="pt-6 border-t border-gray-50">
-                                    <h4 className="text-[10px] font-black text-teal-500 uppercase mb-4 tracking-widest opacity-80">2. Одоогийн байдал</h4>
-                                    <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100">
-                                        <div className="flex flex-wrap gap-x-12 gap-y-4">
-                                            <div className="flex flex-col gap-1.5">
-                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Бохирдол</span>
-                                                <p className="text-sm font-black text-gray-800">{item.cleanliness}</p>
+                    {orderData.items.map((item) => {
+                        const isCancelled = item.status === 'CANCELLED';
+                        return (
+                            <div key={item.id} className={`bg-white rounded-2xl shadow-sm border overflow-hidden group transition-all ${isCancelled ? 'border-red-100 bg-red-50/10' : 'border-gray-100'}`}>
+                                <div className={`px-6 py-5 border-b flex items-center justify-between ${isCancelled ? 'bg-red-50/30 border-red-50' : 'bg-gray-50/30 border-gray-50'}`}>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-9 h-9 rounded-full flex items-center justify-center transition-transform group-hover:scale-110 ${isCancelled ? 'bg-red-100 text-red-500' : 'bg-primary/10 text-primary'}`}>
+                                            <span className="material-icons-round text-lg">{isCancelled ? 'block' : 'hiking'}</span>
+                                        </div>
+                                        <div>
+                                            <h3 className={`text-base font-black uppercase tracking-tight ${isCancelled ? 'text-gray-500 decoration-slice' : 'text-gray-800'}`}>
+                                                {item.name}
+                                                {isCancelled && <span className="ml-2 text-[10px] text-red-500 bg-red-50 px-2 py-0.5 rounded border border-red-100 tracking-wide">БУЦААГДСАН</span>}
+                                            </h3>
+                                            <div className="flex items-center gap-3">
+                                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">ID: {item.id}</p>
+                                                {isCancelled && <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest flex items-center gap-1">
+                                                    <span className="w-1 h-1 rounded-full bg-red-400"></span>
+                                                    Мөрийн төлөв: Буцаагдсан
+                                                </p>}
+                                                {!isCancelled && <p className="text-[10px] font-bold text-green-500 uppercase tracking-widest flex items-center gap-1">
+                                                    <span className="w-1 h-1 rounded-full bg-green-500"></span>
+                                                    Мөрийн төлөв: Болсон
+                                                </p>}
                                             </div>
-                                            <div className="flex flex-col gap-1.5">
-                                                <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Гэмтэл</span>
-                                                <div className={`flex items-center gap-2 text-sm font-black ${item.damage.hasDamage ? 'text-orange-500' : 'text-green-500'}`}>
-                                                    {item.damage.hasDamage && <span className="material-icons-round text-sm">warning</span>}
-                                                    {item.damage.hasDamage ? item.damage.desc : 'Үгүй'}
+                                        </div>
+                                    </div>
+                                    {isCancelled && (
+                                        <div className="bg-red-100 text-red-600 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-red-200">
+                                            Үйлчилгээ цуцлагдсан
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className={`p-8 space-y-8 ${isCancelled ? 'opacity-60 grayscale-[0.5] pointer-events-none select-none' : ''}`}>
+                                    {/* 1. Services */}
+                                    <div>
+                                        <h4 className="text-[10px] font-black text-teal-500 uppercase mb-4 tracking-widest opacity-80">1. Үйлчилгээний дэлгэрэнгүй</h4>
+                                        <div className="flex flex-wrap gap-2.5">
+                                            {item.services.map((s, sIdx) => {
+                                                // Mock price per service
+                                                const servicePrice = s.includes('бага') ? 5000 : 10000;
+                                                return (
+                                                    <span key={s} className="px-4 py-2 bg-white border-2 border-primary/5 text-primary text-[11px] font-black rounded-xl shadow-sm flex items-center gap-2.5 hover:border-primary/20 transition-colors">
+                                                        <span className={`w-1.5 h-1.5 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.5)] ${isCancelled ? 'bg-gray-400' : 'bg-green-400'}`}></span>
+                                                        {s} <span className="opacity-60 font-bold ml-1">{servicePrice.toLocaleString()}₮</span> {isCancelled && '(Цуцлагдсан)'}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Conditions */}
+                                    <div className="pt-6 border-t border-gray-50">
+                                        <h4 className="text-[10px] font-black text-teal-500 uppercase mb-4 tracking-widest opacity-80">2. Одоогийн байдал</h4>
+                                        <div className="bg-gray-50/50 rounded-2xl p-5 border border-gray-100">
+                                            <div className="flex flex-wrap gap-x-12 gap-y-4">
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Бохирдол</span>
+                                                    <p className="text-sm font-black text-gray-800">{item.cleanliness}</p>
+                                                </div>
+                                                <div className="flex flex-col gap-1.5">
+                                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Гэмтэл</span>
+                                                    <div className={`flex items-center gap-2 text-sm font-black ${item.damage.hasDamage ? 'text-orange-500' : 'text-green-500'}`}>
+                                                        {item.damage.hasDamage && <span className="material-icons-round text-sm">warning</span>}
+                                                        {item.damage.hasDamage ? item.damage.desc : 'Үгүй'}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
 
-                                {/* 3. Photos */}
-                                <div className="pt-6 border-t border-gray-50">
-                                    <h4 className="text-[10px] font-black text-teal-500 uppercase mb-4 tracking-widest opacity-80">3. Гүйцэтгэлийн зураг</h4>
-                                    <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
-                                        {item.photos.map((p, pIdx) => (
-                                            <div key={pIdx} className="w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 shadow-sm relative group cursor-pointer shrink-0 hover:ring-4 hover:ring-primary/10 transition-all">
-                                                <img src={p} alt="Result" className="w-full h-full object-cover" />
-                                                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                                                    <span className="material-icons-round text-white scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100 transition-all bg-black/30 p-1.5 rounded-full backdrop-blur-sm">zoom_in</span>
+                                    {/* 3. Photos */}
+                                    <div className="pt-6 border-t border-gray-50">
+                                        <h4 className="text-[10px] font-black text-teal-500 uppercase mb-4 tracking-widest opacity-80">3. Гүйцэтгэлийн зураг</h4>
+                                        <div className="flex gap-4 overflow-x-auto pb-2 no-scrollbar">
+                                            {item.photos.map((p, pIdx) => (
+                                                <div key={pIdx} className="w-24 h-24 rounded-2xl overflow-hidden border border-gray-100 shadow-sm relative group cursor-pointer shrink-0 hover:ring-4 hover:ring-primary/10 transition-all">
+                                                    <img src={p} alt="Result" className="w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
+                                                        <span className="material-icons-round text-white scale-75 group-hover:scale-100 opacity-0 group-hover:opacity-100 transition-all bg-black/30 p-1.5 rounded-full backdrop-blur-sm">zoom_in</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
 
-            {/* Right Column: Sidebar (35% equivalent = 4 cols) */}
+            {/* Right Column: Sidebar */}
             <div className="lg:col-span-4 flex flex-col gap-6 lg:sticky lg:top-8 h-fit">
                 <div className="bg-white rounded-[32px] shadow-xl border border-teal-50/50 overflow-hidden">
                     <div className="p-8">
@@ -224,17 +211,30 @@ const Step1Info: React.FC<Step1InfoProps> = ({ onValidationChange }) => {
                         <div className="space-y-5 mb-8">
                             <div className="flex justify-between items-center">
                                 <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлөв</span>
-                                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-extrabold uppercase tracking-tight">{MOCK_ORDER.payment.status}</span>
+                                <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-extrabold uppercase tracking-tight">{orderData.payment.status}</span>
                             </div>
                             <div className="flex justify-between items-center">
                                 <span className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Хэлбэр</span>
-                                <span className="text-xs font-black text-gray-700">{MOCK_ORDER.payment.method}</span>
+                                <span className="text-xs font-black text-gray-700">{orderData.payment.method}</span>
                             </div>
                         </div>
 
-                        <div className="p-5 bg-teal-50/30 rounded-2xl border border-teal-50 flex justify-between items-center mb-0">
-                            <span className="text-xs font-black text-gray-500 uppercase tracking-widest">Нийт дүн</span>
-                            <span className="text-3xl font-black text-primary tracking-tighter">{MOCK_ORDER.payment.total.toLocaleString()}₮</span>
+                        <div className="space-y-3 pt-6 border-t border-dashed border-gray-200">
+                            <div className="flex justify-between items-center">
+                                <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Үйлчилгээний дүн</span>
+                                <span className="text-sm font-black text-gray-800">{calculations.originalTotal.toLocaleString()}₮</span>
+                            </div>
+                            {calculations.cancelledTotal > 0 && (
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[11px] font-bold text-red-400 uppercase tracking-widest">- Цуцлагдсан үйлчилгээ</span>
+                                    <span className="text-sm font-black text-red-500">-{calculations.cancelledTotal.toLocaleString()}₮</span>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="p-5 mt-4 bg-teal-50/30 rounded-2xl border border-teal-50 flex justify-between items-center mb-0">
+                            <span className="text-xs font-black text-gray-500 uppercase tracking-widest">Шинэчилсэн нийт дүн</span>
+                            <span className="text-3xl font-black text-primary tracking-tighter">{calculations.revisedTotal.toLocaleString()}₮</span>
                         </div>
                     </div>
                 </div>

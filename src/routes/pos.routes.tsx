@@ -17,7 +17,7 @@ import ReturnFlowScreen from '../screens/pos/return/ReturnFlowScreen';
 import ReturnIssueFlowScreen from '../screens/pos/return/ReturnIssueFlowScreen';
 // Products module imports
 import ProductSellScreen from '../screens/pos/products/sell/ProductSellScreen';
-import ProductOrderScreen from '../screens/pos/products/order/ProductOrderScreen';
+import ProductOrderListScreen from '../screens/pos/products/order/ProductOrderListScreen';
 import InventoryListScreen from '../screens/pos/products/inventory/InventoryListScreen';
 import TransferListScreen from '../screens/pos/products/transfer/TransferListScreen';
 import ProductReturnScreen from '../screens/pos/products/return/ProductReturnScreen';
@@ -84,7 +84,9 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
                 <Route index element={<Navigate to="step/1" replace />} />
                 <Route path="step/:step" element={<ProductSellFlowScreen />} />
             </Route>
-            <Route path="order" element={<ProductOrderScreen />} />
+            <Route path="product-order">
+                <Route index element={<ProductOrderListScreen />} />
+            </Route>
             <Route path="inventory" element={<InventoryListScreen />} />
             <Route path="transfer" element={<TransferListScreen />} />
             <Route path="product-return" element={<ProductReturnScreen />} />
