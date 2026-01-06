@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 
+interface Service {
+    name: string;
+    price: number;
+    status: 'ACTIVE' | 'CANCELLED';
+}
+
 interface OrderItem {
     id: number;
     name: string;
-    services: string[];
+    services: Service[];
     quantity: number;
     cleanliness: string;
     damage: {
@@ -12,6 +18,7 @@ interface OrderItem {
         desc?: string;
     };
     photos: string[];
+    status: 'COMPLETED' | 'CANCELLED';
 }
 
 const MOCK_ORDER = {
@@ -23,36 +30,41 @@ const MOCK_ORDER = {
         address: 'УБ, Хан-Уул, 19-р хороолол, 12-р байр'
     },
     payment: {
-        status: 'Хэсэгчлэн', // Төлөгдсөн / Хэсэгчлэн / Үлдэгдэлтэй
+        status: 'Хэсэгчлэн',
         method: 'QPay / Банкны апп',
-        total: 45000,
         paid: 30000,
-        remaining: 15000
+        discount: 5000,
+        pointsUsed: 0
     },
     items: [
         {
             id: 1,
             name: 'Гутал (Nike Air Max)',
-            services: ['Гутал цэвэрлэгээ', 'Ус хамгаалалт'],
+            status: 'COMPLETED',
+            services: [
+                { name: 'Гутал цэвэрлэгээ', price: 25000, status: 'ACTIVE' },
+                { name: 'Ус хамгаалалт', price: 10000, status: 'CANCELLED' }
+            ],
             quantity: 1,
             cleanliness: 'Дунд',
             damage: { hasDamage: false },
             photos: [
                 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
                 'https://images.unsplash.com/photo-1549298916-b41d501d377b?w=200',
-                'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200',
             ]
         },
         {
             id: 2,
             name: 'Гутал (Timberland)',
-            services: ['Илгэн цэвэрлэгээ'],
+            status: 'CANCELLED',
+            services: [
+                { name: 'Илгэн цэвэрлэгээ', price: 30000, status: 'ACTIVE' }
+            ],
             quantity: 1,
             cleanliness: 'Их',
             damage: { hasDamage: true, desc: 'Тийм (Өсгий)' },
             photos: [
                 'https://images.unsplash.com/photo-1520639889456-78443213ecdc?w=200',
-                'https://images.unsplash.com/photo-1551107696-a4b0c5a0d9a2?w=200',
             ]
         }
     ] as OrderItem[]
@@ -84,7 +96,41 @@ const ReceiveDetailScreen: React.FC = () => {
     const navigate = useNavigate();
     const currentStep = parseInt(step || '1', 10);
 
-    // Global State
+    // Централизован тооцоолол
+    const calculations = React.useMemo(() => {
+        let originalTotal = 0;
+        let cancelledTotal = 0;
+
+        MOCK_ORDER.items.forEach(item => {
+            item.services.forEach(service => {
+                originalTotal += service.price;
+                if (service.status === 'CANCELLED' || item.status === 'CANCELLED') {
+                    cancelledTotal += service.price;
+                }
+            });
+        });
+
+        const revisedTotal = originalTotal - cancelledTotal;
+        const discount = MOCK_ORDER.payment.discount || 0;
+        const pointsUsed = MOCK_ORDER.payment.pointsUsed || 0;
+        const vat = Math.round(revisedTotal * 0.1);
+        const finalTotal = revisedTotal + vat - discount - pointsUsed;
+        const paidAmount = MOCK_ORDER.payment.paid || 0;
+        const remaining = Math.max(0, finalTotal - paidAmount);
+
+        return {
+            originalTotal,
+            cancelledTotal,
+            revisedTotal,
+            vat,
+            finalTotal,
+            remaining,
+            paidAmount,
+            discount,
+            pointsUsed
+        };
+    }, []);
+
     const [isProcessing, setIsProcessing] = useState(false);
 
     // Step 1 states
@@ -92,17 +138,17 @@ const ReceiveDetailScreen: React.FC = () => {
     const [checked2, setChecked2] = useState(false);
     const step1Valid = checked1 && checked2;
 
-    // Step 2 states (Synced with Step6Payment logic)
+    // Step 2 states
     const [selectedMethod, setSelectedMethod] = useState('cash');
     const [receivedAmount, setReceivedAmount] = useState('');
-    const finalTotal = MOCK_ORDER.payment.remaining;
-    const changeAmount = Math.max(0, (parseInt(receivedAmount) || 0) - finalTotal);
-    const isStep2Ready = selectedMethod === 'cash' ? (parseInt(receivedAmount) || 0) >= finalTotal : !!selectedMethod;
+    const finalTotalToPay = calculations.remaining;
+    const changeAmount = Math.max(0, (parseInt(receivedAmount) || 0) - finalTotalToPay);
+    const isStep2Ready = selectedMethod === 'cash' ? (parseInt(receivedAmount) || 0) >= finalTotalToPay : !!selectedMethod;
     const [isPaid, setIsPaid] = useState(false);
 
     const handleNext = () => {
         if (currentStep === 1 && !step1Valid) return;
-        if (currentStep === 2 && !isPaid && finalTotal > 0) return;
+        if (currentStep === 2 && !isPaid && calculations.remaining > 0) return;
 
         if (currentStep < 4) {
             navigate(`/pos/receive/${id}/step/${currentStep + 1}`);
@@ -210,18 +256,22 @@ const ReceiveDetailScreen: React.FC = () => {
                         <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
                         <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Төлбөрийн мэдээлэл</h3>
                     </div>
-                    <div className="space-y-6">
-                        <div className="flex justify-between items-center">
-                            <span className="text-[11px] font-bold text-gray-400 uppercase">Төлөв:</span>
-                            <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-lg text-[10px] font-black uppercase tracking-wider">{MOCK_ORDER.payment.status}</span>
+                    <div className="space-y-4">
+                        <div className="flex justify-between text-xs">
+                            <span className="font-bold text-gray-400 uppercase tracking-widest text-[9px]">Анхны дүн</span>
+                            <span className="font-black text-gray-800 leading-none">{calculations.originalTotal.toLocaleString()}₮</span>
                         </div>
-                        <div className="flex justify-between">
-                            <span className="text-[11px] font-bold text-gray-400 uppercase">Төлбөрийн хэлбэр:</span>
-                            <span className="text-xs font-bold text-gray-700">{MOCK_ORDER.payment.method}</span>
+                        <div className="flex justify-between text-xs">
+                            <span className="font-bold text-red-500 uppercase tracking-widest text-[9px]">Цуцлагдсан үйлчилгээ</span>
+                            <span className="font-black text-red-500 leading-none">-{calculations.cancelledTotal.toLocaleString()}₮</span>
                         </div>
-                        <div className="pt-6 border-t border-gray-50 flex justify-between items-baseline">
-                            <span className="text-sm font-black text-gray-800">Нийт дүн:</span>
-                            <span className="text-4xl font-black text-primary tracking-tighter">{MOCK_ORDER.payment.total.toLocaleString()}₮</span>
+                        <div className="flex justify-between text-xs pt-2 border-t border-gray-50">
+                            <span className="font-bold text-gray-500 uppercase tracking-widest text-[9px]">Төлсөн дүн</span>
+                            <span className="font-black text-gray-800 leading-none">{calculations.paidAmount.toLocaleString()}₮</span>
+                        </div>
+                        <div className="flex justify-between items-end pt-4">
+                            <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">Үлдэгдэл</span>
+                            <span className="text-3xl font-black text-primary tracking-tighter leading-none">{calculations.remaining.toLocaleString()}₮</span>
                         </div>
                     </div>
                 </div>
@@ -238,19 +288,31 @@ const ReceiveDetailScreen: React.FC = () => {
                     </div>
                     <div className="divide-y divide-gray-50">
                         {MOCK_ORDER.items.map((item, idx) => (
-                            <div key={item.id} className="p-8 group hover:bg-gray-50/50 transition-all duration-300">
+                            <div key={item.id} className={`p-8 group hover:bg-gray-50/50 transition-all duration-300 ${item.status === 'CANCELLED' ? 'opacity-60 grayscale-[0.5]' : ''}`}>
                                 <div className="flex flex-col md:flex-row gap-8">
                                     <div className="flex-1">
                                         <div className="flex items-center gap-4 mb-4">
                                             <span className="text-2xl font-black text-gray-200">{idx + 1}.</span>
                                             <h4 className="text-xl font-black text-gray-800 tracking-tight">{item.name}</h4>
+                                            <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg border text-[10px] font-black uppercase tracking-tight ${item.status === 'COMPLETED' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-red-50 text-red-500 border-red-100'
+                                                }`}>
+                                                <span className={`w-1 h-1 rounded-full ${item.status === 'COMPLETED' ? 'bg-green-500' : 'bg-red-500'}`}></span>
+                                                {item.status === 'COMPLETED' ? 'Болсон' : 'Буцаагдсан'}
+                                            </div>
                                         </div>
                                         <div className="flex flex-wrap gap-2 mb-6">
-                                            {item.services.map(s => (
-                                                <span key={s} className="px-3 py-1 bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest rounded-lg border border-primary/10">
-                                                    {s}
-                                                </span>
-                                            ))}
+                                            {item.services.map(s => {
+                                                const isServiceCancelled = s.status === 'CANCELLED' || item.status === 'CANCELLED';
+                                                return (
+                                                    <span key={s.name} className={`px-3 py-1 text-[10px] font-black uppercase tracking-widest rounded-lg border flex items-center gap-2 ${isServiceCancelled
+                                                        ? 'bg-gray-50 text-gray-400 border-gray-100 italic line-through'
+                                                        : 'bg-primary/5 text-primary border-primary/10'
+                                                        }`}>
+                                                        {s.name}
+                                                        {isServiceCancelled && <span className="text-[9px] font-normal">(цуцлагдсан)</span>}
+                                                    </span>
+                                                );
+                                            })}
                                         </div>
                                         <div className="grid grid-cols-2 gap-8">
                                             <div>
@@ -345,7 +407,7 @@ const ReceiveDetailScreen: React.FC = () => {
                     <div className="grid grid-cols-2 gap-8">
                         <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Авах дүн</label>
-                            <div className="text-4xl font-black text-gray-800 tracking-tighter">₮ {finalTotal.toLocaleString()}</div>
+                            <div className="text-4xl font-black text-gray-800 tracking-tighter">₮ {calculations.remaining.toLocaleString()}</div>
                         </div>
                         <div className="space-y-3">
                             <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Авсан дүн</label>
@@ -354,7 +416,7 @@ const ReceiveDetailScreen: React.FC = () => {
                                     type="number"
                                     disabled={selectedMethod !== 'cash' || isPaid}
                                     placeholder="0"
-                                    value={selectedMethod === 'cash' ? receivedAmount : finalTotal}
+                                    value={selectedMethod === 'cash' ? receivedAmount : calculations.remaining}
                                     onChange={(e) => setReceivedAmount(e.target.value)}
                                     className="w-full text-3xl font-black bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all tracking-tighter"
                                 />
@@ -392,7 +454,7 @@ const ReceiveDetailScreen: React.FC = () => {
                             <div className="flex justify-between items-end pb-8 border-b border-gray-50">
                                 <span className="text-sm font-bold text-gray-500 font-bold">Нийт төлөх дүн</span>
                                 <div className="text-5xl font-black text-primary tracking-tighter italic">
-                                    ₮ {finalTotal.toLocaleString()}
+                                    ₮ {calculations.remaining.toLocaleString()}
                                 </div>
                             </div>
 
@@ -512,8 +574,8 @@ const ReceiveDetailScreen: React.FC = () => {
 
                     <button
                         onClick={handleNext}
-                        disabled={(currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && finalTotal > 0) || isProcessing}
-                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-yellow-200/50 ${((currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && finalTotal > 0))
+                        disabled={(currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && calculations.remaining > 0) || isProcessing}
+                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-yellow-200/50 ${((currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && calculations.remaining > 0))
                             ? 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
                             : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400]'
                             }`}

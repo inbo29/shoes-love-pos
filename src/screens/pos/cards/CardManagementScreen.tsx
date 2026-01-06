@@ -281,9 +281,6 @@ const CardManagementScreen: React.FC = () => {
                                                 </span>
                                             </div>
                                         </td>
-                                        <td className="px-6 py-5 text-gray-300 group-hover:text-primary transition-colors">
-                                            <span className="material-icons-round text-lg">chevron_right</span>
-                                        </td>
                                     </tr>
                                 )) : (
                                     <tr>

@@ -9,6 +9,7 @@ export interface SelectedProduct {
     productId: string;
     name: string;
     price: number;
+    salePrice?: number;
     quantity: number;
 }
 
@@ -59,7 +60,7 @@ const ProductSellFlowScreen: React.FC = () => {
         setStep1Valid(products.length > 0);
 
         // Calculate total
-        const total = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+        const total = products.reduce((sum, p) => sum + ((p.salePrice ?? p.price) * p.quantity), 0);
         setTotalAmount(total);
     };
 
@@ -69,7 +70,7 @@ const ProductSellFlowScreen: React.FC = () => {
         setPointsUsed(points);
         setDiscount(disc);
 
-        const total = products.reduce((sum, p) => sum + (p.price * p.quantity), 0);
+        const total = products.reduce((sum, p) => sum + ((p.salePrice ?? p.price) * p.quantity), 0);
         setTotalAmount(total);
     };
 
@@ -113,10 +114,18 @@ const ProductSellFlowScreen: React.FC = () => {
         }
     };
 
+    // Calculate step statuses
+    const stepStatuses: Record<number, 'COMPLETED' | 'ACTIVE' | 'PENDING'> = {
+        1: currentStep > 1 ? 'COMPLETED' : currentStep === 1 ? 'ACTIVE' : 'PENDING',
+        2: currentStep > 2 ? 'COMPLETED' : currentStep === 2 ? 'ACTIVE' : 'PENDING',
+        3: currentStep > 3 ? 'COMPLETED' : currentStep === 3 ? 'ACTIVE' : 'PENDING',
+    };
+
     return (
         <StepLayout
             steps={totalSteps}
             currentStep={currentStep}
+            stepStatuses={stepStatuses}
             onBack={handleBack}
             onNext={handleNext}
             onStepClick={handleStepClick}

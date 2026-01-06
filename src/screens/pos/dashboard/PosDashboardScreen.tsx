@@ -41,7 +41,6 @@ const PosDashboardScreen: React.FC = () => {
                     icon="currency_rupee"
                     colorClass="text-[#FFD400]"
                     iconBg="bg-[#FFD400]/10"
-                    isRevenue
                 />
                 <StatCard
                     title="Хүлээн өгсөн захиалга"

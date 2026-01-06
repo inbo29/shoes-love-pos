@@ -51,6 +51,7 @@ const SellStep1ProductSelect: React.FC<Props> = ({ selectedProducts, onProductsC
                         productId: prod.id,
                         name: prod.name,
                         price: prod.price,
+                        salePrice: prod.salePrice,
                         quantity: qty as number
                     });
                 }
@@ -121,34 +122,58 @@ const SellStep1ProductSelect: React.FC<Props> = ({ selectedProducts, onProductsC
                                     {/* Product Info */}
                                     <div className="p-3 flex flex-col gap-2 flex-1">
                                         <div className="flex-1">
-                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-1 px-1.5 py-0.5 bg-gray-50 rounded-md self-start inline-block">
                                                 {product.category}
                                             </p>
-                                            <h3 className="text-xs font-bold text-gray-800 line-clamp-2 min-h-[32px]">
+                                            <h3 className="text-[11px] font-bold text-gray-800 line-clamp-2 min-h-[32px] leading-tight">
                                                 {product.name}
                                             </h3>
                                         </div>
-                                        <p className="text-base font-black text-primary">
-                                            {product.price.toLocaleString()}₮
-                                        </p>
+
+                                        <div className="flex flex-col mb-1">
+                                            {product.salePrice ? (
+                                                <>
+                                                    <p className="text-[10px] font-bold text-gray-400 line-through decoration-red-400 decoration-2">
+                                                        {product.price.toLocaleString()}₮
+                                                    </p>
+                                                    <p className="text-sm font-black text-primary">
+                                                        {product.salePrice.toLocaleString()}₮
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <p className="text-sm font-black text-gray-900">
+                                                    {product.price.toLocaleString()}₮
+                                                </p>
+                                            )}
+                                        </div>
 
                                         {/* Quantity Controls */}
-                                        <div className="flex items-center justify-between gap-2 bg-gray-50 rounded-lg p-1.5">
+                                        <div className={`flex items-center justify-between gap-1 rounded-lg p-1 transition-colors ${isSelected ? 'bg-primary/5' : 'bg-gray-50'}`}>
                                             <button
                                                 onClick={() => handleQuantityChange(product, -1)}
                                                 disabled={qty === 0}
-                                                className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-100 disabled:opacity-30 disabled:cursor-not-allowed transition-all active:scale-95"
+                                                className={`w-7 h-7 rounded-md flex items-center justify-center transition-all active:scale-95 ${qty === 0
+                                                    ? 'bg-transparent text-gray-300 cursor-not-allowed'
+                                                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-red-50 hover:text-red-500 hover:border-red-100'
+                                                    }`}
                                             >
-                                                <span className="material-icons-round text-lg">remove</span>
+                                                <span className="material-icons-round text-base">remove</span>
                                             </button>
-                                            <span className={`font-black text-base min-w-[32px] text-center ${isSelected ? 'text-primary' : 'text-gray-400'}`}>
-                                                {qty}
-                                            </span>
+
+                                            <div className="flex-1 flex justify-center">
+                                                <span className={`font-black text-sm min-w-[20px] text-center ${isSelected ? 'text-primary' : 'text-gray-300'}`}>
+                                                    {qty > 0 ? qty : '0'}
+                                                </span>
+                                            </div>
+
                                             <button
                                                 onClick={() => handleQuantityChange(product, 1)}
-                                                className="w-8 h-8 rounded-lg bg-primary text-white flex items-center justify-center hover:bg-primary/90 transition-all active:scale-95"
+                                                className={`w-7 h-7 rounded-md flex items-center justify-center transition-all active:scale-95 ${isSelected
+                                                    ? 'bg-primary text-white shadow-md shadow-primary/20 hover:bg-primary/90'
+                                                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-primary hover:text-white hover:border-primary'
+                                                    }`}
                                             >
-                                                <span className="material-icons-round text-lg">add</span>
+                                                <span className="material-icons-round text-base">add</span>
                                             </button>
                                         </div>
                                     </div>

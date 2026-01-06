@@ -261,7 +261,6 @@ const OrderListScreen: React.FC = () => {
                             { label: 'Бүх төлөв', value: 'all' },
                             { label: 'Захиалж байна', value: 'Захиалж байна' },
                             { label: 'Захиалсан', value: 'Захиалсан' },
-                            { label: 'Хүлээлгэн өгсөн', value: 'Хүлээлгэн өгсөн' },
                         ]}
                         className="w-full sm:w-[150px] shrink-0"
                     />

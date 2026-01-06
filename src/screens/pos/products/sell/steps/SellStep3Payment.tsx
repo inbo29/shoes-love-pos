@@ -9,7 +9,6 @@ const PAYMENT_METHODS = [
     { id: 'candy', label: 'Candy', icon: 'stars', color: 'bg-pink-500' },
     { id: 'pocket', label: 'Pocket', icon: 'account_balance_wallet', color: 'bg-cyan-500' },
     { id: 'gift', label: 'Бэлгийн карт', icon: 'card_giftcard', color: 'bg-purple-500' },
-    { id: 'barter', label: 'Бартер', icon: 'swap_horiz', color: 'bg-gray-500' },
 ];
 
 interface Transaction {
@@ -41,7 +40,19 @@ const SellStep3Payment: React.FC<Props> = ({
     const [paymentHistory, setPaymentHistory] = useState<Transaction[]>([]);
     const [showReceiptPrinted, setShowReceiptPrinted] = useState(false);
 
-    const vat = Math.floor(totalAmount * 0.1);
+    // New states for tax and billing
+    const [noVat, setNoVat] = useState(false);
+    const [billingType, setBillingType] = useState<'individual' | 'company'>('individual');
+    const [showCompanyPopup, setShowCompanyPopup] = useState(false);
+    const [bizNumber, setBizNumber] = useState('');
+    const [selectedCompany, setSelectedCompany] = useState<string | null>(null);
+
+    // Mock company data
+    const MOCK_COMPANIES: Record<string, string> = {
+        '6677207': 'ITWizard LLC'
+    };
+
+    const vat = noVat ? 0 : Math.floor(totalAmount * 0.1);
     const finalTotal = totalAmount + vat - discount - pointsUsed;
     const totalPaid = paymentHistory.reduce((sum, tx) => sum + tx.amount, 0);
     const remaining = Math.max(0, finalTotal - totalPaid);
@@ -49,8 +60,8 @@ const SellStep3Payment: React.FC<Props> = ({
 
     // Notify parent validation state
     useEffect(() => {
-        onValidationChange(totalPaid > 0 && showReceiptPrinted);
-    }, [totalPaid, showReceiptPrinted, onValidationChange]);
+        onValidationChange(isPaidFull);
+    }, [isPaidFull, onValidationChange]);
 
     const inputValue = amountStr === '' ? 0 : parseInt(amountStr);
     const validToPay = selectedMethod && inputValue > 0 && inputValue <= remaining;
@@ -71,6 +82,15 @@ const SellStep3Payment: React.FC<Props> = ({
         }, 600);
     };
 
+    const handleCompanyLookup = () => {
+        const company = MOCK_COMPANIES[bizNumber];
+        if (company) {
+            setSelectedCompany(company);
+        } else {
+            alert('Байгууллага олдсонгүй');
+        }
+    };
+
     const handlePrintReceipt = () => {
         // Simulate receipt printing
         setShowReceiptPrinted(true);
@@ -82,7 +102,7 @@ const SellStep3Payment: React.FC<Props> = ({
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8 pb-12 overflow-visible h-full">
+        <div className="flex flex-col lg:flex-row gap-8 pb-12 overflow-visible h-full relative">
             {/* Left Column */}
             <div className="w-full lg:w-[64%] flex flex-col gap-8 overflow-visible min-w-0">
                 {isPaidFull ? (
@@ -171,8 +191,8 @@ const SellStep3Payment: React.FC<Props> = ({
 
             {/* Right Column: Payment Summary */}
             <div className="w-full lg:w-[36%] shrink-0 flex flex-col gap-6">
-                <div className="bg-white rounded-[32px] shadow-xl border border-primary/5 overflow-hidden sticky top-4">
-                    <div className="p-8">
+                <div className="bg-white rounded-[32px] shadow-xl border border-primary/5 overflow-hidden sticky top-4 max-h-[calc(100vh-140px)] flex flex-col">
+                    <div className="p-6 md:p-8 overflow-y-auto flex-1 scrollbar-thin scrollbar-thumb-gray-200 scrollbar-track-transparent">
                         <div className="flex items-center gap-3 mb-6">
                             <div className="h-4 w-1 bg-[#FFD400] rounded-sm"></div>
                             <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн тооцоо</h3>
@@ -268,6 +288,61 @@ const SellStep3Payment: React.FC<Props> = ({
                             </div>
                         )}
 
+                        {/* Toggles / Options Section moved below payment input */}
+                        <div className="mt-6 pt-6 border-t border-gray-50 space-y-4">
+                            {/* No VAT Toggle */}
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={noVat}
+                                        onChange={(e) => setNoVat(e.target.checked)}
+                                        className="sr-only"
+                                    />
+                                    <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${noVat ? 'border-secondary bg-secondary' : 'border-gray-200 bg-white group-hover:border-secondary/50'}`}>
+                                        {noVat && <span className="material-icons-round text-gray-900 text-[14px]">done</span>}
+                                    </div>
+                                </div>
+                                <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">Нөатгүй</span>
+                            </label>
+
+                            {/* Billing Type Toggle */}
+                            <div className="flex bg-gray-50 p-1 rounded-xl">
+                                <button
+                                    onClick={() => setBillingType('individual')}
+                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Хувь хүн
+                                </button>
+                                <button
+                                    onClick={() => {
+                                        setBillingType('company');
+                                        if (!selectedCompany) setShowCompanyPopup(true);
+                                    }}
+                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'company' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                >
+                                    Байгууллага
+                                </button>
+                            </div>
+
+                            {billingType === 'company' && selectedCompany && (
+                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 animate-in fade-in zoom-in-95">
+                                    <div className="flex justify-between items-center">
+                                        <div className="space-y-1">
+                                            <p className="text-[9px] font-bold text-gray-900 uppercase">Сонгосон байгууллага</p>
+                                            <p className="text-xs font-black text-gray-800">{selectedCompany}</p>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowCompanyPopup(true)}
+                                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm hover:scale-110 transition-transform"
+                                        >
+                                            <span className="material-icons-round text-base">edit</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
                         {/* Info Note */}
                         {remaining > 0 && (
                             <div className="mt-6 px-4 py-3 bg-blue-50/50 rounded-2xl border border-blue-100/50">
@@ -279,6 +354,58 @@ const SellStep3Payment: React.FC<Props> = ({
                     </div>
                 </div>
             </div>
+
+            {/* Company Search Popup */}
+            {showCompanyPopup && (
+                <div className="fixed inset-0 z-[999] flex items-center justify-center p-6 bg-gray-900/60 backdrop-blur-sm animate-in fade-in">
+                    <div className="bg-white w-full max-w-md rounded-[32px] shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-8">
+                        <div className="p-8">
+                            <div className="flex justify-between items-center mb-8">
+                                <h3 className="text-xl font-black text-gray-800 uppercase tracking-tight">Байгууллагын мэдээлэл</h3>
+                                <button onClick={() => setShowCompanyPopup(false)} className="text-gray-400 hover:text-gray-600 transition-colors">
+                                    <span className="material-icons-round">close</span>
+                                </button>
+                            </div>
+
+                            <div className="space-y-6">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Регистрийн №</label>
+                                    <div className="flex gap-3">
+                                        <input
+                                            type="number"
+                                            value={bizNumber}
+                                            onChange={(e) => setBizNumber(e.target.value)}
+                                            placeholder="Регистрийн дугаар..."
+                                            className="flex-1 bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 focus:outline-none focus:border-primary focus:bg-white transition-all font-black text-gray-800"
+                                        />
+                                        <button
+                                            onClick={handleCompanyLookup}
+                                            className="px-6 rounded-2xl bg-secondary text-gray-900 font-black text-xs uppercase shadow-lg shadow-secondary/30 active:scale-95 transition-all hover:bg-yellow-400"
+                                        >
+                                            Шалгах
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Татвар төлөгчийн нэр</label>
+                                    <div className="bg-gray-50 border-2 border-gray-100 rounded-2xl px-5 py-4 font-black text-gray-800 min-h-[60px] flex items-center">
+                                        {selectedCompany || <span className="text-gray-300">Байгууллагын нэр энд гарна...</span>}
+                                    </div>
+                                </div>
+
+                                <button
+                                    onClick={() => setShowCompanyPopup(false)}
+                                    disabled={!selectedCompany}
+                                    className={`w-full py-5 rounded-2xl text-sm font-black uppercase tracking-wider transition-all shadow-xl active:scale-95 ${selectedCompany ? 'bg-secondary text-gray-900 shadow-secondary/50 hover:bg-yellow-400' : 'bg-gray-100 text-gray-400 border-gray-50 cursor-not-allowed shadow-none'}`}
+                                >
+                                    Баталгаажуулах
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

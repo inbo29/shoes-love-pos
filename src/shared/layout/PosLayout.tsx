@@ -140,18 +140,18 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
             active={location.pathname.startsWith('/pos/receive')}
             onClick={() => navigate('/pos/receive')}
           />
-          <NavButton
+          {/* <NavButton
             label={<>Буцаалт<br />хийх / олгох</>}
             icon="keyboard_return"
             active={isActive('/pos/returns')}
             onClick={() => navigate('/pos/returns')}
-          />
+          /> */}
 
           {/* Products Module - Individual Buttons */}
           <NavButton
             label={<>Бараа<br />зарах</>}
             icon="shopping_cart"
-            active={isActive('/pos/sell')}
+            active={location.pathname.startsWith('/pos/sell')}
             onClick={() => navigate('/pos/sell')}
           />
           <NavButton
