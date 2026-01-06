@@ -21,6 +21,8 @@ import ProductOrderListScreen from '../screens/pos/products/order/ProductOrderLi
 import InventoryListScreen from '../screens/pos/products/inventory/InventoryListScreen';
 import TransferListScreen from '../screens/pos/products/transfer/TransferListScreen';
 import ProductReturnScreen from '../screens/pos/products/return/ProductReturnScreen';
+import ProductInquiryScreen from '../screens/pos/products/inquiry/ProductInquiryScreen';
+import AuditListScreen from '../screens/pos/products/audit/AuditListScreen';
 import ProductSellFlowScreen from '../screens/pos/products/sell/ProductSellFlowScreen';
 
 
@@ -38,7 +40,7 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
     return (
         <Routes>
             <Route index element={<Navigate to="dashboard" />} />
-            <Route path="dashboard" element={<DashboardScreen />} />
+            <Route path="dashboard" element={<DashboardScreen userName={userName} />} />
 
             {/* Orders */}
             <Route path="orders">
@@ -87,8 +89,10 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
             <Route path="product-order">
                 <Route index element={<ProductOrderListScreen />} />
             </Route>
-            <Route path="inventory" element={<InventoryListScreen />} />
+            <Route path="inventory" element={<InventoryListScreen userName={userName} initialBranch={selectedBranch} />} />
             <Route path="transfer" element={<TransferListScreen />} />
+            <Route path="product-inquiry" element={<ProductInquiryScreen />} />
+            <Route path="product-audit" element={<AuditListScreen userName={userName} initialBranch={selectedBranch} />} />
             <Route path="product-return" element={<ProductReturnScreen />} />
 
             <Route path="*" element={<Navigate to="dashboard" replace />} />

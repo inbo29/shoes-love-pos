@@ -47,7 +47,7 @@ const LoginScreenWrapper: React.FC<{ onLogin: (id: string, pw: string) => boolea
 
 const App: React.FC = () => {
   const [userName, setUserName] = useState('Админ');
-  const [selectedBranch, setSelectedBranch] = useState('Төв сал발');
+  const [selectedBranch, setSelectedBranch] = useState('Төв салбар');
   const [error, setError] = useState<{ message: string; system?: 'POS' | 'ERP' | 'RMS' } | null>(null);
 
   const handleLogin = (id: string, pw: string) => {

@@ -155,13 +155,19 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
             onClick={() => navigate('/pos/sell')}
           />
           <NavButton
+            label={<>Бараа<br />лавлах</>}
+            icon="inventory_2"
+            active={location.pathname.startsWith('/pos/product-inquiry')}
+            onClick={() => navigate('/pos/product-inquiry')}
+          />
+          <NavButton
             label={<>Бараа<br />удирдах</>}
             icon="add_shopping_cart"
             active={location.pathname.startsWith('/pos/product-order')}
             onClick={() => navigate('/pos/product-order')}
           />
           <NavButton
-            label={<>Бараа<br />тооллого</>}
+            label={<>Бараа<br />үлдэгдэл</>}
             icon="inventory"
             active={isActive('/pos/inventory')}
             onClick={() => navigate('/pos/inventory')}
@@ -173,12 +179,11 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
             onClick={() => navigate('/pos/transfer')}
           />
           <NavButton
-            label={<>Бараа<br />буцаалт</>}
-            icon="assignment_return"
-            active={isActive('/pos/product-return')}
-            onClick={() => navigate('/pos/product-return')}
+            label={<>Бараа<br />тооллого</>}
+            icon="fact_check"
+            active={isActive('/pos/product-audit')}
+            onClick={() => navigate('/pos/product-audit')}
           />
-
           <NavButton
             label={<>Ачилт<br />хийх / авах</>}
             icon="local_shipping"

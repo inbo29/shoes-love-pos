@@ -50,14 +50,14 @@ const DashboardScreen: React.FC = () => {
                     iconBg="bg-green-50"
                 />
                 <StatCard
-                    title="Ачигдах бараа"
+                    title="Ачигдах захиалга"
                     value="45"
                     icon="outbound"
                     colorClass="text-orange-500"
                     iconBg="bg-orange-50"
                 />
                 <StatCard
-                    title="Ирсэн бараа"
+                    title="Ирсэн захиалга"
                     value="30"
                     icon="move_to_inbox"
                     colorClass="text-blue-500"

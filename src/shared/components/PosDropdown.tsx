@@ -12,6 +12,7 @@ interface PosDropdownProps {
     onChange: (value: string) => void;
     icon?: string;
     className?: string;
+    disabled?: boolean;
 }
 
 const PosDropdown: React.FC<PosDropdownProps> = ({
@@ -20,7 +21,8 @@ const PosDropdown: React.FC<PosDropdownProps> = ({
     value,
     onChange,
     icon,
-    className = ""
+    className = "",
+    disabled = false
 }) => {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -42,8 +44,10 @@ const PosDropdown: React.FC<PosDropdownProps> = ({
             {label && <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">{label}</label>}
             <div className="relative">
                 <button
-                    onClick={() => setIsOpen(!isOpen)}
-                    className={`w-full h-[44px] pl-11 pr-10 bg-white border ${isOpen ? 'border-primary shadow-[0_0_0_4px_rgba(64,193,199,0.1)]' : 'border-gray-200'} rounded-xl text-[13px] font-bold text-gray-700 flex items-center transition-all hover:border-primary/50 text-left`}
+                    onClick={() => !disabled && setIsOpen(!isOpen)}
+                    disabled={disabled}
+                    className={`w-full h-[44px] pl-11 pr-10 border ${isOpen ? 'border-primary shadow-[0_0_0_4px_rgba(64,193,199,0.1)]' : 'border-gray-200'} rounded-xl text-[13px] font-bold flex items-center transition-all text-left 
+                        ${disabled ? 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-70' : 'bg-white text-gray-700 hover:border-primary/50'}`}
                 >
                     {icon && (
                         <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
