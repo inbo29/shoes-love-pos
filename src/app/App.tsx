@@ -45,6 +45,9 @@ const LoginScreenWrapper: React.FC<{ onLogin: (id: string, pw: string) => boolea
   return <LoginScreen onLogin={handleLoginSubmit} />;
 };
 
+// 환경별 base URL 설정 (프로덕션: '/shoes-love-pos', 개발: '')
+const basename = import.meta.env.PROD ? '/shoes-love-pos' : '';
+
 const App: React.FC = () => {
   const [userName, setUserName] = useState('Админ');
   const [selectedBranch, setSelectedBranch] = useState('Төв салбар');
@@ -68,11 +71,11 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    window.location.href = '/';
+    window.location.href = import.meta.env.BASE_URL;
   };
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route path="/" element={
           <LoginScreenWrapper onLogin={handleLogin} userName={userName} />

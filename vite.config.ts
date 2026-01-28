@@ -6,8 +6,8 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
 
   return {
-    /** ✅ 여기 추가 (중요) */
-    base: '/shoes-love-pos/',
+    /** ✅ 개발: '/', 프로덕션: '/shoes-love-pos/' */
+    base: mode === 'production' ? '/shoes-love-pos/' : '/',
 
     server: {
       port: 3000,
