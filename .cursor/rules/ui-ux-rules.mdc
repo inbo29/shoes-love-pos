@@ -1,0 +1,143 @@
+---
+description: UI/UX 디자인 규칙 및 Tailwind 스타일 가이드
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# UI/UX 디자인 규칙
+
+## 색상 팔레트 (고정)
+
+```css
+/* Primary - 메인 브랜드 색상 */
+--primary: #111827;        /* bg-primary, text-primary */
+
+/* Secondary - 강조/액션 색상 */
+--secondary: #FFD400;      /* bg-secondary, bg-[#FFD400] */
+--secondary-hover: #FFC400;
+
+/* 상태 색상 */
+--success: #22C55E;        /* green-500 */
+--warning: #F59E0B;        /* yellow-500, orange-500 */
+--error: #EF4444;          /* red-500 */
+--info: #40C1C7;           /* cyan */
+
+/* 배경 색상 */
+--bg-page: #F8F9FA;
+--bg-card: #FFFFFF;
+--bg-section: #F3F6F9;
+--bg-input: #F9FAFB;       /* gray-50 */
+
+/* 테두리 */
+--border-light: #F3F4F6;   /* gray-100 */
+--border-medium: #E5E7EB;  /* gray-200 */
+```
+
+---
+
+## 컴포넌트 스타일 규칙
+
+### 카드
+```tsx
+// 대시보드 카드
+<div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100">
+
+// 위젯 카드
+<div className="bg-white rounded-[40px] p-8 shadow-sm border border-gray-100">
+
+// 섹션 카드
+<div className="bg-surface-light rounded-2xl shadow-sm border border-gray-100 p-6">
+```
+
+### 버튼
+```tsx
+// Primary 버튼 (노란색)
+<button className="px-10 py-3.5 rounded-2xl bg-[#FFD400] text-gray-900 
+  font-black text-xs uppercase tracking-widest 
+  hover:bg-[#FFC400] active:scale-95 shadow-xl shadow-yellow-200/50">
+
+// Secondary 버튼 (테두리)
+<button className="px-6 py-3 rounded-2xl border-2 border-gray-100 bg-white 
+  text-gray-500 font-black text-xs uppercase tracking-widest 
+  hover:bg-gray-50 hover:border-gray-200 active:scale-95">
+
+// Success 버튼 (완료)
+<button className="bg-green-500 text-white shadow-green-200">
+
+// Disabled 버튼
+<button className="bg-gray-200 text-gray-400 cursor-not-allowed shadow-none" disabled>
+```
+
+### 입력 필드
+```tsx
+<div className="relative rounded-md shadow-sm">
+  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+    <span className="material-icons-round text-gray-400 text-xl">phone</span>
+  </div>
+  <input
+    className="block w-full rounded-lg border-gray-300 pl-10 
+      focus:border-primary focus:ring-primary sm:text-sm py-3"
+    type="text"
+  />
+</div>
+```
+
+---
+
+## 레이아웃 규칙
+
+### 페이지 컨테이너
+```tsx
+// 스크롤 가능한 메인 영역
+<div className="flex-1 flex flex-col p-8 gap-10 overflow-y-auto bg-[#F8F9FA] no-scrollbar">
+```
+
+### 그리드 시스템
+```tsx
+// 반응형 카드 그리드
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+
+// 2컬럼 레이아웃 (STEP 화면)
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+```
+
+### 섹션 헤더
+```tsx
+<div className="flex items-center gap-3">
+  <div className="h-6 w-1 bg-primary rounded-full"></div>
+  <h2 className="text-xs font-black text-gray-400 uppercase tracking-[0.3em]">섹션 타이틀</h2>
+</div>
+```
+
+---
+
+## 아이콘 규칙
+
+### Material Icons 사용
+```tsx
+// Rounded 스타일 (활성 상태)
+<span className="material-icons-round text-lg">check</span>
+
+// Outlined 스타일 (비활성 상태)
+<span className="material-icons-outlined text-lg">check</span>
+```
+
+### 자주 사용하는 아이콘
+```
+네비게이션: home, add, handshake, shopping_cart, inventory
+액션: check, close, edit, delete, search
+방향: west, east, expand_more, open_in_new
+상태: check_circle, error, warning, info
+```
+
+---
+
+## 금지 사항
+
+```
+❌ Gradient 사용 금지 (solid color만 사용)
+❌ 모바일 전용 스타일 금지 (PC/Tablet만 지원)
+❌ 새로운 색상 코드 임의 추가 금지
+❌ 기존 라운딩 값 변경 금지
+❌ 아이콘 라이브러리 변경 금지 (Material Icons 고정)
+```

@@ -1,0 +1,148 @@
+---
+description: 4-5명 개발자 협업 시 필수 준수 규칙
+alwaysApply: true
+---
+
+# 공동 개발 규칙 (Collaboration Rules)
+
+## 소스 충돌 방지 기준
+
+### 작업 전 필수 확인
+```bash
+# 1. 최신 소스 pull
+git pull origin main
+
+# 2. 본인 작업 브랜치 생성
+git checkout -b feature/[담당자]-[기능명]
+# 예: feature/kim-order-step2
+
+# 3. 작업 완료 후 PR 생성
+```
+
+### 파일 담당 구분
+```
+담당자A: screens/pos/order/**
+담당자B: screens/pos/receive/**
+담당자C: screens/pos/products/**
+담당자D: shared/components/**
+```
+
+---
+
+## API / 데이터 수정 시 영향 범위 체크
+
+### Mock 서비스 수정 시
+```typescript
+// mockCustomerService.ts 수정 전 체크리스트:
+// 1. Customer 인터페이스를 사용하는 모든 화면 확인
+// 2. lookupCustomerByPhone 호출하는 모든 컴포넌트 확인
+// 3. 변경 내용 PR에 명시
+
+// 영향받는 파일 검색
+// Grep: Customer | lookupCustomerByPhone
+```
+
+### 공통 컴포넌트 수정 시
+```
+StepIndicator 수정 → OrderFlowScreen, ReceiveFlowScreen, ReturnFlowScreen 등 모든 STEP 화면 테스트 필수
+StepLayout 수정 → 모든 Flow 화면 테스트 필수
+PosLayout 수정 → 모든 POS 화면 테스트 필수
+```
+
+---
+
+## 신규 화면 vs 개선 화면 구분
+
+### 신규 화면 추가 시
+```
+1. routes/pos.routes.tsx에 라우트 추가
+2. screens/pos/[도메인]/ 디렉토리에 파일 생성
+3. 기존 화면 구조 참고하여 동일한 레이아웃 적용
+4. shared/layout/PosLayout.tsx에 네비게이션 버튼 추가
+```
+
+### 기존 화면 개선 시
+```
+1. 기존 파일 수정 (새 파일 생성 금지)
+2. 기존 Props interface 확장 시 optional(?) 사용
+3. 기존 로직 수정 시 주석으로 변경 사유 명시
+```
+
+---
+
+## 코드 리뷰 체크리스트
+
+### PR 생성 시 필수 확인
+```
+□ STEP 화면인 경우 좌우 레이아웃 구조 유지 확인
+□ 몽골어 텍스트 오타/누락 확인
+□ validation 로직 포함 여부
+□ 공통 컴포넌트 import 경로 확인
+□ 콘솔 에러/warning 없음 확인
+□ 기존 화면 동작에 영향 없음 확인
+```
+
+### 리뷰어 체크 사항
+```
+□ 기존 아키텍처 패턴 준수 여부
+□ 네이밍 컨벤션 준수 여부
+□ 불필요한 리팩토링 없음
+□ Mock 데이터 구조 일관성
+```
+
+---
+
+## AI 도구(Cursor/Copilot) 사용 시 주의사항
+
+### 금지 사항
+```
+❌ AI가 제안하는 "더 나은 구조" 무분별 적용 금지
+❌ AI 자동완성의 다른 언어 텍스트 적용 금지 (영어→몽골어 확인)
+❌ AI가 삭제 제안하는 "불필요한" 코드 확인 없이 삭제 금지
+❌ AI가 생성한 새로운 패턴/구조 검토 없이 적용 금지
+```
+
+### 권장 사항
+```
+✅ AI 코드 생성 후 반드시 기존 패턴과 비교 검토
+✅ AI가 수정한 import 경로 확인
+✅ AI 생성 코드의 몽골어 텍스트 정확성 확인
+✅ AI 제안 수락 전 영향 범위 파악
+```
+
+---
+
+## Git Commit 메시지 규칙
+
+```
+feat: 새로운 기능 추가
+fix: 버그 수정
+style: 스타일 변경 (로직 변경 없음)
+refactor: 리팩토링 (기능 변경 없음)
+docs: 문서 수정
+test: 테스트 추가/수정
+
+예시:
+feat: 주문 STEP3 서비스 상세 선택 화면 추가
+fix: 수령 STEP1 validation 오류 수정
+style: 대시보드 카드 간격 조정
+```
+
+---
+
+## 브랜치 전략
+
+```
+main (production)
+  └── develop
+       ├── feature/kim-order-step2
+       ├── feature/lee-receive-flow
+       └── fix/park-validation-error
+```
+
+### 머지 규칙
+```
+1. feature → develop: PR + 최소 1명 리뷰 승인
+2. develop → main: QA 완료 후 머지
+3. hotfix → main: 긴급 수정 시 직접 머지 (사후 develop 동기화)
+```

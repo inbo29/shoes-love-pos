@@ -1,0 +1,97 @@
+---
+description: Mock 서비스 및 데이터 관리 규칙
+globs: "**/services/**"
+alwaysApply: false
+---
+
+# Mock 서비스 규칙
+
+## 파일 구조
+
+```
+services/
+├─ mockCustomerService.ts    # 고객 조회 서비스
+├─ mockProductData.ts        # 상품 데이터
+├─ mockOrderData.ts          # 주문 데이터
+├─ mockInventoryData.ts      # 재고 데이터
+└─ mock*.ts                  # 기타 Mock 데이터
+```
+
+---
+
+## Mock 서비스 작성 규칙
+
+### 인터페이스 먼저 정의
+```typescript
+// ✅ GOOD - 명확한 타입 정의
+export interface Customer {
+  phone: string;
+  name: string;
+  address: string;
+  membershipType: 'Энгийн' | 'VIP' | 'Байгууллага';
+}
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+  category: string;
+}
+```
+
+### 함수 시그니처 명확히
+```typescript
+/**
+ * 전화번호로 고객 조회
+ * @param phone 고객 전화번호
+ * @returns 고객 정보 또는 null (미등록 고객)
+ */
+export const lookupCustomerByPhone = (phone: string): Customer | null => {
+  const cleanPhone = phone.replace(/[-\s]/g, '');
+  return mockCustomers.find(c => c.phone === cleanPhone) || null;
+};
+```
+
+---
+
+## 데이터 구조 일관성
+
+### 몽골어 텍스트 유지
+```typescript
+// ✅ GOOD - 몽골어 사용
+const membershipTypes = ['Энгийн', 'VIP', 'Байгууллага'];
+
+// ❌ BAD - 영어 또는 한국어
+const membershipTypes = ['Normal', 'VIP', 'Corporate'];
+```
+
+### 실제 데이터 형식 사용
+```typescript
+// ✅ GOOD - 몽골 주소 형식
+address: 'Баянзүрх дүүрэг, 12-р хороо'
+
+// ✅ GOOD - 몽골 전화번호 형식
+phone: '99119911' // 8자리
+
+// ✅ GOOD - 몽골 화폐 단위
+price: 45000 // 투그릭 (₮)
+```
+
+---
+
+## 수정 시 주의사항
+
+```
+⚠️ 인터페이스 수정 시:
+   - 해당 타입을 import하는 모든 파일 확인
+   - 기존 필드 삭제 금지 (optional로 변경)
+   
+⚠️ Mock 데이터 수정 시:
+   - 기존 데이터 구조 유지
+   - 새 데이터 추가는 배열 끝에
+   
+⚠️ 함수 시그니처 수정 시:
+   - 기존 파라미터 순서 유지
+   - 새 파라미터는 optional로 끝에 추가
+```

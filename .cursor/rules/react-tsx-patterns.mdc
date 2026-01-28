@@ -1,0 +1,139 @@
+---
+description: React/TSX 컴포넌트 패턴 및 규칙
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# React/TSX 컴포넌트 패턴
+
+## 컴포넌트 구조 템플릿
+
+### Screen 컴포넌트
+```tsx
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+
+interface ScreenNameProps {
+  userName?: string;
+  initialBranch?: string;
+}
+
+const ScreenName: React.FC<ScreenNameProps> = ({ userName, initialBranch }) => {
+  const navigate = useNavigate();
+  
+  // State
+  const [data, setData] = useState<DataType[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Effects
+  useEffect(() => {
+    // 초기 데이터 로드
+  }, []);
+  
+  // Handlers
+  const handleAction = () => {
+    // 액션 처리
+  };
+  
+  return (
+    <div className="flex-1 flex flex-col p-8 gap-10 overflow-y-auto bg-[#F8F9FA] no-scrollbar">
+      {/* Content */}
+    </div>
+  );
+};
+
+export default ScreenName;
+```
+
+### Step 컴포넌트
+```tsx
+interface StepNNameProps {
+  onValidationChange?: (isValid: boolean) => void;
+}
+
+const StepNName: React.FC<StepNNameProps> = ({ onValidationChange }) => {
+  // Validation Effect 필수
+  useEffect(() => {
+    const isValid = /* validation logic */;
+    onValidationChange?.(isValid);
+  }, [/* dependencies */, onValidationChange]);
+  
+  return (
+    <div className="w-full h-full flex flex-col p-4 md:p-6 overflow-y-auto no-scrollbar">
+      {/* 2 Column Layout for STEP screens */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-full">
+        {/* Left: Main Content */}
+        <section className="bg-surface-light rounded-2xl shadow-sm border border-gray-100 p-6">
+          {/* ... */}
+        </section>
+        
+        {/* Right: Summary Panel (sticky) */}
+        <section className="bg-surface-light rounded-2xl shadow-sm border border-gray-100 p-6">
+          {/* ... */}
+        </section>
+      </div>
+    </div>
+  );
+};
+```
+
+---
+
+## 필수 패턴
+
+### Props 전파
+```tsx
+// ✅ GOOD - 명시적 Props 전달
+<StepLayout
+  currentStep={currentStep}
+  onNext={handleNext}
+  nextDisabled={!isValid}
+/>
+
+// ❌ BAD - 스프레드 남용
+<StepLayout {...props} />
+```
+
+### 조건부 렌더링
+```tsx
+// ✅ GOOD
+{isLoading && <LoadingOverlay />}
+{error && <ErrorModal message={error} />}
+{data && <DataList items={data} />}
+
+// ❌ BAD - 중첩 삼항 연산자
+{isLoading ? <Loading /> : error ? <Error /> : data ? <Data /> : null}
+```
+
+### 이벤트 핸들러
+```tsx
+// ✅ GOOD - handle 접두사 사용
+const handleSubmit = () => { ... };
+const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { ... };
+const handleStepClick = (step: number) => { ... };
+
+// ❌ BAD
+const submit = () => { ... };
+const change = () => { ... };
+```
+
+---
+
+## 금지 패턴
+
+```tsx
+// ❌ 인라인 스타일 금지
+<div style={{ padding: '24px' }}>
+
+// ❌ 하드코딩된 색상값 (테마 색상 외)
+<div className="bg-[#123456]">
+
+// ❌ 클래스 컴포넌트 금지
+class MyComponent extends React.Component { }
+
+// ❌ any 타입 남용 금지
+const data: any = fetchData();
+
+// ❌ useEffect 의존성 배열 누락 금지
+useEffect(() => { /* ... */ }); // 빈 배열이라도 명시
+```

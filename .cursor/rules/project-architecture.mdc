@@ -1,0 +1,134 @@
+---
+description: Shoes Love POS 프로젝트 전체 아키텍처 및 개발 규칙 (필수 적용)
+alwaysApply: true
+---
+
+# Shoes Love POS - 프로젝트 아키텍처 및 개발 규칙
+
+## 프로젝트 개요
+
+- **프로젝트명**: Shoes Love POS
+- **타입**: React 기반 프론트엔드 전용 POS 시스템
+- **기술 스택**: React 19 + TypeScript + Vite + React Router DOM
+- **UI 언어**: 몽골어 (Mongolian)
+- **데이터**: Mock 데이터 (백엔드 없음)
+- **타겟 디바이스**: PC / Tablet (모바일 제외)
+
+---
+
+## 절대 금지 사항 (AI 오작동 방지)
+
+```
+❌ 기존 구조를 임의로 단순화하거나 삭제 금지
+❌ Screen / Service / Component 계층을 합치지 말 것
+❌ 공통 컴포넌트(shared/)를 화면별 폴더로 이동 금지
+❌ Mock 데이터 구조를 임의로 변경 금지
+❌ STEP 화면 레이아웃(좌측 콘텐츠 + 우측 패널 sticky) 구조 변경 금지
+❌ 몽골어 텍스트를 다른 언어로 변경 금지
+❌ 기존 라우팅 구조 임의 변경 금지
+❌ "이렇게 바꾸는 게 낫다" 식의 임의 리팩토링 금지
+```
+
+---
+
+## 프로젝트 디렉토리 구조
+
+```
+src/
+├─ app/
+│  └─ App.tsx                    # 앱 진입점, 라우터 설정
+│
+├─ routes/
+│  └─ pos.routes.tsx             # POS 모듈 라우팅
+│
+├─ screens/                      # 화면 단위 컴포넌트
+│  ├─ auth/                      # 인증 화면
+│  │  ├─ LoginScreen.tsx
+│  │  └─ RoleSelectScreen.tsx
+│  │
+│  └─ pos/                       # POS 업무 화면
+│     ├─ dashboard/              # 대시보드
+│     ├─ order/                  # 주문 접수
+│     │  ├─ OrderListScreen.tsx
+│     │  ├─ OrderFlowScreen.tsx
+│     │  └─ steps/               # 주문 STEP 화면들
+│     ├─ receive/                # 수령 (Хүлээлгэн өгөх)
+│     ├─ return/                 # 반품 (Буцаалт)
+│     ├─ shipment/               # 출고 (Ачилт)
+│     ├─ products/               # 상품 관리
+│     ├─ cards/                  # 멤버십 카드
+│     ├─ management/             # 일마감
+│     ├─ finance/                # 재무 (현금 제출, 리포트)
+│     └─ flow/                   # 공통 STEP 레이아웃
+│
+├─ services/                     # Mock 데이터 서비스
+│  ├─ mockCustomerService.ts
+│  ├─ mockProductData.ts
+│  └─ mock*.ts
+│
+├─ shared/                       # 공통 재사용 컴포넌트
+│  ├─ components/
+│  │  ├─ StepIndicator/          # STEP 진행 표시
+│  │  ├─ StepFooter/             # STEP 하단 버튼
+│  │  ├─ ErrorModal/
+│  │  ├─ Popup/
+│  │  ├─ PosDropdown.tsx
+│  │  └─ PosPagination.tsx
+│  └─ layout/
+│     └─ PosLayout.tsx           # POS 공통 레이아웃
+│
+└─ types/                        # 타입 정의
+   ├─ index.ts
+   └─ orderStatus.types.ts
+```
+
+---
+
+## 라우팅 구조 (고정)
+
+```
+/                    → 로그인 화면
+/role-select         → 역할 선택 (POS/ERP/RMS)
+/pos/dashboard       → POS 대시보드
+/pos/orders          → 주문 리스트
+/pos/orders/new/step/:step    → 신규 주문 STEP
+/pos/orders/:id/edit/step/:step → 주문 수정 STEP
+/pos/receive         → 수령 리스트
+/pos/receive/:id/step/:step   → 수령 처리 STEP
+/pos/returns         → 반품 리스트
+/pos/shipments       → 출고 리스트
+/pos/sell/step/:step → 상품 판매 STEP
+/pos/inventory       → 재고 현황
+/pos/cards           → 멤버십 관리
+/pos/management/day  → 일마감
+/pos/cash-submit     → 현금 제출
+/pos/cash-report     → 캐시 리포트
+```
+
+---
+
+## 레이아웃 규칙 (필수 준수)
+
+### STEP 화면 레이아웃 (가장 중요)
+
+```
+┌──────────────────────────────────────────────────┐
+│                   Header (고정)                   │
+├──────────────────────────────────────────────────┤
+│              StepIndicator (고정)                 │
+├─────────────────────────┬────────────────────────┤
+│                         │                        │
+│   좌측 메인 콘텐츠      │   우측 요약 패널        │
+│   (스크롤 가능)         │   (position: sticky)   │
+│                         │                        │
+├─────────────────────────┴────────────────────────┤
+│                StepFooter (고정)                  │
+│   [뒤로가기]  [임시저장]  [다음/완료]             │
+└──────────────────────────────────────────────────┘
+```
+
+**필수 규칙:**
+- 우측 요약 패널은 모든 STEP에서 sticky 유지
+- STEP에 따라 우측 패널이 사라지면 안 됨
+- PC 화면 가로 폭 100% 동일 유지
+- 좌/우 컬럼 너비 STEP마다 동일

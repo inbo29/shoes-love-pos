@@ -1,0 +1,178 @@
+---
+description: 개발 표준 및 코딩 컨벤션
+alwaysApply: true
+---
+
+# 개발 표준 및 코딩 컨벤션
+
+## 네이밍 규칙
+
+### 파일명
+```
+Screen: [도메인]Screen.tsx      예) OrderListScreen.tsx
+Step:   Step[N][기능].tsx       예) Step1Info.tsx, Step2ServiceSelection.tsx
+Flow:   [도메인]FlowScreen.tsx  예) OrderFlowScreen.tsx
+Service: mock[도메인]Data.ts    예) mockCustomerService.ts
+```
+
+### 컴포넌트/함수
+```typescript
+// ✅ GOOD
+const OrderListScreen: React.FC = () => { ... }
+const handleSubmit = () => { ... }
+const isValidPhone = (phone: string): boolean => { ... }
+
+// ❌ BAD
+const orderlist = () => { ... }
+const Submit = () => { ... }
+```
+
+### 상수/타입
+```typescript
+// ✅ GOOD
+type StepStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED' | 'WARNING';
+const MAX_STEPS = 6;
+
+// ❌ BAD
+type stepstatus = 'pending' | 'active';
+```
+
+---
+
+## 컴포넌트 구조 규칙
+
+### Screen 컴포넌트
+```typescript
+// 구조 예시
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+interface Props {
+  userName?: string;
+}
+
+const ExampleScreen: React.FC<Props> = ({ userName }) => {
+  const navigate = useNavigate();
+  
+  // 1. State 선언
+  // 2. Effects
+  // 3. Handlers
+  // 4. Render helpers
+  
+  return (
+    <div className="...">
+      {/* JSX */}
+    </div>
+  );
+};
+
+export default ExampleScreen;
+```
+
+### Props Interface
+```typescript
+// ✅ 항상 Interface 정의
+interface StepLayoutProps {
+  children: React.ReactNode;
+  currentStep: number;
+  onNext: () => void;
+  nextDisabled?: boolean;
+}
+```
+
+---
+
+## STEP 상태 관리 규칙
+
+### 상태 기반 관리 (필수)
+```typescript
+// STEP 상태는 URL이 아닌 상태값 기준으로 관리
+type StepStatus = 'PENDING' | 'ACTIVE' | 'COMPLETED';
+
+// ✅ GOOD - 상태 기반 완료 처리
+const completeStep = () => {
+  updateStepStatus(currentStep, 'COMPLETED');
+  updateStepStatus(currentStep + 1, 'ACTIVE');
+  navigate(`/step/${currentStep + 1}`);
+};
+
+// ❌ BAD - URL 이동만으로 완료 처리
+const nextStep = () => {
+  navigate(`/step/${currentStep + 1}`); // 완료 상태 없이 이동만
+};
+```
+
+### STEP 완료 조건
+- STEP 체크(✔)는 해당 STEP의 **핵심 액션이 완료**되었을 때만 표시
+- "다음" 버튼은 STEP 완료를 의미하지 않음
+- 완료 조건 미충족 시 버튼 비활성화 + 힌트 메시지 표시
+
+---
+
+## Validation 규칙
+
+```typescript
+// ✅ useEffect로 validation 상태 관리
+useEffect(() => {
+  const isPhoneValid = phone.trim().length > 0;
+  const isNameValid = customerName.trim().length > 0;
+  const isValid = isPhoneValid && isNameValid;
+  
+  onValidationChange?.(isValid);
+}, [phone, customerName, onValidationChange]);
+```
+
+---
+
+## 스타일링 규칙
+
+### Tailwind CSS 사용
+```tsx
+// ✅ GOOD - 프로젝트 일관성 유지
+<div className="bg-white rounded-[32px] p-6 shadow-sm border border-gray-100">
+
+// ❌ BAD - inline style 또는 CSS module
+<div style={{ backgroundColor: 'white', borderRadius: '32px' }}>
+```
+
+### 색상 규칙
+```
+Primary:   #111827 (bg-primary)
+Secondary: #FFD400 (bg-secondary, bg-[#FFD400])
+Success:   green-500
+Warning:   yellow-400, orange-500
+Error:     red-500
+Background: #F1F3F4, #F3F6F9, #F8F9FA
+```
+
+### 라운딩 규칙
+```
+카드:     rounded-[32px], rounded-[40px]
+버튼:     rounded-2xl, rounded-xl
+인풋:     rounded-lg
+아이콘박스: rounded-[12px], rounded-[14px], rounded-[24px]
+```
+
+---
+
+## Import 순서
+
+```typescript
+// 1. React 관련
+import React, { useState, useEffect } from 'react';
+
+// 2. 라우터
+import { useNavigate, useParams } from 'react-router-dom';
+
+// 3. 공통 컴포넌트
+import StepLayout from '../flow/StepLayout';
+
+// 4. 로컬 컴포넌트/Steps
+import Step1Info from './steps/Step1Info';
+
+// 5. 서비스/유틸
+import { lookupCustomerByPhone } from '../../../../services/mockCustomerService';
+
+// 6. 타입
+import { StepStatus } from '../../../shared/components/StepIndicator/StepIndicator';
+```

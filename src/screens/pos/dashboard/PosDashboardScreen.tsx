@@ -85,7 +85,6 @@ const PosDashboardScreen: React.FC<{ userName?: string }> = ({ userName = 'Ад�
                             icon="payments"
                             colorClass="text-[#FFD400]"
                             iconBg="bg-[#FFD400]/10"
-                            isRevenue
                             onClick={() => navigate('/pos/finance/cash-report')}
                         />
                     )}
