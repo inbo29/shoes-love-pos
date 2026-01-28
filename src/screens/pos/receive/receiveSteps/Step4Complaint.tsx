@@ -1,7 +1,37 @@
 
 import React, { useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 
-const Step4Complaint: React.FC = () => {
+// Gomdol 재주문 데이터 타입
+export interface GomdolOrderData {
+    source: 'gomdol';
+    isReOrder: true;
+    originalOrderId: string;
+    originalReceiveId: string;
+    complaintId: string;
+    complaintType: string;
+    complaintDescription: string;
+    selectedItems: GomdolSelectedItem[];
+    selectedAction: string;
+    price: 0;
+}
+
+export interface GomdolSelectedItem {
+    id: number;
+    name: string;
+    model: string;
+    services: string[];
+    quantity: number;
+    price: number; // 항상 0
+}
+
+interface Step4ComplaintProps {
+    onGomdolReorder?: () => void;
+}
+
+const Step4Complaint: React.FC<Step4ComplaintProps> = ({ onGomdolReorder }) => {
+    const navigate = useNavigate();
+    const { id: receiveId } = useParams();
 
     // Mock Data for "Target Selection" (Which shoes?)
     const ORDER_ITEMS = [
@@ -219,7 +249,7 @@ const Step4Complaint: React.FC = () => {
                     <div className="p-5 border-b border-blue-50 bg-blue-50/30">
                         <div className="flex items-center gap-3">
                             <div className="h-5 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
-                            <h2 className="text-xs font-black text-gray-600 uppercase">Санхүүгийн нөлөө (Автомат)</h2>
+                            <h2 className="text-xs font-black text-gray-600 uppercase">Төлбөр (Автомат)</h2>
                         </div>
                     </div>
                     <div className="p-6 bg-blue-50/10">
@@ -247,10 +277,14 @@ const Step4Complaint: React.FC = () => {
                         </div>
                         <div className="space-y-2">
                             {ACTION_OPTIONS.map(opt => (
-                                <label key={opt.id} className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedAction === opt.id
-                                    ? 'bg-gray-50 border-gray-400'
-                                    : 'border-gray-100 hover:bg-gray-50'
-                                    }`}>
+                                <label 
+                                    key={opt.id} 
+                                    onClick={() => setSelectedAction(opt.id)}
+                                    className={`flex items-center justify-between p-3 rounded-xl border cursor-pointer transition-all ${selectedAction === opt.id
+                                        ? 'bg-gray-50 border-gray-400'
+                                        : 'border-gray-100 hover:bg-gray-50'
+                                    }`}
+                                >
                                     <span className={`text-xs font-bold ${selectedAction === opt.id ? 'text-gray-900' : 'text-gray-600'}`}>
                                         {opt.label}
                                     </span>
@@ -261,12 +295,86 @@ const Step4Complaint: React.FC = () => {
                                 </label>
                             ))}
                         </div>
+
+                        {/* 다시 주문 넣기 버튼 (Дахин захиалга) - "다시 주문" 액션 선택 시만 표시 */}
+                        {selectedAction === 'retry' && selectedTargets.length > 0 && (
+                            <div className="mt-6 pt-6 border-t border-gray-100">
+                                <button
+                                    onClick={handleGomdolReorder}
+                                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-orange-400 to-yellow-400 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200/50 hover:shadow-xl hover:shadow-orange-300/50 transition-all active:scale-[0.98] flex items-center justify-center gap-3"
+                                >
+                                    <span className="material-icons-round">refresh</span>
+                                    Дахин захиалга үүсгэх
+                                </button>
+                                <p className="text-[10px] text-center text-gray-400 mt-2">
+                                    * Захиалга Step 5-руу шууд шилжинэ
+                                </p>
+                            </div>
+                        )}
+                        
+                        {/* 영수증/티켓 인쇄 버튼 - 클레임 등록 후 */}
+                        <div className="mt-6 pt-6 border-t border-gray-100">
+                            <button
+                                onClick={handlePrintTicket}
+                                className="w-full py-3.5 rounded-2xl bg-[#40C1C7] hover:bg-[#35a8ad] text-white font-black text-xs uppercase tracking-widest transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-lg shadow-[#40C1C7]/30"
+                            >
+                                <span className="material-icons-round text-lg">print</span>
+                                <span className="text-[10px] font-black uppercase tracking-widest">Падаан хэвлэх</span>
+                            </button>
+                            <p className="text-[9px] text-center text-gray-500 mt-2">
+                                * Гомдлын дугаар болон мэдээллийг агуулсан баримт
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
 
         </div>
     );
+
+    // Gomdol → Order Step 5 직행 핸들러
+    function handleGomdolReorder() {
+        // 선택된 아이템들로 Gomdol 재주문 데이터 구성
+        const selectedItemsData: GomdolSelectedItem[] = ORDER_ITEMS
+            .filter(item => selectedTargets.includes(item.id))
+            .map(item => ({
+                id: item.id,
+                name: item.name,
+                model: item.model,
+                services: [], // 기존 서비스 유지 (실제로는 원본 주문에서 가져옴)
+                quantity: 1,
+                price: 0 // 항상 0
+            }));
+
+        const gomdolOrderData: GomdolOrderData = {
+            source: 'gomdol',
+            isReOrder: true,
+            originalOrderId: 'ORD-231027-001', // Mock - 실제로는 원본 주문 ID
+            originalReceiveId: receiveId || '',
+            complaintId: `GOMDOL-${Date.now()}`, // 자동 생성
+            complaintType: selectedType,
+            complaintDescription: description,
+            selectedItems: selectedItemsData,
+            selectedAction: selectedAction,
+            price: 0
+        };
+
+        // sessionStorage에 gomdol 데이터 저장 (라우트 간 전달용)
+        sessionStorage.setItem('gomdolOrderData', JSON.stringify(gomdolOrderData));
+
+        // onGomdolReorder prop이 있으면 호출, 없으면 직접 navigate
+        if (onGomdolReorder) {
+            onGomdolReorder();
+        } else {
+            // Order Step 5로 직행
+            navigate('/pos/orders/gomdol/step/5');
+        }
+    }
+    
+    // 영수증/티켓 인쇄 핸들러
+    function handlePrintTicket() {
+        window.print();
+    }
 };
 
 export default Step4Complaint;

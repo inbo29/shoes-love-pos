@@ -72,8 +72,8 @@ const MOCK_ORDER = {
 
 const STEP_LABELS = [
     'Захиалгын мэдээлэл шалгах',
+    'Сэтгэл ханамж / Гомдол',
     'Үлдэгдэл төлбөр шалгах / төлөх',
-    'Сэтгэл ханамжийн санал асуулга',
     'Хүлээлгэн өгсөн'
 ];
 
@@ -138,23 +138,60 @@ const ReceiveDetailScreen: React.FC = () => {
     const [checked2, setChecked2] = useState(false);
     const step1Valid = checked1 && checked2;
 
-    // Step 2 states
+    // Step 2 states (Survey / Complaint) - 새로운 Step 2
+    const [surveyRating, setSurveyRating] = useState<number>(0);
+    const [surveyComment, setSurveyComment] = useState('');
+    const [hasComplaint, setHasComplaint] = useState(false);
+    const [complaintType, setComplaintType] = useState<string>('');
+    const step2SurveyValid = surveyRating > 0;
+
+    // Step 3 states (Payment) - 기존 Step 2 → 새로운 Step 3
     const [selectedMethod, setSelectedMethod] = useState('cash');
     const [receivedAmount, setReceivedAmount] = useState('');
     const finalTotalToPay = calculations.remaining;
     const changeAmount = Math.max(0, (parseInt(receivedAmount) || 0) - finalTotalToPay);
-    const isStep2Ready = selectedMethod === 'cash' ? (parseInt(receivedAmount) || 0) >= finalTotalToPay : !!selectedMethod;
+    const isStep3Ready = selectedMethod === 'cash' ? (parseInt(receivedAmount) || 0) >= finalTotalToPay : !!selectedMethod;
     const [isPaid, setIsPaid] = useState(false);
+    
+    // NOAT (부가세 없음) 상태
+    const [noVat, setNoVat] = useState(false);
+    const [billingType, setBillingType] = useState<'individual' | 'company'>('individual');
 
     const handleNext = () => {
         if (currentStep === 1 && !step1Valid) return;
-        if (currentStep === 2 && !isPaid && calculations.remaining > 0) return;
+        if (currentStep === 2 && !step2SurveyValid) return;
+        if (currentStep === 3 && !isPaid && calculations.remaining > 0) return;
 
         if (currentStep < 4) {
             navigate(`/pos/receive/${id}/step/${currentStep + 1}`);
         } else {
             navigate('/pos/receive');
         }
+    };
+
+    // Gomdol 재주문으로 이동
+    const handleGomdolReorder = () => {
+        // 클레임 데이터를 세션에 저장
+        const gomdolData = {
+            source: 'gomdol',
+            isReOrder: true,
+            originalOrderId: MOCK_ORDER.id,
+            originalReceiveId: id,
+            complaintId: `GOMDOL-${Date.now()}`,
+            complaintType: complaintType,
+            complaintDescription: surveyComment,
+            selectedItems: MOCK_ORDER.items.filter(item => item.status === 'COMPLETED').map(item => ({
+                id: item.id,
+                name: item.name,
+                services: item.services.filter(s => s.status === 'ACTIVE').map(s => s.name),
+                quantity: item.quantity,
+                price: 0
+            })),
+            selectedAction: 'retry',
+            price: 0
+        };
+        sessionStorage.setItem('gomdolOrderData', JSON.stringify(gomdolData));
+        navigate('/pos/orders/gomdol/step/5');
     };
 
     const handleBack = () => {
@@ -368,7 +405,8 @@ const ReceiveDetailScreen: React.FC = () => {
         </div>
     );
 
-    const renderStep2 = () => (
+    // 새로운 Step 3: 결제 (기존 Step 2에서 이동)
+    const renderStep3Payment = () => (
         <div className="max-w-[1440px] mx-auto w-full flex flex-col lg:flex-row gap-8 pb-32 animate-in fade-in duration-500 overflow-visible">
             {/* Left Column: Payment Methods (60%) */}
             <div className="lg:w-[60%] flex flex-col gap-6 overflow-visible">
@@ -447,46 +485,45 @@ const ReceiveDetailScreen: React.FC = () => {
                     <div className="p-8">
                         <div className="flex items-center gap-3 mb-8">
                             <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
-                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн хураангуй</h3>
+                            <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн тооцоо</h3>
                         </div>
 
-                        <div className="space-y-8">
-                            <div className="flex justify-between items-end pb-8 border-b border-gray-50">
-                                <span className="text-sm font-bold text-gray-500 font-bold">Нийт төлөх дүн</span>
-                                <div className="text-5xl font-black text-primary tracking-tighter italic">
-                                    ₮ {calculations.remaining.toLocaleString()}
-                                </div>
+                        <div className="space-y-4">
+                            <div className="flex justify-between text-sm">
+                                <span className="font-bold text-gray-500">Үйлчилгээний дүн</span>
+                                <span className="font-black text-gray-800">{calculations.revisedTotal.toLocaleString()} ₮</span>
                             </div>
+                            {calculations.cancelledTotal > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="font-bold text-red-500">- Цуцлагдсан</span>
+                                    <span className="font-black text-red-500">-{calculations.cancelledTotal.toLocaleString()} ₮</span>
+                                </div>
+                            )}
+                            {!noVat && (
+                                <div className="flex justify-between text-sm animate-in fade-in slide-in-from-top-1">
+                                    <span className="font-bold text-gray-500">НӨАТ (10%)</span>
+                                    <span className="font-black text-gray-800">{calculations.vat.toLocaleString()} ₮</span>
+                                </div>
+                            )}
+                            {calculations.paidAmount > 0 && (
+                                <div className="flex justify-between text-sm">
+                                    <span className="font-bold text-green-600">Төлсөн</span>
+                                    <span className="font-black text-green-600">-{calculations.paidAmount.toLocaleString()} ₮</span>
+                                </div>
+                            )}
 
-                            <div className="p-6 bg-gray-50 rounded-[24px] border border-gray-100 space-y-5">
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-400 font-bold uppercase tracking-widest">Сонгосон:</span>
-                                    <span className="text-gray-800 font-black flex items-center gap-2 uppercase tracking-tight">
-                                        <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] ${PAYMENT_METHODS.find(m => m.id === selectedMethod)?.color}`}>
-                                            <span className="material-icons-round">{PAYMENT_METHODS.find(m => m.id === selectedMethod)?.icon}</span>
-                                        </div>
-                                        {PAYMENT_METHODS.find(m => m.id === selectedMethod)?.label}
-                                    </span>
-                                </div>
-                                <div className="flex justify-between items-center text-xs">
-                                    <span className="text-gray-400 font-bold uppercase tracking-widest">Төлөв:</span>
-                                    {isPaid ? (
-                                        <span className="px-3 py-1 bg-green-100 text-green-700 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                                            Төлбөр төлөгдсөн
-                                        </span>
-                                    ) : (
-                                        <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-lg text-[10px] font-black uppercase tracking-wider">
-                                            Төлбөр хүлээгдэж буй
-                                        </span>
-                                    )}
-                                </div>
+                            <div className="w-full h-px bg-gray-100 my-4" />
+
+                            <div className="flex justify-between items-end">
+                                <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">Үлдэгдэл</span>
+                                <span className="text-3xl font-black text-primary tracking-tighter">{calculations.remaining.toLocaleString()} ₮</span>
                             </div>
                         </div>
 
                         <button
-                            disabled={!isStep2Ready || isProcessing || isPaid}
+                            disabled={!isStep3Ready || isProcessing || isPaid}
                             onClick={handlePaymentAction}
-                            className={`w-full mt-10 py-6 rounded-2xl text-base font-black tracking-tight shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4 ${isStep2Ready && !isProcessing && !isPaid
+                            className={`w-full mt-8 py-6 rounded-2xl text-base font-black tracking-tight shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4 ${isStep3Ready && !isProcessing && !isPaid
                                 ? 'bg-[#FFD400] text-gray-900 shadow-yellow-200/50 hover:bg-[#FFC400] cursor-pointer'
                                 : isPaid
                                     ? 'bg-green-500 text-white shadow-green-200/30 cursor-default'
@@ -507,26 +544,172 @@ const ReceiveDetailScreen: React.FC = () => {
                                 </>
                             )}
                         </button>
+
+                        {/* NOAT Toggle Section */}
+                        <div className="mt-6 pt-6 border-t border-gray-50 space-y-4">
+                            {/* No VAT Toggle */}
+                            <label className="flex items-center gap-3 cursor-pointer group">
+                                <div className="relative flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={noVat}
+                                        onChange={(e) => setNoVat(e.target.checked)}
+                                        className="sr-only"
+                                    />
+                                    <div className={`w-5 h-5 rounded-md border-2 transition-all flex items-center justify-center ${noVat ? 'border-yellow-400 bg-yellow-400' : 'border-gray-200 bg-white group-hover:border-yellow-300'}`}>
+                                        {noVat && <span className="material-icons-round text-gray-900 text-[14px]">done</span>}
+                                    </div>
+                                </div>
+                                <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">Нөатгүй</span>
+                            </label>
+
+                            {/* Billing Type Toggle - НӨАТГҮЙ 체크 시 숨김 */}
+                            {!noVat && (
+                                <div className="flex bg-gray-50 p-1 rounded-xl animate-in fade-in slide-in-from-top-2">
+                                    <button
+                                        onClick={() => setBillingType('individual')}
+                                        className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                    >
+                                        Хувь хүн
+                                    </button>
+                                    <button
+                                        onClick={() => setBillingType('company')}
+                                        className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'company' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                    >
+                                        Байгууллага
+                                    </button>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
                 <div className="p-6 bg-blue-50/50 rounded-[24px] border border-blue-100/50 flex items-start gap-4">
                     <span className="material-icons-round text-blue-400 text-lg">info</span>
-                    <p className="text-[11px] text-blue-700 font-bold uppercase tracking-wider leading-relaxed">
-                        Төлбөр баталгаажсаны дараа 영수증(Receipt) 출력 팝업이 나타나며, 확인 후 주문 목록으로 자동 이동합니다.
+                    <p className="text-[11px] text-blue-700 font-bold leading-relaxed">
+                        Санамж: Та одоо заавал бүх төлбөрөө 30% хүртэл төлсөн тохиолдолд захиалгыг дуусгаж болно.
                     </p>
                 </div>
             </div>
         </div>
     );
 
-    const renderStep3 = () => (
-        <div className="max-w-[1440px] mx-auto p-12 flex flex-col items-center justify-center bg-white rounded-[32px] border border-gray-100 shadow-xl min-h-[500px]">
-            <span className="material-icons-round text-gray-200 text-6xl mb-6">poll</span>
-            <h2 className="text-2xl font-black text-gray-800 mb-2 uppercase tracking-tight">Сэтгэл ханамжийн санал асуулга</h2>
-            <p className="text-gray-400 font-bold mb-12">Үйлчилгээ болон гүйцэтгэлд өгөх үнэлгээ</p>
-            <div className="w-full max-w-lg bg-gray-50 rounded-2xl p-8 border border-gray-100 italic text-center text-gray-400">
-                Судалгааны UI хөгжүүлэгдэж байна...
+    // 새로운 Step 2: 설문조사 + 클레임
+    const renderStep2Survey = () => (
+        <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 pb-32 animate-in fade-in duration-500">
+            {/* Left Column: Survey */}
+            <div className="lg:col-span-7 flex flex-col gap-6">
+                <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8">
+                    <div className="flex items-center gap-3 mb-8 border-b border-gray-50 pb-4">
+                        <div className="h-6 w-1 bg-[#40C1C7] rounded-sm shrink-0"></div>
+                        <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Сэтгэл ханамжийн үнэлгээ</h3>
+                    </div>
+                    
+                    <div className="space-y-8">
+                        {/* Star Rating */}
+                        <div className="text-center">
+                            <p className="text-sm font-bold text-gray-600 mb-6">Үйлчилгээний чанарыг үнэлнэ үү</p>
+                            <div className="flex justify-center gap-3">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setSurveyRating(star)}
+                                        className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${
+                                            star <= surveyRating 
+                                                ? 'bg-yellow-400 text-white shadow-lg shadow-yellow-200 scale-110' 
+                                                : 'bg-gray-100 text-gray-300 hover:bg-gray-200'
+                                        }`}
+                                    >
+                                        <span className="material-icons-round text-3xl">star</span>
+                                    </button>
+                                ))}
+                            </div>
+                            {surveyRating > 0 && (
+                                <p className="mt-4 text-sm font-bold text-yellow-600">
+                                    {surveyRating === 5 ? 'Маш сайн!' : surveyRating === 4 ? 'Сайн' : surveyRating === 3 ? 'Дунд' : surveyRating === 2 ? 'Муу' : 'Маш муу'}
+                                </p>
+                            )}
+                        </div>
+
+                        {/* Comment */}
+                        <div>
+                            <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 block">Нэмэлт санал</label>
+                            <textarea
+                                value={surveyComment}
+                                onChange={(e) => setSurveyComment(e.target.value)}
+                                placeholder="Таны санал бидэнд чухал..."
+                                className="w-full h-28 p-4 bg-gray-50 border border-gray-100 rounded-2xl text-sm focus:outline-none focus:border-primary resize-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Right Column: Complaint */}
+            <div className="lg:col-span-5 flex flex-col gap-6">
+                <div className={`rounded-[32px] shadow-sm border p-8 transition-all ${hasComplaint ? 'bg-orange-50 border-orange-200' : 'bg-white border-gray-100'}`}>
+                    <div className="flex items-center gap-3 mb-8 border-b border-gray-50 pb-4">
+                        <div className={`h-6 w-1 rounded-sm shrink-0 ${hasComplaint ? 'bg-orange-400' : 'bg-gray-300'}`}></div>
+                        <h3 className="text-[11px] font-black text-gray-800 uppercase tracking-widest">Гомдол бүртгэх</h3>
+                    </div>
+
+                    {/* Complaint Toggle */}
+                    <label 
+                        onClick={() => setHasComplaint(!hasComplaint)}
+                        className="flex items-center gap-4 cursor-pointer p-4 bg-white rounded-2xl border border-gray-100 hover:border-orange-200 transition-all mb-6"
+                    >
+                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${hasComplaint ? 'bg-orange-400 border-orange-400' : 'bg-white border-gray-200'}`}>
+                            {hasComplaint && <span className="material-icons-round text-white text-sm">check</span>}
+                        </div>
+                        <span className="text-sm font-bold text-gray-700">Гомдол байгаа</span>
+                    </label>
+
+                    {hasComplaint && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-top-4">
+                            {/* Complaint Type */}
+                            <div>
+                                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 block">Гомдлын төрөл</label>
+                                <div className="grid grid-cols-2 gap-2">
+                                    {['Чанар муу', 'Хугацаа хэтэрсэн', 'Эд зүйл гэмтсэн', 'Бусад'].map(type => (
+                                        <button
+                                            key={type}
+                                            onClick={() => setComplaintType(type)}
+                                            className={`px-4 py-3 rounded-xl text-xs font-bold border-2 transition-all ${
+                                                complaintType === type 
+                                                    ? 'border-orange-400 bg-orange-100 text-orange-700' 
+                                                    : 'border-gray-100 bg-white text-gray-600 hover:border-orange-200'
+                                            }`}
+                                        >
+                                            {type}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Re-order Button */}
+                            {complaintType && (
+                                <button
+                                    onClick={handleGomdolReorder}
+                                    className="w-full py-5 rounded-2xl bg-gradient-to-r from-orange-400 to-yellow-400 text-white font-black text-sm uppercase tracking-widest shadow-lg shadow-orange-200/50 hover:shadow-xl hover:shadow-orange-300/50 transition-all active:scale-[0.98] flex items-center justify-center gap-3 animate-in fade-in zoom-in-95"
+                                >
+                                    <span className="material-icons-round">refresh</span>
+                                    Дахин захиалга үүсгэх
+                                </button>
+                            )}
+
+                            <p className="text-[10px] text-center text-orange-600 font-medium">
+                                * Гомдлын дагуу үнэгүй дахин захиалга үүсгэнэ
+                            </p>
+                        </div>
+                    )}
+
+                    {!hasComplaint && (
+                        <div className="text-center py-8 text-gray-300">
+                            <span className="material-icons-round text-5xl mb-2">sentiment_satisfied</span>
+                            <p className="text-xs font-bold">Гомдол байхгүй</p>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -550,8 +733,8 @@ const ReceiveDetailScreen: React.FC = () => {
 
             <div className="flex-1 overflow-y-auto no-scrollbar p-6 md:p-8">
                 {currentStep === 1 && renderStep1()}
-                {currentStep === 2 && renderStep2()}
-                {currentStep === 3 && renderStep3()}
+                {currentStep === 2 && renderStep2Survey()}
+                {currentStep === 3 && renderStep3Payment()}
                 {currentStep === 4 && renderStep4()}
             </div>
 
@@ -574,8 +757,8 @@ const ReceiveDetailScreen: React.FC = () => {
 
                     <button
                         onClick={handleNext}
-                        disabled={(currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && calculations.remaining > 0) || isProcessing}
-                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-yellow-200/50 ${((currentStep === 1 && !step1Valid) || (currentStep === 2 && !isPaid && calculations.remaining > 0))
+                        disabled={(currentStep === 1 && !step1Valid) || (currentStep === 2 && !step2SurveyValid) || (currentStep === 3 && !isPaid && calculations.remaining > 0) || isProcessing}
+                        className={`px-10 py-3.5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all active:scale-95 flex items-center gap-2 shadow-xl shadow-yellow-200/50 ${((currentStep === 1 && !step1Valid) || (currentStep === 2 && !step2SurveyValid) || (currentStep === 3 && !isPaid && calculations.remaining > 0))
                             ? 'bg-gray-100 text-gray-300 cursor-not-allowed shadow-none'
                             : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400]'
                             }`}

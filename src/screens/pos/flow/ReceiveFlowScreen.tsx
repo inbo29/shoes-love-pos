@@ -2,8 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import StepLayout from './StepLayout';
 import Step1Info from '../receive/receiveSteps/Step1Info';
-import Step2Payment from '../receive/receiveSteps/Step2Payment';
-import Step3Survey from '../receive/receiveSteps/Step3Survey';
+import Step2Survey from '../receive/receiveSteps/Step3Survey'; // Step 2: 설문조사/클레임 (기존 Step3)
+import Step3Payment from '../receive/receiveSteps/Step2Payment'; // Step 3: 결제 (기존 Step2)
 import Step4Complete from '../receive/receiveSteps/Step4Complete';
 import Step4Complaint from '../receive/receiveSteps/Step4Complaint';
 
@@ -185,10 +185,35 @@ const ReceiveFlowScreen: React.FC = () => {
         setIsComplaintMode(true);
         setStepStatuses(prev => ({
             ...prev,
+            [2]: 'COMPLETED',
             [3]: 'COMPLETED',
             [4]: 'WARNING'
         }));
         navigate(`/pos/receive/${id}/step/4`);
+    };
+
+    // Gomdol 재주문으로 이동
+    const handleGomdolReorder = () => {
+        const gomdolData = {
+            source: 'gomdol',
+            isReOrder: true,
+            originalOrderId: selectedOrder.id,
+            originalReceiveId: id,
+            complaintId: `GOMDOL-${Date.now()}`,
+            complaintType: 'factory_return',
+            complaintDescription: '공장에서 서비스 안됨',
+            selectedItems: selectedOrder.items.filter(item => item.status === 'COMPLETED').map(item => ({
+                id: item.id,
+                name: item.name,
+                services: item.services,
+                quantity: item.quantity,
+                price: 0
+            })),
+            selectedAction: 'retry',
+            price: 0
+        };
+        sessionStorage.setItem('gomdolOrderData', JSON.stringify(gomdolData));
+        navigate('/pos/orders/gomdol/step/5');
     };
 
     const handleBack = () => {
@@ -210,15 +235,16 @@ const ReceiveFlowScreen: React.FC = () => {
     };
 
     const renderFooterLeft = () => {
-        if (currentStep === 3) {
+        // Step 2 (설문조사)에서 클레임 버튼 표시
+        if (currentStep === 2) {
             return (
                 <div className="flex items-center gap-3">
                     <button
                         onClick={handleComplaint}
-                        className="px-6 py-3 rounded-2xl border-2 border-yellow-300 bg-yellow-300 text-yellow-900 font-black text-xs uppercase tracking-widest hover:bg-yellow-400 hover:border-yellow-400 transition-all flex items-center gap-2 shadow-sm"
+                        className="px-6 py-3 rounded-2xl border-2 border-orange-300 bg-gradient-to-r from-orange-400 to-yellow-400 text-white font-black text-xs uppercase tracking-widest hover:from-orange-500 hover:to-yellow-500 transition-all flex items-center gap-2 shadow-lg shadow-orange-200/50"
                     >
                         <span className="material-icons-round text-sm">report_problem</span>
-                        Гомдол
+                        Гомдол бүртгэх
                     </button>
                 </div>
             );
@@ -239,8 +265,12 @@ const ReceiveFlowScreen: React.FC = () => {
         }
     }, [currentStep, isComplaintMode]);
 
+    // Step 3 (결제)가 마지막 실질적 단계
     const nextLabel = currentStep === 3 ? 'Дуусгах' : 'Дараах';
     const [noVatSelected, setNoVatSelected] = useState(false);
+
+    // 영수증 인쇄 가능 여부: 결제 금액이 0이거나 모두 결제됨
+    const canPrintReceipt = calculations.remaining === 0;
 
     return (
         <StepLayout
@@ -259,20 +289,23 @@ const ReceiveFlowScreen: React.FC = () => {
                 orderData={selectedOrder}
                 calculations={calculations}
             />}
-            {currentStep === 2 && <Step2Payment
+            {/* Step 2: 설문조사 (기존 Step3) */}
+            {currentStep === 2 && <Step2Survey
+                noVat={noVatSelected}
+                orderData={selectedOrder}
+                calculations={calculations}
+                onSurveyComplete={setStep2Complete}
+            />}
+            {/* Step 3: 결제 (기존 Step2) */}
+            {currentStep === 3 && <Step3Payment
                 onPaymentComplete={(isComplete) => {
-                    setStep2Complete(isComplete);
+                    // 결제 완료 처리
                 }}
                 onNoVatChange={setNoVatSelected}
                 orderData={selectedOrder}
                 calculations={calculations}
             />}
-            {currentStep === 3 && <Step3Survey
-                noVat={noVatSelected}
-                orderData={selectedOrder}
-                calculations={calculations}
-            />}
-            {currentStep === 4 && (isComplaintMode ? <Step4Complaint /> : <Step4Complete />)}
+            {currentStep === 4 && (isComplaintMode ? <Step4Complaint onGomdolReorder={handleGomdolReorder} /> : <Step4Complete />)}
         </StepLayout>
     );
 };

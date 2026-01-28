@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ItemConditionSummary, { ItemConditionData, mockShoeCondition1, mockShoeCondition2 } from '../../../../shared/components/ItemConditionSummary/ItemConditionSummary';
 
 // Reusing types locally for now
 interface SummaryItem {
@@ -8,7 +9,7 @@ interface SummaryItem {
     status?: 'completed' | 'ready' | 'pending';
     services: string[];
     priceDetails: { label: string, price: number }[];
-    conditions: { label: string, value: string, warning?: boolean }[];
+    conditionData: ItemConditionData; // 전체 상태 데이터
     photos: string[];
 }
 
@@ -59,11 +60,7 @@ const Step5OrderSummary: React.FC = () => {
                 { label: 'Угаах (Стандарт)', price: 23900 },
                 { label: 'Будах (Хар)', price: 15000 },
             ],
-            conditions: [
-                { label: 'Бохирдол', value: 'Их (Тос)' },
-                { label: 'Материал', value: 'Илгэ / Арьс' },
-                { label: 'Гэмтэл', value: 'Ул хагарсан', warning: true },
-            ],
+            conditionData: mockShoeCondition1,
             photos: [
                 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200',
                 'https://images.unsplash.com/photo-1560769629-975ec94e6a86?w=200',
@@ -80,11 +77,7 @@ const Step5OrderSummary: React.FC = () => {
                 { label: 'Ул наах', price: 15000 },
                 { label: 'Ус хамгаалалт', price: 5000 },
             ],
-            conditions: [
-                { label: 'Бохирдол', value: 'Бага' },
-                { label: 'Материал', value: 'Арьс' },
-                { label: 'Гэмтэл', value: 'Үгүй' },
-            ],
+            conditionData: mockShoeCondition2,
             photos: [
                 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200'
             ]
@@ -181,22 +174,10 @@ const Step5OrderSummary: React.FC = () => {
                                     </div>
                                 </div>
 
-                                {/* 2. Current Status (Conditions) */}
+                                {/* 2. Current Status (Conditions) - 전체 항목 표시 */}
                                 <div className="pt-4 border-t border-gray-50">
                                     <h4 className="text-[10px] font-black text-teal-500 uppercase mb-3 tracking-wider opacity-70">2. Одоогийн байдал</h4>
-                                    <div className="bg-gray-50/50 rounded-xl p-4 border border-gray-100">
-                                        <div className="flex flex-wrap gap-x-8 gap-y-3">
-                                            {item.conditions.map(c => (
-                                                <div key={c.label} className="flex flex-col gap-1">
-                                                    <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">{c.label}</span>
-                                                    <div className={`flex items-center gap-1.5 text-xs font-bold ${c.warning ? 'text-orange-500' : 'text-gray-700'}`}>
-                                                        {c.warning && <span className="material-icons-round text-sm">warning</span>}
-                                                        {c.value}
-                                                    </div>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    </div>
+                                    <ItemConditionSummary conditions={item.conditionData} compact={true} />
                                 </div>
 
                                 {/* 3. Photos */}

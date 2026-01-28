@@ -56,12 +56,14 @@ const OrderFlowScreen: React.FC = () => {
     };
 
     // Render Step Content
+    // Step 3: 물품 상태 등록 (Одоогийн байдал бүртгэх)
+    // Step 4: 서비스 상세 선택 (Сонгосон үйлчилгээний дэлгэрэнгүй)
     const renderStepContent = () => {
         switch (currentStep) {
             case 1: return <Step1Info onValidationChange={setStep1Valid} />;
             case 2: return <Step2ServiceSelection onValidationChange={setStep2Valid} />;
-            case 3: return <Step3ServiceDetails onValidationChange={setStep3Valid} />;
-            case 4: return <Step4ItemCondition onValidationChange={setStep4Valid} />;
+            case 3: return <Step4ItemCondition onValidationChange={setStep3Valid} />;
+            case 4: return <Step3ServiceDetails onValidationChange={setStep4Valid} />;
             case 5: return <Step5OrderSummary />;
             case 6: return <Step6Payment onValidationChange={setStep6Valid} />;
             default: return <Step1Info />;

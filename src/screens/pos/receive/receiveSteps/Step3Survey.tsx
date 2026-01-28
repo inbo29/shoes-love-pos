@@ -23,12 +23,18 @@ interface Step3SurveyProps {
         discount: number;
         pointsUsed: number;
     };
+    onSurveyComplete?: (isComplete: boolean) => void;
 }
 
-const Step3Survey: React.FC<Step3SurveyProps> = ({ noVat, orderData, calculations }) => {
+const Step3Survey: React.FC<Step3SurveyProps> = ({ noVat, orderData, calculations, onSurveyComplete }) => {
     const [rating, setRating] = useState<number | null>(null);
     const [wantsServiceAgain, setWantsServiceAgain] = useState(false);
     const [comment, setComment] = useState('');
+    
+    // 설문 완료 여부 (별점 선택 시 완료로 간주)
+    React.useEffect(() => {
+        onSurveyComplete?.(rating !== null);
+    }, [rating, onSurveyComplete]);
 
     const currentFinalTotal = calculations.finalTotal - (noVat ? calculations.vat : 0);
     const isFullyPaid = calculations.remaining <= 0; // The consolidated remaining in flow might be different if Step 2 added payments, but survey usually shows final state of mock base.

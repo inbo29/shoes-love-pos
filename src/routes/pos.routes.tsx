@@ -3,6 +3,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardScreen from '../screens/pos/dashboard/PosDashboardScreen';
 import OrderListScreen from '../screens/pos/order/OrderListScreen';
 import OrderFlowScreen from '../screens/pos/order/OrderFlowScreen';
+import GomdolOrderFlowScreen from '../screens/pos/order/GomdolOrderFlowScreen';
 import DayManagementScreen from '../screens/pos/management/DayManagementScreen';
 import CashSubmissionScreen from '../screens/pos/finance/CashSubmissionScreen';
 import CashReportScreen from '../screens/pos/finance/CashReportScreen';
@@ -47,6 +48,8 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
                 <Route index element={<OrderListScreen />} />
                 <Route path="new/step/:step" element={<OrderFlowScreen />} />
                 <Route path=":id/edit/step/:step" element={<OrderFlowScreen />} />
+                {/* Gomdol 재주문 - Step 5부터 시작하는 특수 주문 */}
+                <Route path="gomdol/step/:step" element={<GomdolOrderFlowScreen />} />
             </Route>
 
             {/* Management & Finance */}

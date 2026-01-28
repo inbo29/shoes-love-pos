@@ -26,9 +26,10 @@ interface Transaction {
 
 interface Step6PaymentProps {
     onValidationChange?: (isValid: boolean) => void;
+    isGomdolOrder?: boolean; // Gomdol 재주문 모드
 }
 
-const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
+const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange, isGomdolOrder = false }) => {
     const [selectedMethod, setSelectedMethod] = useState<string>('cash');
     const [amountStr, setAmountStr] = useState<string>('');
     const [isProcessing, setIsProcessing] = useState(false);
@@ -60,9 +61,113 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
     // Notify parent of validation state (Finish button)
     React.useEffect(() => {
         if (onValidationChange) {
-            onValidationChange(totalPaid > 0);
+            // Gomdol 주문은 항상 valid (가격이 0이므로)
+            if (isGomdolOrder) {
+                onValidationChange(true);
+            } else {
+                onValidationChange(totalPaid > 0);
+            }
         }
-    }, [totalPaid, onValidationChange]);
+    }, [totalPaid, onValidationChange, isGomdolOrder]);
+
+    // Gomdol 주문일 경우 간소화된 완료 화면 표시
+    if (isGomdolOrder) {
+        return (
+            <div className="flex flex-col lg:flex-row gap-8 pb-12 overflow-visible relative">
+                {/* Left Column - Gomdol 완료 화면 */}
+                <div className="w-full lg:w-[64%] flex flex-col gap-8 overflow-visible min-w-0">
+                    <div className="p-16 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-[40px] border border-orange-200 flex flex-col items-center text-center shadow-sm animate-in fade-in zoom-in-95">
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 flex items-center justify-center mb-8 shadow-xl shadow-orange-200/50">
+                            <span className="material-icons-round text-white text-5xl">refresh</span>
+                        </div>
+                        <h2 className="text-3xl font-black text-gray-800 uppercase mb-4 tracking-tight">
+                            Дахин захиалга
+                        </h2>
+                        <p className="text-gray-600 text-sm font-bold mb-4 max-w-sm leading-relaxed">
+                            Гомдлоор дахин илгээх захиалга үүсгэх гэж байна.
+                        </p>
+                        <div className="px-4 py-2 bg-green-100 rounded-full text-green-700 text-xs font-black uppercase">
+                            Төлбөр: ₮ 0 (Үнэгүй)
+                        </div>
+
+                        <div className="mt-10 p-6 bg-white/80 rounded-2xl border border-orange-100 w-full max-w-sm">
+                            <h4 className="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest">Тэмдэглэл</h4>
+                            <ul className="text-xs text-gray-600 space-y-2 text-left">
+                                <li className="flex items-start gap-2">
+                                    <span className="material-icons-round text-orange-400 text-sm mt-0.5">check</span>
+                                    Энэ захиалга нь гомдлоор дахин илгээж буй захиалга
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="material-icons-round text-orange-400 text-sm mt-0.5">check</span>
+                                    Төлбөр 0₮ болно
+                                </li>
+                                <li className="flex items-start gap-2">
+                                    <span className="material-icons-round text-orange-400 text-sm mt-0.5">check</span>
+                                    Тайлан дээр тусдаа бүртгэгдэнэ
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right Column - Gomdol 결제 요약 (모두 0) */}
+                <div className="w-full lg:w-[36%] shrink-0 flex flex-col gap-6">
+                    <div className="bg-white rounded-[32px] shadow-xl border border-orange-100 overflow-hidden sticky top-4">
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="h-4 w-1 bg-orange-400 rounded-sm"></div>
+                                <h3 className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Төлбөрийн тооцоо</h3>
+                            </div>
+
+                            <div className="space-y-4">
+                                <div className="flex justify-between text-sm">
+                                    <span className="font-bold text-gray-400 line-through">Үйлчилгээний дүн</span>
+                                    <span className="font-black text-gray-400 tracking-tight line-through">₮ 0</span>
+                                </div>
+
+                                <div className="flex justify-between text-sm">
+                                    <span className="font-bold text-gray-400 line-through">НӨАТ (10%)</span>
+                                    <span className="font-black text-gray-400 tracking-tight line-through">₮ 0</span>
+                                </div>
+
+                                <div className="w-full h-px bg-gray-100" />
+
+                                <div className="flex justify-between items-end pt-4">
+                                    <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">Нийт дүн</span>
+                                    <span className="text-3xl font-black text-green-600 tracking-tighter leading-none">₮ 0</span>
+                                </div>
+                            </div>
+
+                            {/* Gomdol 배지 */}
+                            <div className="mt-8 p-4 bg-orange-50 rounded-2xl border border-orange-200">
+                                <div className="flex items-center gap-3">
+                                    <span className="material-icons-round text-orange-500 text-xl">warning</span>
+                                    <div>
+                                        <p className="text-xs font-black text-orange-700">Дахин захиалга</p>
+                                        <p className="text-[10px] text-orange-600">Төлбөргүй дахин илгээх</p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            {/* Gomdol 주문 영수증/티켓 인쇄 버튼 */}
+                            <div className="mt-6 pt-6 border-t border-orange-200">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="w-full py-4 bg-[#40C1C7] hover:bg-[#35a8ad] rounded-2xl flex items-center justify-center gap-3 text-white transition-all active:scale-95 group shadow-lg shadow-[#40C1C7]/30"
+                                >
+                                    <span className="material-icons-round text-xl group-hover:rotate-12 transition-transform">print</span>
+                                    <span className="text-[11px] font-black uppercase tracking-widest">Падаан хэвлэх</span>
+                                </button>
+                                <p className="text-[9px] text-center text-gray-500 mt-2">
+                                    * Гомдлын дахин захиалга - үнэгүй
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     // Current Input
     const inputValue = amountStr === '' ? '' : parseInt(amountStr);
@@ -132,9 +237,12 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
                                         </p>
                                     </div>
                                 </div>
-                                <button className="flex items-center gap-2 px-6 py-3.5 bg-white border-2 border-gray-100 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-700 hover:bg-gray-50 transition-all shadow-sm active:scale-95 shrink-0">
+                                <button 
+                                    onClick={() => window.print()}
+                                    className="flex items-center gap-2 px-6 py-3.5 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 hover:border-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-700 transition-all shadow-sm active:scale-95 shrink-0"
+                                >
                                     <span className="material-icons-round text-lg">print</span>
-                                    Капитанз хэвлэх
+                                    <span>Падаан хэвлэх</span>
                                 </button>
                             </div>
                         )}
@@ -292,40 +400,44 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
                                 <span className="text-xs font-bold text-gray-600 uppercase tracking-tight">Нөатгүй</span>
                             </label>
 
-                            {/* Billing Type Toggle */}
-                            <div className="flex bg-gray-50 p-1 rounded-xl">
-                                <button
-                                    onClick={() => setBillingType('individual')}
-                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                >
-                                    Хувь хүн
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setBillingType('company');
-                                        if (!selectedCompany) setShowCompanyPopup(true);
-                                    }}
-                                    className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'company' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
-                                >
-                                    Байгууллага
-                                </button>
-                            </div>
-
-                            {billingType === 'company' && selectedCompany && (
-                                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 animate-in fade-in zoom-in-95">
-                                    <div className="flex justify-between items-center">
-                                        <div className="space-y-1">
-                                            <p className="text-[9px] font-bold text-gray-900 uppercase">Сонгосон байгууллага</p>
-                                            <p className="text-xs font-black text-gray-800">{selectedCompany}</p>
-                                        </div>
+                            {/* Billing Type Toggle - НӨАТГҮЙ 체크 시 숨김 */}
+                            {!noVat && (
+                                <>
+                                    <div className="flex bg-gray-50 p-1 rounded-xl animate-in fade-in slide-in-from-top-2">
                                         <button
-                                            onClick={() => setShowCompanyPopup(true)}
-                                            className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm hover:scale-110 transition-transform"
+                                            onClick={() => setBillingType('individual')}
+                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'individual' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
                                         >
-                                            <span className="material-icons-round text-base">edit</span>
+                                            Хувь хүн
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setBillingType('company');
+                                                if (!selectedCompany) setShowCompanyPopup(true);
+                                            }}
+                                            className={`flex-1 py-1.5 text-[9px] font-black uppercase tracking-wider rounded-lg transition-all ${billingType === 'company' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-400 hover:text-gray-600'}`}
+                                        >
+                                            Байгууллага
                                         </button>
                                     </div>
-                                </div>
+
+                                    {billingType === 'company' && selectedCompany && (
+                                        <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10 animate-in fade-in zoom-in-95">
+                                            <div className="flex justify-between items-center">
+                                                <div className="space-y-1">
+                                                    <p className="text-[9px] font-bold text-gray-900 uppercase">Сонгосон байгууллага</p>
+                                                    <p className="text-xs font-black text-gray-800">{selectedCompany}</p>
+                                                </div>
+                                                <button
+                                                    onClick={() => setShowCompanyPopup(true)}
+                                                    className="w-7 h-7 rounded-full bg-white flex items-center justify-center text-gray-800 shadow-sm hover:scale-110 transition-transform"
+                                                >
+                                                    <span className="material-icons-round text-base">edit</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
 
@@ -334,6 +446,38 @@ const Step6Payment: React.FC<Step6PaymentProps> = ({ onValidationChange }) => {
                             <div className="mt-6 px-4 py-3 bg-blue-50/50 rounded-2xl border border-blue-100/50">
                                 <p className="text-[9px] text-blue-600 font-bold leading-relaxed text-center">
                                     Санамж: Та одоо заавал бүх төлбөрөө 30% хүртэл төлсөн тохиолдолд захиалгыг дуусгаж болно.
+                                </p>
+                            </div>
+                        )}
+                        
+                        {/* Падаан хэвлэх 버튼 - 결제가 있을 때만 표시 */}
+                        {totalPaid > 0 && remaining > 0 && (
+                            <div className="mt-6 pt-6 border-t border-gray-100">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="w-full py-4 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 hover:border-gray-300 rounded-2xl flex items-center justify-center gap-3 text-gray-700 transition-all active:scale-95 group"
+                                >
+                                    <span className="material-icons-round text-xl group-hover:rotate-12 transition-transform">print</span>
+                                    <span className="text-[11px] font-black uppercase tracking-widest">Падаан хэвлэх</span>
+                                </button>
+                                <p className="text-[9px] text-center text-gray-500 mt-2">
+                                    * Урьдчилгаа төлбөрийн баримт
+                                </p>
+                            </div>
+                        )}
+                        
+                        {/* 완료 화면용 - 잔액 0일 때 영수증 인쇄 버튼 */}
+                        {remaining === 0 && (
+                            <div className="mt-6 pt-6 border-t border-gray-100">
+                                <button
+                                    onClick={() => window.print()}
+                                    className="w-full py-4 bg-[#40C1C7] hover:bg-[#35a8ad] rounded-2xl flex items-center justify-center gap-3 text-white transition-all active:scale-95 group shadow-lg shadow-[#40C1C7]/30"
+                                >
+                                    <span className="material-icons-round text-xl group-hover:rotate-12 transition-transform">print</span>
+                                    <span className="text-[11px] font-black uppercase tracking-widest">Падаан хэвлэх</span>
+                                </button>
+                                <p className="text-[9px] text-center text-gray-500 mt-2">
+                                    * Төлбөр бүрэн төлөгдсөн тул баримт хэвлэх боломжтой
                                 </p>
                             </div>
                         )}

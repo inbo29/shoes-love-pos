@@ -1,0 +1,176 @@
+---
+description: Gomdol(클레임) 재주문 기능 규칙 - Step 5 직행 특수 흐름
+globs: "**/order/**,**/receive/**"
+alwaysApply: false
+---
+
+# Gomdol 재주문 기능 규칙
+
+## 기능 개요
+
+Gomdol(불만/클레임)으로 인한 재주문은 일반 주문 흐름을 따르지 않고,
+**Zahialga Step 5부터 직접 시작**하는 특수 주문입니다.
+
+---
+
+## 진입 트리거
+
+```
+위치: 수령(Receive) → Step 4 (Complaint 화면)
+액션: "Дахин үйлчилгээ хийх" 선택 + "Дахин захиалга үүсгэх" 버튼 클릭
+URL: /pos/orders/gomdol/step/5
+```
+
+---
+
+## 동작 흐름 (필수 준수)
+
+```
+Receive Step 3
+    ↓ (Gomdol 버튼 클릭)
+Receive Step 4 (Complaint 등록)
+    ↓ ("Дахин захиалга үүсгэх" 클릭)
+Order Step 5 (Gomdol Mode) - 직행
+    ↓
+Order Step 6 (Payment - 0원)
+    ↓
+완료
+```
+
+**Step 1~4 완전히 스킵됨**
+
+---
+
+## 데이터 구조 (필수)
+
+```typescript
+interface GomdolOrderData {
+    source: 'gomdol';           // 반드시 'gomdol'
+    isReOrder: true;            // 반드시 true
+    originalOrderId: string;    // 원본 주문 ID
+    originalReceiveId: string;  // 원본 수령 ID
+    complaintId: string;        // 클레임 ID
+    complaintType: string;      // 클레임 유형
+    complaintDescription: string;
+    selectedItems: GomdolSelectedItem[];
+    selectedAction: string;
+    price: 0;                   // 반드시 0
+}
+```
+
+---
+
+## UI/UX 제한 규칙 (절대 금지)
+
+### Step 5 (GomdolSummary)
+
+```
+❌ 아이템 추가/삭제 버튼 표시 금지
+❌ 수량 조절 버튼 표시 금지
+❌ 서비스 선택 UI 활성화 금지
+❌ 가격 입력 필드 활성화 금지
+✅ 모든 정보 읽기 전용(Read-only)
+✅ 화면 상단에 "Дахин захиалга" 배지 고정 표시
+```
+
+### Step 6 (Payment)
+
+```
+❌ 결제 수단 선택 UI 표시 금지
+❌ 금액 입력 필드 표시 금지
+❌ 포인트 사용 UI 활성화 금지
+✅ 가격 0원으로 고정 표시
+✅ "Дахин захиалга" 안내 문구 표시
+```
+
+---
+
+## 라우팅 규칙
+
+```typescript
+// 허용되는 라우트
+/pos/orders/gomdol/step/5  ✅
+/pos/orders/gomdol/step/6  ✅
+
+// 금지되는 라우트 (자동 리다이렉트)
+/pos/orders/gomdol/step/1  ❌ → /pos/orders/gomdol/step/5
+/pos/orders/gomdol/step/2  ❌ → /pos/orders/gomdol/step/5
+/pos/orders/gomdol/step/3  ❌ → /pos/orders/gomdol/step/5
+/pos/orders/gomdol/step/4  ❌ → /pos/orders/gomdol/step/5
+```
+
+---
+
+## 접근 제어
+
+```typescript
+// sessionStorage에 gomdolOrderData 없이 접근 시
+if (!sessionStorage.getItem('gomdolOrderData')) {
+    navigate('/pos/receive');  // Receive로 강제 이동
+}
+
+// source !== 'gomdol' 인 경우
+if (data.source !== 'gomdol') {
+    navigate('/pos/receive');  // Receive로 강제 이동
+}
+```
+
+---
+
+## 금액 규칙
+
+| 항목 | 값 |
+|------|-----|
+| 아이템 단가 | 0 |
+| 총 금액 | 0 |
+| NӨАТ | 0 |
+| 할인/포인트 | 사용 불가 |
+
+---
+
+## 저장/완료 처리
+
+```
+- 일반 주문과 동일하게 주문 생성
+- 상태: "Дахин захиалга"
+- 통계/리포트: 매출 ❌, 주문 건수 ⭕ (별도 분리)
+- sessionStorage 클리어 필수
+```
+
+---
+
+## 컴포넌트 파일 구조
+
+```
+src/screens/pos/
+├─ order/
+│  ├─ GomdolOrderFlowScreen.tsx     # Gomdol 전용 Flow
+│  └─ steps/
+│     ├─ Step5GomdolSummary.tsx     # Gomdol 전용 Summary
+│     └─ Step6Payment.tsx           # isGomdolOrder prop 지원
+│
+└─ receive/
+   └─ receiveSteps/
+      └─ Step4Complaint.tsx         # Gomdol 진입점
+```
+
+---
+
+## 수정 시 주의사항
+
+```
+⚠️ GomdolOrderData 인터페이스 수정 시:
+   - Step4Complaint.tsx
+   - Step5GomdolSummary.tsx
+   - GomdolOrderFlowScreen.tsx
+   모두 동기화 필요
+
+⚠️ 라우팅 변경 시:
+   - pos.routes.tsx
+   - Step4Complaint.tsx의 navigate 경로
+   모두 동기화 필요
+
+⚠️ UI 변경 시:
+   - Gomdol 모드 배지/알림은 반드시 유지
+   - 일반 주문과 시각적으로 구분 필수
+```

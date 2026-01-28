@@ -156,6 +156,15 @@ const PosDashboardScreen: React.FC<{ userName?: string }> = ({ userName = 'Ад�
                         iconBg="bg-red-50"
                         onClick={() => navigate('/pos/inventory')}
                     />
+                    <StatCard
+                        title="Гомдол / Клэйм"
+                        value="8"
+                        icon="report_problem"
+                        colorClass="text-amber-600"
+                        iconBg="bg-amber-50"
+                        onClick={() => navigate('/pos/receive')}
+                        tooltip="Шийдвэрлээгүй гомдлын тоо"
+                    />
                 </div>
             </div>
 
@@ -229,14 +238,29 @@ const PosDashboardScreen: React.FC<{ userName?: string }> = ({ userName = 'Ад�
                     <WidgetHeader title="Сүүлийн тооллого" icon="fact_check" />
                     <div className="space-y-4">
                         {recentAudits.map((item, idx) => (
-                            <div key={idx} className="flex items-center justify-between p-4 bg-[#111827] rounded-2xl group hover:bg-black transition-all cursor-pointer" onClick={() => navigate('/pos/product-audit')}>
+                            <div 
+                                key={idx} 
+                                className={`flex items-center justify-between p-4 rounded-2xl group transition-all cursor-pointer border-2 ${
+                                    item.diff === 0 
+                                        ? 'bg-gradient-to-r from-green-50 to-emerald-50 border-green-200 hover:border-green-400' 
+                                        : 'bg-gradient-to-r from-red-50 to-orange-50 border-red-200 hover:border-red-400'
+                                }`} 
+                                onClick={() => navigate('/pos/product-audit')}
+                            >
                                 <div className="flex flex-col">
-                                    <span className="text-xs font-black text-gray-400 group-hover:text-primary transition-colors">{item.date}</span>
+                                    <span className="text-sm font-black text-gray-800">{item.date}</span>
                                     <span className="text-[10px] font-bold text-gray-500">{item.manager}</span>
                                 </div>
-                                <span className={`font-black text-sm ${item.diff === 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                    {item.diff > 0 ? '+' : ''}{item.diff} ш
-                                </span>
+                                <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl ${
+                                    item.diff === 0 
+                                        ? 'bg-green-500 text-white' 
+                                        : 'bg-red-500 text-white'
+                                }`}>
+                                    <span className="material-icons-round text-sm">{item.diff === 0 ? 'check_circle' : 'remove_circle'}</span>
+                                    <span className="font-black text-sm">
+                                        {item.diff > 0 ? '+' : ''}{item.diff} ш
+                                    </span>
+                                </div>
                             </div>
                         ))}
                     </div>

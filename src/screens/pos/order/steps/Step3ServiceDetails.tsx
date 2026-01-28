@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { serviceDataByItem, mapCategoryToItemType, ItemType, ServiceType, ServiceDetail, ItemData } from '../../../../services/mockServiceData';
+import ItemConditionSummary, { ItemConditionData, mockShoeCondition1, mockChemicalCondition } from '../../../../shared/components/ItemConditionSummary/ItemConditionSummary';
 
 export type OrderHandlingType =
     | 'NORMAL'        // ЭНГИЙН
@@ -215,6 +216,13 @@ const Step3ServiceDetails: React.FC<Step3ServiceDetailsProps> = ({ onValidationC
                                     <span className="text-sm px-3 py-1 rounded-full bg-primary/10 text-primary font-medium">
                                         Сонгосон: {serviceCount} үйлчилгээ
                                     </span>
+                                </div>
+
+                                {/* Step 3에서 등록한 물품 상태 요약 (Одоогийн байдал) - 전체 항목 표시 */}
+                                <div className="mb-5">
+                                    <ItemConditionSummary 
+                                        conditions={item.itemType === 'SHOES' ? mockShoeCondition1 : mockChemicalCondition}
+                                    />
                                 </div>
 
                                 {/* Service Type Cards - Horizontal Scroll */}
