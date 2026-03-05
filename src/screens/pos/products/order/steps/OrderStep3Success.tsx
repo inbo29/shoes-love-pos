@@ -1,8 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const OrderStep3Success: React.FC = () => {
+interface Props {
+    onBackToList?: () => void;
+}
+
+const OrderStep3Success: React.FC<Props> = ({ onBackToList }) => {
     const navigate = useNavigate();
+
+    const handleBack = () => {
+        if (onBackToList) {
+            onBackToList();
+        } else {
+            navigate('/pos/product-order');
+        }
+    };
 
     return (
         <div className="flex-1 flex flex-col items-center justify-center bg-[#F8F9FA] p-6">
@@ -16,11 +28,12 @@ const OrderStep3Success: React.FC = () => {
                 </h3>
 
                 <p className="text-sm font-bold text-gray-400 leading-relaxed mb-10 px-4">
-                    Захиалга амжилттай бүртгэгдлээ. Төв салбар руу мэдээлэл илгээгдсэн.
+                    Захиалга амжилттай бүртгэгдлээ.<br />
+                    Төв салбар руу мэдээлэл илгээгдсэн.
                 </p>
 
                 <button
-                    onClick={() => navigate('/pos/product-order')}
+                    onClick={handleBack}
                     className="w-full py-5 bg-[#FFD400] text-gray-900 rounded-2xl text-[11px] font-black uppercase tracking-widest shadow-xl shadow-yellow-200 hover:bg-[#FFC400] transition-all active:scale-95"
                 >
                     Жагсаалт руу буцах

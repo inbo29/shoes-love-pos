@@ -6,9 +6,6 @@ const PAYMENT_METHODS = [
     { id: 'cash', label: 'Бэлэн', icon: 'payments', color: 'bg-green-500' },
     { id: 'card', label: 'Карт', icon: 'credit_card', color: 'bg-blue-500' },
     { id: 'qpay', label: 'QPAY', icon: 'qr_code_2', color: 'bg-red-500' },
-    { id: 'candy', label: 'Candy', icon: 'stars', color: 'bg-pink-500' },
-    { id: 'pocket', label: 'Pocket', icon: 'account_balance_wallet', color: 'bg-cyan-500' },
-    { id: 'gift', label: 'Бэлгийн карт', icon: 'card_giftcard', color: 'bg-purple-500' },
 ];
 
 interface Transaction {

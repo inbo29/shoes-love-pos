@@ -5,14 +5,6 @@ const PAYMENT_METHODS = [
     { id: 'cash', label: 'Бэлэн', icon: 'payments', color: 'bg-green-500' },
     { id: 'card', label: 'Карт', icon: 'credit_card', color: 'bg-blue-500' },
     { id: 'qpay', label: 'QPAY', icon: 'qr_code_2', color: 'bg-red-500' },
-    { id: 'bank', label: 'Дансаар', icon: 'account_balance', color: 'bg-indigo-500' },
-    { id: 'candy', label: 'Candy', icon: 'stars', color: 'bg-pink-500' },
-    { id: 'voucher', label: 'Эрхийн бичиг', icon: 'confirmation_number', color: 'bg-orange-500' },
-    { id: 'gift', label: 'Бэлгийн карт', icon: 'card_giftcard', color: 'bg-purple-500' },
-    { id: 'nomin', label: 'Номин', icon: 'shopping_bag', color: 'bg-teal-500' },
-    { id: 'pocket', label: 'Pocket', icon: 'account_balance_wallet', color: 'bg-cyan-500' },
-    { id: 'storepay', label: 'storepay', icon: 'shopping_cart', color: 'bg-emerald-500' },
-    { id: 'barter', label: 'Бартер', icon: 'swap_horiz', color: 'bg-gray-500' },
 ];
 
 interface Transaction {
@@ -137,7 +129,7 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                         </p>
                                     </div>
                                 </div>
-                                <button 
+                                <button
                                     onClick={() => window.print()}
                                     className="flex items-center gap-2 px-6 py-3.5 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 hover:border-gray-300 rounded-2xl font-black text-[10px] uppercase tracking-widest text-gray-700 transition-all shadow-sm active:scale-95 shrink-0"
                                 >
@@ -388,7 +380,7 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                     Санамж: Та одоо заавал бүх төлбөрөө 30% хүртэл төлсөн тохиолдолд захиалгыг дуусгаж болно.
                                 </p>
                             </div>
-                            
+
                             {/* Падаан хэвлэх 버튼 - 결제가 있을 때만 표시 */}
                             {totalPaidInSession > 0 && currentRemaining > 0 && (
                                 <div className="pt-4 border-t border-gray-100 mt-4">
@@ -404,7 +396,7 @@ const Step2Payment: React.FC<Step2PaymentProps> = ({ onPaymentComplete, onNoVatC
                                     </p>
                                 </div>
                             )}
-                            
+
                             {/* 완료 화면용 - 잔액 0일 때 영수증 인쇄 버튼 */}
                             {currentRemaining === 0 && (
                                 <div className="pt-4 border-t border-gray-100 mt-4">

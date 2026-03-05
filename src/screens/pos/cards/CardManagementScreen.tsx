@@ -182,80 +182,79 @@ const CardManagementScreen: React.FC = () => {
     return (
         <div className="flex-1 flex flex-col h-full bg-[#F8F9FA] overflow-y-auto no-scrollbar overflow-visible">
             <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20 overflow-visible">
-                {/* 1. List Section */}
-                <div className="bg-white rounded-[24px] shadow-lg border border-gray-100 flex flex-col min-h-[480px] overflow-visible relative z-[1]">
-                    {/* Header */}
-                    <div className="p-6 border-b border-gray-100 flex flex-col xl:flex-row items-end justify-between gap-6">
-                        <div className="flex items-center gap-3 w-full xl:w-auto">
-                            <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
-                            <div>
-                                <h2 className="text-[18px] font-bold text-[#374151] tracking-tight">Гишүүнчлэлийн жагсаалт</h2>
-                                <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">Нийт бүртгэлтэй хэрэглэгчид</p>
-                            </div>
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-4 w-full xl:w-auto">
-                            <div className="relative flex-1 min-w-[260px]">
-                                <span className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center pointer-events-none text-gray-400">
-                                    <span className="material-icons-round text-xl">search</span>
-                                </span>
-                                <input
-                                    type="text"
-                                    placeholder="нэр / утас / карт №"
-                                    value={searchQuery}
-                                    onChange={(e) => {
-                                        setSearchQuery(e.target.value);
-                                        setCurrentPage(1);
-                                    }}
-                                    className="w-full h-[44px] pl-12 pr-4 bg-white border border-gray-200 rounded-xl text-[13px] font-bold focus:outline-none focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all shadow-sm"
-                                />
-                            </div>
-
-                            <PosDropdown
-                                icon="sort"
-                                value={sortBy}
-                                onChange={(val) => {
-                                    setSortBy(val);
-                                    setCurrentPage(1);
-                                }}
-                                options={[
-                                    { label: 'Сүүлд нэмэгдсэн', value: 'newest' },
-                                    { label: 'Анх нэмэгдсэн', value: 'oldest' },
-                                    { label: 'Нэрээр (А-Я)', value: 'name-asc' },
-                                    { label: 'Хүсэлт илгээсэн', value: 'requested' },
-                                    { label: 'Идэвхтэй', value: 'active' },
-                                    { label: 'Идэвхгүй', value: 'inactive' },
-                                ]}
-                                className="w-[200px]"
-                            />
-
-                            <PosExcelButton />
+                {/* Header & Filters */}
+                <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-4 shrink-0">
+                    <div className="flex items-center gap-3">
+                        <div className="h-8 w-1.5 bg-primary rounded-sm"></div>
+                        <div>
+                            <h2 className="text-[18px] font-bold text-[#374151]">Гишүүнчлэлийн жагсаалт</h2>
                         </div>
                     </div>
 
+                    <div className="flex flex-wrap lg:flex-nowrap items-center gap-3 w-full lg:w-auto">
+                        <div className="relative flex-1 min-w-[260px] lg:w-[300px]">
+                            <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                                <span className="material-icons-round text-sm">search</span>
+                            </span>
+                            <input
+                                type="text"
+                                placeholder="Нэр / Утас / Карт №"
+                                value={searchQuery}
+                                onChange={(e) => {
+                                    setSearchQuery(e.target.value);
+                                    setCurrentPage(1);
+                                }}
+                                className="block w-full h-11 pl-9 pr-4 bg-white border border-gray-100 rounded-xl text-xs font-bold focus:outline-none focus:border-primary transition-all shadow-sm"
+                            />
+                        </div>
+
+                        <PosDropdown
+                            icon="sort"
+                            value={sortBy}
+                            onChange={(val) => {
+                                setSortBy(val);
+                                setCurrentPage(1);
+                            }}
+                            options={[
+                                { label: 'Сүүлд нэмэгдсэн', value: 'newest' },
+                                { label: 'Анх нэмэгдсэн', value: 'oldest' },
+                                { label: 'Нэрээр (А-Я)', value: 'name-asc' },
+                                { label: 'Хүсэлт илгээсэн', value: 'requested' },
+                                { label: 'Идэвхтэй', value: 'active' },
+                                { label: 'Идэвхгүй', value: 'inactive' },
+                            ]}
+                            className="w-[200px]"
+                        />
+
+                        <PosExcelButton />
+                    </div>
+                </div>
+
+                {/* 1. List Section */}
+                <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 flex flex-col min-h-[480px] overflow-visible relative z-[1]">
                     {/* Table */}
-                    <div className="flex-1 overflow-x-auto">
+                    <div className="flex-1 overflow-x-auto overflow-y-auto no-scrollbar">
                         <table className="w-full text-left border-collapse">
-                            <thead className="bg-gray-50/50">
-                                <tr className="text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
-                                    <th className="px-6 py-4">Гишүүнчлэлийн №</th>
-                                    <th className="px-6 py-4">Хэрэглэгчийн нэр</th>
-                                    <th className="px-6 py-4">Төрөл</th>
-                                    <th className="px-6 py-4">Утас</th>
-                                    <th className="px-6 py-4 hidden lg:table-cell">Төрсөн огноо</th>
-                                    <th className="px-6 py-4 text-center">Пойнт</th>
-                                    <th className="px-6 py-4 text-center">Төлөв</th>
-                                    <th className="px-6 py-4 w-10"></th>
+                            <thead className="sticky top-0 bg-gray-50/90 backdrop-blur-md z-10 text-[10px] font-black text-gray-400 uppercase tracking-widest border-b border-gray-100">
+                                <tr>
+                                    <th className="px-6 py-4 font-black">Гишүүнчлэлийн №</th>
+                                    <th className="px-6 py-4 font-black">Хэрэглэгчийн нэр</th>
+                                    <th className="px-6 py-4 font-black">Төрөл</th>
+                                    <th className="px-6 py-4 font-black">Утас</th>
+                                    <th className="px-6 py-4 font-black hidden lg:table-cell">Төрсөн огноо</th>
+                                    <th className="px-6 py-4 font-black text-center">Пойнт</th>
+                                    <th className="px-6 py-4 font-black text-center">Төлөв</th>
+                                    <th className="px-6 py-4 font-black w-10"></th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-50 bg-white">
                                 {paginatedCards.length > 0 ? paginatedCards.map((card) => (
                                     <tr
                                         key={card.cardNo}
                                         onClick={() => handleRowClick(card)}
                                         className={`cursor-pointer transition-all hover:bg-primary/5 group ${selectedCard?.cardNo === card.cardNo ? 'bg-primary/5' : ''}`}
                                     >
-                                        <td className="px-6 py-5 font-black text-primary text-[13px]">{card.cardNo}</td>
+                                        <td className="px-6 py-5 font-black text-primary group-hover:underline text-[13px]">{card.cardNo}</td>
                                         <td className="px-6 py-5 font-bold text-gray-800 text-[13px]">{maskName(card.name)}</td>
                                         <td className="px-6 py-5 font-bold text-gray-600 text-[11px] uppercase tracking-wide">
                                             {getMembershipLabel(card.membershipType)}
@@ -279,6 +278,11 @@ const CardManagementScreen: React.FC = () => {
                                                     {card.status === 'ACTIVE' ? 'Идэвхтэй' :
                                                         card.status === 'REQUESTED' ? 'Хүсэлт илгээсэн' : 'Идэвхгүй'}
                                                 </span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 w-8 shrink-0">
+                                            <div className="flex justify-end text-gray-300 group-hover:text-primary transition-colors">
+                                                <span className="material-icons-round">chevron_right</span>
                                             </div>
                                         </td>
                                     </tr>
@@ -432,7 +436,7 @@ const CardManagementScreen: React.FC = () => {
                                 className="w-full sm:flex-1 lg:flex-none h-[52px] px-6 lg:px-8 bg-white border-2 border-primary/20 text-primary rounded-2xl text-[10px] lg:text-[11px] font-black uppercase tracking-widest hover:bg-primary/5 transition-all flex items-center justify-center gap-2 whitespace-nowrap"
                             >
                                 <span className="material-icons-round">add</span>
-                                Шинэ бүртгэл
+                                Хүсэлт
                             </button>
                             {/* Cancel button always available to reset form */}
                             <button

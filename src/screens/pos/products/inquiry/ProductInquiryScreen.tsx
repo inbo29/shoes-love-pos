@@ -20,25 +20,25 @@ const ProductInquiryScreen: React.FC = () => {
             <div className="w-full h-full flex flex-col p-4 md:p-6 gap-6 relative overflow-hidden">
                 <div className="flex items-center gap-3 shrink-0">
                     <div className="h-8 w-1.5 bg-primary rounded-sm"></div>
-                    <h2 className="text-xl font-black text-[#374151] uppercase tracking-tight">Бараа лавлах</h2>
+                    <h2 className="text-xl font-bold text-[#374151] uppercase tracking-tight">Бараа лавлах</h2>
                 </div>
 
                 {/* Search Area */}
-                <div className="bg-white rounded-[28px] p-6 shadow-sm border border-gray-100 shrink-0">
+                <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 shrink-0">
                     <div className="flex items-center gap-4">
                         <div className="relative flex-1">
-                            <span className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-gray-400">
-                                <span className="material-icons-round">search</span>
+                            <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                                <span className="material-icons-round text-sm">search</span>
                             </span>
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={e => setSearchQuery(e.target.value)}
-                                className="w-full h-14 pl-14 pr-4 bg-[#F9FAFB] border-2 border-transparent rounded-[24px] text-sm font-bold focus:outline-none focus:border-primary focus:bg-white transition-all shadow-inner"
+                                className="w-full h-[44px] pl-9 pr-12 bg-gray-50 border border-transparent rounded-xl text-sm font-medium focus:outline-none focus:border-primary transition-all"
                                 placeholder="Бараа хайх (Нэр, ангилал, үнэ)..."
                             />
-                            <button className="absolute inset-y-0 right-4 flex items-center text-gray-300 hover:text-primary transition-colors">
-                                <span className="material-icons-round">qr_code_scanner</span>
+                            <button className="absolute inset-y-0 right-3 flex items-center text-gray-400 hover:text-primary transition-colors">
+                                <span className="material-icons-round text-lg">qr_code_scanner</span>
                             </button>
                         </div>
                     </div>

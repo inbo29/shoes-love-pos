@@ -1,11 +1,15 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PosDropdown from '../../../../shared/components/PosDropdown';
 import PosDateRangePicker from '../../../../shared/components/PosDateRangePicker';
 import PosExcelButton from '../../../../shared/components/PosExcelButton';
 import PosPagination from '../../../../shared/components/PosPagination';
-import { mockProductOrders, ProductOrder, ProductOrderItem, InventoryHistory, ProductOrderStatus } from '../../../../services/mockProductOrderData';
-import { mockProducts } from '../../../../services/mockProductData';
+import {
+    getProductOrders,
+    addProductOrder,
+    ProductOrder,
+    ProductOrderStatus,
+} from '../../../../services/mockProductOrderData';
 import OrderStep1ProductSelect from './steps/OrderStep1ProductSelect';
 import OrderStep2Confirmation from './steps/OrderStep2Confirmation';
 import OrderStep3Success from './steps/OrderStep3Success';
@@ -16,19 +20,48 @@ export interface SelectedOrderProduct {
     price: number;
     category: string;
     quantity: number;
+    stock?: number;
 }
 
 type ViewMode = 'LIST' | 'CREATE' | 'DETAIL';
 
+// ─── Helpers ───────────────────────────────────────────────────────
+const getStatusStyles = (status: ProductOrderStatus) => {
+    switch (status) {
+        case 'Захиалсан': return 'bg-blue-100 text-blue-600 border-blue-200';
+        case 'Ирсэн': return 'bg-amber-100 text-amber-600 border-amber-200';
+        case 'Авсан': return 'bg-green-100 text-green-600 border-green-200';
+        default: return 'bg-gray-100 text-gray-500 border-gray-200';
+    }
+};
+
+const getDotColor = (status: ProductOrderStatus) => {
+    switch (status) {
+        case 'Захиалсан': return 'bg-blue-500';
+        case 'Ирсэн': return 'bg-amber-500';
+        case 'Авсан': return 'bg-green-500';
+        default: return 'bg-gray-400';
+    }
+};
+
+const generateOrderId = () => {
+    const now = new Date();
+    const seq = Math.floor(Math.random() * 900) + 100;
+    return `#PO-${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}${seq}`;
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  ProductOrderListScreen
+// ══════════════════════════════════════════════════════════════════
 const ProductOrderListScreen: React.FC = () => {
     const navigate = useNavigate();
 
-    // View State
     const [viewMode, setViewMode] = useState<ViewMode>('LIST');
     const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null);
     const [createStep, setCreateStep] = useState(1);
+    const [orders, setOrders] = useState<ProductOrder[]>(() => getProductOrders());
 
-    // List State
+    // List filters
     const [searchTerm, setSearchTerm] = useState('');
     const [sortBy, setSortBy] = useState('newest');
     const [selectedStatus, setSelectedStatus] = useState('all');
@@ -37,70 +70,56 @@ const ProductOrderListScreen: React.FC = () => {
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
 
-    // Create State
-    const [selectedProducts, setSelectedProducts] = useState<any[]>([]);
+    // Create flow state
+    const [selectedProducts, setSelectedProducts] = useState<SelectedOrderProduct[]>([]);
     const [isStep2Valid, setIsStep2Valid] = useState(false);
+    const [orderRemarks, setOrderRemarks] = useState('');
 
-    // Detail State
-    const [detailTab, setDetailTab] = useState<'ITEMS' | 'DISPATCH' | 'RECEIPT'>('ITEMS');
-    const [dispatchQty, setDispatchQty] = useState<Record<string, number>>({});
-    const [receiptQty, setReceiptQty] = useState<Record<string, number>>({});
+    const selectedOrder = useMemo(
+        () => orders.find(o => o.id === selectedOrderId),
+        [orders, selectedOrderId]
+    );
 
-    const selectedOrder = useMemo(() =>
-        mockProductOrders.find(o => o.id === selectedOrderId),
-        [selectedOrderId]);
-
-    const filteredAndSortedData = useMemo(() => {
-        let result = mockProductOrders.filter(item => {
-            const matchesSearch = item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    // ── Filtering / sorting ─────────────────────────────────────────
+    const filteredData = useMemo(() => {
+        let result = [...orders].filter(item => {
+            const matchesSearch =
+                item.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
                 item.staff.toLowerCase().includes(searchTerm.toLowerCase());
-
             const matchesStatus = selectedStatus === 'all' || item.status === selectedStatus;
-            const matchesBranch = selectedBranch === 'all' || item.branch === selectedBranch;
-
+            const matchesBranch = selectedBranch === 'all' || item.from === selectedBranch;
             const itemDate = new Date(item.date.split(' ')[0].replace(/\./g, '-'));
             const matchesDate = (!startDate || itemDate >= startDate) && (!endDate || itemDate <= endDate);
-
             return matchesSearch && matchesStatus && matchesBranch && matchesDate;
         });
 
         result.sort((a, b) => {
-            const dateA = new Date(a.date.replace(/\./g, '-')).getTime();
-            const dateB = new Date(b.date.replace(/\./g, '-')).getTime();
-            if (sortBy === 'newest') return dateB - dateA;
-            if (sortBy === 'oldest') return dateA - dateB;
+            const tA = new Date(a.date.replace(/\./g, '-')).getTime();
+            const tB = new Date(b.date.replace(/\./g, '-')).getTime();
+            if (sortBy === 'newest') return tB - tA;
+            if (sortBy === 'oldest') return tA - tB;
             if (sortBy === 'amount-high') return b.totalAmount - a.totalAmount;
             if (sortBy === 'amount-low') return a.totalAmount - b.totalAmount;
             return 0;
         });
-
         return result;
-    }, [searchTerm, selectedStatus, selectedBranch, startDate, endDate, sortBy]);
+    }, [orders, searchTerm, selectedStatus, selectedBranch, startDate, endDate, sortBy]);
 
     const itemsPerPage = 8;
-    const paginatedData = filteredAndSortedData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+    const paginatedData = filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-    const getStatusStyles = (status: ProductOrderStatus) => {
-        switch (status) {
-            case 'Бүрэн авсан': return 'bg-green-100 text-green-600 border-green-200';
-            case 'Захиалсан': return 'bg-blue-100 text-blue-600 border-blue-200';
-            case 'Хүлээгдэж байна': return 'bg-yellow-100 text-yellow-600 border-yellow-200';
-            case 'Хэсэгчлэн авсан': return 'bg-orange-100 text-orange-600 border-orange-200';
-            case 'Цуцалсан': return 'bg-red-100 text-red-600 border-red-200';
-            default: return 'bg-gray-100 text-gray-500 border-gray-200';
-        }
-    };
-
+    // ── Handlers ──────────────────────────────────────────────────
     const handleRowClick = (id: string) => {
         setSelectedOrderId(id);
         setViewMode('DETAIL');
-        setDetailTab('ITEMS');
     };
 
     const handleCreateNew = () => {
         setViewMode('CREATE');
         setCreateStep(1);
         setSelectedProducts([]);
+        setIsStep2Valid(false);
+        setOrderRemarks('');
     };
 
     const handleBackToList = () => {
@@ -108,148 +127,234 @@ const ProductOrderListScreen: React.FC = () => {
         setSelectedOrderId(null);
     };
 
-    // --- RENDERERS ---
+    const handleConfirmOrder = () => {
+        const total = selectedProducts.reduce((s, p) => s + p.price * p.quantity, 0);
+        const qty = selectedProducts.reduce((s, p) => s + p.quantity, 0);
+        const newOrder: ProductOrder = {
+            id: generateOrderId(),
+            date: new Date().toLocaleString('mn-MN', {
+                year: 'numeric', month: '2-digit', day: '2-digit',
+                hour: '2-digit', minute: '2-digit',
+            }).replace(/\//g, '.'),
+            staff: 'Ажилтан',
+            from: 'Салбар 1',
+            to: 'Төв салбар',
+            totalAmount: total,
+            totalQuantity: qty,
+            status: 'Захиалсан',
+            remarks: orderRemarks,
+            items: selectedProducts.map(p => ({
+                productId: p.productId,
+                name: p.name,
+                category: p.category,
+                price: p.price,
+                orderedQuantity: p.quantity,
+                receivedQuantity: 0,
+            })),
+            receiptHistory: [],
+        };
+        addProductOrder(newOrder);
+        setOrders(getProductOrders());
+        setCreateStep(3);
+    };
 
+    // ══════════════════════════════════════════════════════════
+    //  RENDER: LIST
+    // ══════════════════════════════════════════════════════════
     const renderList = () => (
-        <div className="w-full flex flex-col p-4 md:p-6 gap-6 pb-20">
-            <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-6 shrink-0">
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-3">
-                        <div className="h-8 w-1.5 bg-[#40C1C7] rounded-sm"></div>
-                        <h2 className="text-[18px] font-bold text-[#374151]">Бараа удирдах</h2>
-                    </div>
+        <div className="w-full h-full flex flex-col p-4 md:p-6 gap-6 overflow-hidden">
+
+            {/* ── header row ── */}
+            <div className="flex flex-col lg:flex-row justify-between lg:items-end gap-4 shrink-0">
+                <div className="flex items-center gap-3">
+                    <div className="h-8 w-1.5 bg-primary rounded-sm" />
+                    <h2 className="text-xl font-bold text-[#374151] uppercase tracking-tight">Бараа удирдах</h2>
+                </div>
+                <div className="flex items-center gap-3">
                     <button
                         onClick={handleCreateNew}
-                        className="bg-[#FFD400] hover:bg-[#eec600] text-gray-900 px-6 py-3 rounded-2xl shadow-lg shadow-yellow-500/10 flex items-center gap-2 transition-all font-black uppercase text-[11px] tracking-wider active:scale-95 w-fit shrink-0 whitespace-nowrap"
+                        className="bg-[#FFD400] hover:bg-[#eec600] text-gray-900 px-6 py-3 h-[44px] rounded-2xl shadow-lg flex items-center justify-center gap-2 font-bold text-[12px] uppercase tracking-wider active:scale-95 transition-all w-full sm:w-auto"
                     >
                         <span className="material-icons-round text-lg">add_circle</span>
                         Шинэ бараа захиалах
                     </button>
-                </div>
-
-                <div className="flex items-center gap-3 w-full lg:w-auto">
-                    <div className="relative flex-1 lg:w-[400px]">
-                        <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
-                            <span className="material-icons-round text-xl">search</span>
-                        </span>
-                        <input
-                            value={searchTerm}
-                            onChange={e => setSearchTerm(e.target.value)}
-                            className="block w-full h-[48px] pl-11 pr-4 border border-gray-100 rounded-2xl bg-white text-sm"
-                            placeholder="Захиалгын № / Ажилтан нэрээр хайх"
-                            type="text"
-                        />
-                    </div>
+                    <button
+                        onClick={() => navigate('/pos/product-receive')}
+                        className="bg-[#111827] hover:bg-[#1f2937] text-white px-6 py-3 h-[44px] rounded-2xl shadow-lg flex items-center justify-center gap-2 font-bold text-[12px] uppercase tracking-wider active:scale-95 transition-all w-full sm:w-auto"
+                    >
+                        <span className="material-icons-round text-lg">move_to_inbox</span>
+                        Орлого авах
+                    </button>
                     <PosExcelButton />
                 </div>
             </div>
 
+            {/* ── filters ── */}
             <div className="bg-white rounded-[24px] p-5 shadow-sm border border-gray-100 flex flex-wrap lg:flex-nowrap items-end gap-4 shrink-0">
-                <div className="w-full sm:w-auto flex-1 min-w-[240px]">
+                <div className="flex-1 min-w-[220px]">
                     <PosDateRangePicker
+                        label="Захиалсан хугацаа"
                         start={startDate}
                         end={endDate}
                         onChange={(s, e) => { setStartDate(s); setEndDate(e); setCurrentPage(1); }}
                     />
                 </div>
                 <PosDropdown
-                    label="Захиалсан салбар" icon="storefront" value={selectedBranch} onChange={setSelectedBranch}
-                    options={[{ label: 'Бүх салбар', value: 'all' }, { label: 'Төв салбар', value: 'Төв салбар' }, { label: 'Салбар 1', value: 'Салбар 1' }, { label: 'Салбар 2', value: 'Салбар 2' }]}
-                    className="w-full sm:w-[150px]"
+                    label="Захиалсан салбар" icon="storefront" value={selectedBranch}
+                    onChange={v => { setSelectedBranch(v); setCurrentPage(1); }}
+                    options={[
+                        { label: 'Бүх салбар', value: 'all' },
+                        { label: 'Салбар 1', value: 'Салбар 1' },
+                        { label: 'Салбар 2', value: 'Салбар 2' },
+                    ]}
+                    className="w-[150px]"
                 />
                 <PosDropdown
-                    label="Төлөв" icon="flag" value={selectedStatus} onChange={setSelectedStatus}
-                    options={[{ label: 'Бүх төлөв', value: 'all' }, { label: 'Захиалсан', value: 'Захиалсан' }, { label: 'Хүлээгдэж байна', value: 'Хүлээгдэж байна' }, { label: 'Хэсэгчлэн авсан', value: 'Хэсэгчлэн авсан' }, { label: 'Бүрэн авсан', value: 'Бүрэн авсан' }, { label: 'Цуцлагдсан', value: 'Цуцлагдсан' }]}
-                    className="w-full sm:w-[150px]"
+                    label="Төлөв" icon="flag" value={selectedStatus}
+                    onChange={v => { setSelectedStatus(v); setCurrentPage(1); }}
+                    options={[
+                        { label: 'Бүх төлөв', value: 'all' },
+                        { label: 'Захиалсан', value: 'Захиалсан' },
+                        { label: 'Ирсэн', value: 'Ирсэн' },
+                        { label: 'Авсан', value: 'Авсан' },
+                    ]}
+                    className="w-[160px]"
                 />
-                <PosDropdown
-                    label="Эрэмбэлэх" icon="sort" value={sortBy} onChange={setSortBy}
-                    options={[{ label: 'Сүүлд нэмэгдсэн', value: 'newest' }, { label: 'Анх нэмэгдсэн', value: 'oldest' }, { label: 'Дүн (Өндөрөөс)', value: 'amount-high' }, { label: 'Дүн (Багаас)', value: 'amount-low' }]}
-                    className="w-full sm:w-[160px]"
-                />
-                <button className="bg-primary hover:bg-primary/90 text-white px-6 h-[44px] rounded-xl shadow-lg flex items-center justify-center gap-2 font-bold text-sm active:scale-95 w-full lg:w-auto lg:ml-auto">
-                    <span className="material-icons-round text-lg">sync</span> Шүүх
-                </button>
-            </div>
-
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden flex-1 flex flex-col min-h-0">
-                <div className="flex-1 overflow-x-auto overflow-y-auto no-scrollbar">
-                    <div className="min-w-[1000px] flex flex-col h-full uppercase">
-                        <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[10px] font-black tracking-widest items-center">
-                            <div className="w-[150px] shrink-0">Захиалгын №</div>
-                            <div className="w-[150px] shrink-0 px-2">Огноо</div>
-                            <div className="w-[180px] shrink-0 px-2">Ажилтан</div>
-                            <div className="w-[180px] shrink-0 px-2">Салбар</div>
-                            <div className="w-[120px] shrink-0 px-2 text-center">Нийт тоо</div>
-                            <div className="w-[140px] shrink-0 px-2 text-center">Төлөв</div>
-                            <div className="w-[130px] shrink-0 px-2 text-right">Нийт дүн</div>
-                            <div className="w-8 shrink-0"></div>
-                        </div>
-                        <div className="flex-1">
-                            {paginatedData.length > 0 ? paginatedData.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    onClick={() => handleRowClick(item.id)}
-                                    className="flex px-6 py-5 border-b border-gray-50 hover:bg-primary/5 cursor-pointer transition-colors items-center text-[13px] group normal-case"
-                                >
-                                    <div className="w-[150px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline">{item.id}</div>
-                                    <div className="w-[150px] shrink-0 px-2 text-gray-400 text-xs font-medium">{item.date}</div>
-                                    <div className="w-[180px] shrink-0 px-2 font-bold text-gray-800 truncate">{item.staff}</div>
-                                    <div className="w-[180px] shrink-0 px-2 font-bold text-gray-500 truncate">{item.branch}</div>
-                                    <div className="w-[120px] shrink-0 px-2 text-center font-bold text-gray-600">{item.totalQuantity}</div>
-                                    <div className="w-[140px] shrink-0 px-2 flex justify-center">
-                                        <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap ${getStatusStyles(item.status)}`}>
-                                            <span className={`w-1.5 h-1.5 rounded-full ${item.status === 'Бүрэн авсан' ? 'bg-green-500' :
-                                                item.status === 'Захиалсан' ? 'bg-blue-500' :
-                                                    item.status === 'Цуцалсан' ? 'bg-red-500' :
-                                                        item.status === 'Хэсэгчлэн авсан' ? 'bg-orange-500' : 'bg-yellow-500'
-                                                }`}></span>
-                                            {item.status}
-                                        </span>
-                                    </div>
-                                    <div className="w-[130px] shrink-0 px-2 text-right font-black text-gray-900">{item.totalAmount.toLocaleString()} ₮</div>
-                                    <div className="w-8 shrink-0 flex justify-end text-gray-300 group-hover:text-primary transition-colors">
-                                        <span className="material-icons-round">chevron_right</span>
-                                    </div>
-                                </div>
-                            )) : (
-                                <div className="flex flex-col items-center justify-center py-20 text-gray-300">
-                                    <span className="material-icons-round text-6xl mb-4 opacity-20">search_off</span>
-                                    <p className="font-bold text-lg">Мэдээлэл олдсонгүй</p>
-                                </div>
-                            )}
-                        </div>
+                <div className="flex flex-col gap-1.5 flex-1 min-w-[200px]">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">Хайх</label>
+                    <div className="relative">
+                        <span className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-400">
+                            <span className="material-icons-round text-sm">search</span>
+                        </span>
+                        <input
+                            value={searchTerm}
+                            onChange={e => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+                            className="w-full h-[44px] pl-9 pr-4 bg-gray-50 border border-transparent rounded-xl text-sm font-medium focus:outline-none focus:border-primary transition-all"
+                            placeholder="Захиалгын №, ажилтан..."
+                        />
                     </div>
                 </div>
-                <PosPagination totalItems={filteredAndSortedData.length} itemsPerPage={itemsPerPage} currentPage={currentPage} onPageChange={setCurrentPage} />
+                <PosDropdown
+                    label="Эрэмбэлэх" icon="sort" value={sortBy} onChange={setSortBy}
+                    options={[
+                        { label: 'Сүүлд нэмэгдсэн', value: 'newest' },
+                        { label: 'Анх нэмэгдсэн', value: 'oldest' },
+                        { label: 'Дүн (өндөрөөс)', value: 'amount-high' },
+                        { label: 'Дүн (багаас)', value: 'amount-low' },
+                    ]}
+                    className="w-[160px]"
+                />
+            </div>
+
+            {/* ── table — flex-1 so it fills remaining height ── */}
+            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 flex-1 flex flex-col min-h-0 overflow-hidden">
+                <div className="flex-1 overflow-x-auto overflow-y-auto no-scrollbar">
+                    <div className="min-w-[1000px] flex flex-col">
+                        {/* Header */}
+                        <div className="sticky top-0 z-10 bg-gray-50 border-b border-gray-100 text-gray-400 px-6 py-4 flex text-[12px] font-bold tracking-widest items-center uppercase text-left">
+                            <div className="w-[150px] shrink-0">Захиалгын №</div>
+                            <div className="w-[120px] shrink-0 px-2">Огноо</div>
+                            <div className="w-[140px] shrink-0 px-2">Ажилтан</div>
+                            <div className="w-[120px] shrink-0 px-2">Хаанаас</div>
+                            <div className="w-[120px] shrink-0 px-2">Хаашаа</div>
+                            <div className="w-[90px] shrink-0 px-2 text-center">Нийт тоо</div>
+                            <div className="flex-1 px-2 text-right">Нийт дүн</div>
+                            <div className="w-[140px] shrink-0 px-2 flex justify-center">Төлөв</div>
+                            <div className="w-[40px] shrink-0 px-1 text-center">Тайл</div>
+                            <div className="w-8 shrink-0" />
+                        </div>
+
+                        {/* Rows */}
+                        {paginatedData.length > 0 ? paginatedData.map((item, idx) => (
+                            <div
+                                key={idx}
+                                onClick={() => handleRowClick(item.id)}
+                                className="flex px-6 py-5 border-b border-gray-50 hover:bg-primary/5 cursor-pointer transition-colors items-center text-[13px] group normal-case"
+                            >
+                                <div className="w-[150px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline text-sm truncate pr-2">{item.id}</div>
+                                <div className="w-[120px] shrink-0 px-2 text-gray-400 text-xs font-medium">{item.date}</div>
+                                <div className="w-[140px] shrink-0 px-2 font-bold text-gray-800 truncate text-[12px]">{item.staff}</div>
+                                <div className="w-[120px] shrink-0 px-2 font-bold text-gray-600 truncate flex items-center gap-1 text-[12px]">
+                                    <span className="material-icons-round text-[13px] text-gray-300">storefront</span>
+                                    {item.from}
+                                </div>
+                                <div className="w-[120px] shrink-0 px-2 font-bold text-[#40C1C7] truncate flex items-center gap-1 text-[12px]">
+                                    <span className="material-icons-round text-[13px] text-[#40C1C7]/70">east</span>
+                                    {item.to}
+                                </div>
+                                <div className="w-[90px] shrink-0 px-2 text-center font-bold text-gray-800">
+                                    {item.totalQuantity} <span className="text-[10px] text-gray-400 font-medium ml-0.5">ш</span>
+                                </div>
+                                <div className="flex-1 px-2 text-right font-black text-gray-900">{item.totalAmount.toLocaleString()} ₮</div>
+                                <div className="w-[140px] shrink-0 px-2 flex justify-center">
+                                    <span className={`px-3 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap ${getStatusStyles(item.status)}`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${getDotColor(item.status)}`} />
+                                        {item.status}
+                                    </span>
+                                </div>
+                                <div className="w-[40px] shrink-0 px-1 flex justify-center">
+                                    {item.remarks && (
+                                        <span className="material-icons-round text-[16px] text-amber-400" title={item.remarks}>notes</span>
+                                    )}
+                                </div>
+                                <div className="w-8 shrink-0 flex justify-end text-gray-300 group-hover:text-primary transition-colors">
+                                    <span className="material-icons-round">chevron_right</span>
+                                </div>
+                            </div>
+                        )) : (
+                            <div className="flex flex-col items-center justify-center py-20 text-gray-300">
+                                <span className="material-icons-round text-6xl mb-4 opacity-20">search_off</span>
+                                <p className="font-bold text-lg">Мэдээлэл олдсонгүй</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+                <PosPagination
+                    totalItems={filteredData.length}
+                    itemsPerPage={itemsPerPage}
+                    currentPage={currentPage}
+                    onPageChange={setCurrentPage}
+                />
             </div>
         </div>
     );
 
+    // ══════════════════════════════════════════════════════════
+    //  RENDER: CREATE (3-step inline flow)
+    // ══════════════════════════════════════════════════════════
     const renderCreate = () => {
-        const totalSteps = 3;
-        const handleNext = () => {
-            if (createStep < totalSteps) setCreateStep(s => s + 1);
+        const handleNextStep = () => {
+            if (createStep === 2) { handleConfirmOrder(); return; }
+            if (createStep < 3) setCreateStep(s => s + 1);
         };
-        const handleBack = () => {
+        const handleBackStep = () => {
             if (createStep > 1) setCreateStep(s => s - 1);
             else setViewMode('LIST');
         };
+        const nextLabel = createStep === 2 ? 'ЗАХИАЛАХ' : 'Үргэлжлүүлэх';
+        const nextDisabled =
+            (createStep === 1 && selectedProducts.length === 0) ||
+            (createStep === 2 && !isStep2Valid);
 
         return (
-            <div className="flex-1 flex flex-col h-full bg-white relative overflow-hidden">
-                {/* Custom Stepper Header */}
+            <div className="flex-1 flex flex-col h-full bg-white overflow-hidden">
+                {/* Step header */}
                 <div className="shrink-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                        <button onClick={handleBack} className="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400 transition-colors">
+                        <button onClick={handleBackStep} className="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400">
                             <span className="material-icons-round">arrow_back</span>
                         </button>
-                        <h3 className="text-lg font-black text-gray-800">Шинэ захиалга бүртгэх</h3>
+                        <div>
+                            <h3 className="text-lg font-black text-gray-800">Шинэ захиалга бүртгэх</h3>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                {createStep === 1 ? 'Бараа сонгох' : createStep === 2 ? 'Баталгаажуулах' : 'Амжилттай'}
+                            </p>
+                        </div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                         {[1, 2, 3].map(s => (
-                            <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${createStep === s ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/20' :
-                                createStep > s ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'
+                            <div key={s} className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black transition-all ${createStep === s ? 'bg-primary text-white scale-110 shadow-lg shadow-primary/20'
+                                : createStep > s ? 'bg-green-500 text-white' : 'bg-gray-100 text-gray-400'
                                 }`}>
                                 {createStep > s ? <span className="material-icons-round text-sm">check</span> : s}
                             </div>
@@ -262,31 +367,38 @@ const ProductOrderListScreen: React.FC = () => {
                         <OrderStep1ProductSelect
                             selectedProducts={selectedProducts}
                             onProductsChange={setSelectedProducts}
+                            fromBranch="Салбар 1"
                         />
                     )}
                     {createStep === 2 && (
                         <OrderStep2Confirmation
                             selectedProducts={selectedProducts}
                             onValidationChange={setIsStep2Valid}
+                            onRemarksChange={setOrderRemarks}
+                            fromBranch="Салбар 1"
                         />
                     )}
                     {createStep === 3 && (
-                        <OrderStep3Success />
+                        <OrderStep3Success onBackToList={handleBackToList} />
                     )}
                 </div>
 
                 {createStep < 3 && (
                     <div className="shrink-0 p-6 bg-white border-t border-gray-100 flex justify-end gap-3">
-                        <button onClick={handleBack} className="px-8 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all uppercase text-[11px] tracking-wider">Буцах</button>
+                        <button onClick={handleBackStep} className="px-8 py-3 rounded-xl font-bold text-gray-500 hover:bg-gray-50 transition-all uppercase text-[11px] tracking-wider">
+                            Буцах
+                        </button>
                         <button
-                            onClick={handleNext}
-                            disabled={(createStep === 2 && !isStep2Valid) || selectedProducts.length === 0}
-                            className={`px-12 py-3 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all shadow-lg ${((createStep === 2 && !isStep2Valid) || selectedProducts.length === 0)
+                            onClick={handleNextStep}
+                            disabled={nextDisabled}
+                            className={`px-12 py-3 rounded-xl font-black text-[11px] uppercase tracking-wider transition-all shadow-lg ${nextDisabled
                                 ? 'bg-gray-100 text-gray-300 shadow-none cursor-not-allowed'
-                                : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400] active:scale-95 shadow-yellow-200'
+                                : createStep === 2
+                                    ? 'bg-[#111827] text-white hover:bg-[#1f2937] active:scale-95'
+                                    : 'bg-[#FFD400] text-gray-900 hover:bg-[#FFC400] active:scale-95 shadow-yellow-200'
                                 }`}
                         >
-                            {createStep === 2 ? 'Захиалах' : 'Үргэлжлүүлэх'}
+                            {nextLabel}
                         </button>
                     </div>
                 )}
@@ -294,15 +406,19 @@ const ProductOrderListScreen: React.FC = () => {
         );
     };
 
+    // ══════════════════════════════════════════════════════════
+    //  RENDER: DETAIL (read-only view; receiving via /product-receive)
+    // ══════════════════════════════════════════════════════════
     const renderDetail = () => {
         if (!selectedOrder) return null;
+        const isIrsen = selectedOrder.status === 'Ирсэн';
 
         return (
             <div className="flex-1 flex flex-col h-full bg-[#F8F9FA] overflow-hidden">
                 {/* Header */}
                 <div className="shrink-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between shadow-sm">
                     <div className="flex items-center gap-4">
-                        <button onClick={handleBackToList} className="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400 transition-colors">
+                        <button onClick={handleBackToList} className="w-10 h-10 rounded-xl hover:bg-gray-50 flex items-center justify-center text-gray-400">
                             <span className="material-icons-round">arrow_back</span>
                         </button>
                         <div>
@@ -312,187 +428,125 @@ const ProductOrderListScreen: React.FC = () => {
                                     {selectedOrder.status}
                                 </span>
                             </div>
-                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">{selectedOrder.date} • {selectedOrder.branch} • {selectedOrder.staff}</p>
+                            <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">
+                                {selectedOrder.date} • {selectedOrder.staff}
+                            </p>
                         </div>
                     </div>
                     <div className="flex items-center gap-2">
+                        {/* CTA to receive if Ирсэн */}
+                        {isIrsen && (
+                            <button
+                                onClick={() => navigate('/pos/product-receive', { state: { orderId: selectedOrder.id } })}
+                                className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-black uppercase tracking-wider active:scale-95 transition-all shadow-sm shadow-amber-200"
+                            >
+                                <span className="material-icons-round text-sm">move_to_inbox</span>
+                                Орлого авах
+                            </button>
+                        )}
                         <button className="flex items-center gap-2 px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-xl text-xs font-bold transition-all">
                             <span className="material-icons-round text-sm">print</span> Хэвлэх
                         </button>
                     </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="shrink-0 flex px-6 bg-white border-b border-gray-50">
-                    {[
-                        { id: 'ITEMS', label: 'Барааны жагсаалт', icon: 'list_alt' },
-                        { id: 'DISPATCH', label: 'Зарлага (Dispatch)', icon: 'outbox' },
-                        { id: 'RECEIPT', label: 'Орлого (Receipt)', icon: 'inbox' }
-                    ].map(tab => (
-                        <button
-                            key={tab.id}
-                            onClick={() => setDetailTab(tab.id as any)}
-                            className={`flex items-center gap-2 px-6 py-4 border-b-4 transition-all ${detailTab === tab.id ? 'border-primary text-primary font-black' : 'border-transparent text-gray-400 font-bold hover:text-gray-600'
-                                }`}
-                        >
-                            <span className="material-icons-round text-lg">{tab.icon}</span>
-                            <span className="text-[11px] uppercase tracking-wider">{tab.label}</span>
-                        </button>
-                    ))}
-                </div>
+                {/* Scrollable body */}
+                <div className="flex-1 overflow-y-auto no-scrollbar p-6 flex flex-col gap-5">
 
-                <div className="flex-1 overflow-y-auto p-6 no-scrollbar">
-                    {detailTab === 'ITEMS' && (
-                        <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 overflow-hidden">
-                            <div className="sticky top-0 bg-gray-50/80 backdrop-blur-md px-6 py-4 border-b border-gray-50 flex text-[10px] font-black text-gray-400 tracking-widest uppercase">
-                                <div className="flex-1">Барааны нэр</div>
-                                <div className="w-[120px] text-center">Захиалсан</div>
-                                <div className="w-[120px] text-center">Олгосон</div>
-                                <div className="w-[120px] text-center">Хүлээн авсан</div>
-                                <div className="w-[120px] text-center">Дутуу</div>
+                    {/* Order meta */}
+                    <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5 grid grid-cols-2 md:grid-cols-4 gap-5">
+                        <div>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Хаанаас</p>
+                            <div className="flex items-center gap-1.5">
+                                <span className="material-icons-round text-sm text-gray-400">storefront</span>
+                                <p className="text-[13px] font-bold text-gray-800">{selectedOrder.from}</p>
                             </div>
-                            <div className="divide-y divide-gray-50">
-                                {selectedOrder.items.map((item, idx) => {
-                                    const missing = item.orderedQuantity - item.receivedQuantity;
-                                    return (
-                                        <div key={idx} className="px-6 py-5 flex items-center text-[13px]">
-                                            <div className="flex-1">
-                                                <p className="font-bold text-gray-800">{item.name}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{item.category}</p>
-                                            </div>
-                                            <div className="w-[120px] text-center font-black text-gray-900">{item.orderedQuantity}</div>
-                                            <div className="w-[120px] text-center font-bold text-blue-500">{item.dispatchedQuantity}</div>
-                                            <div className="w-[120px] text-center font-bold text-green-500">{item.receivedQuantity}</div>
-                                            <div className={`w-[120px] text-center font-bold ${missing > 0 ? 'text-red-500' : 'text-gray-300'}`}>
-                                                {missing}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Хаашаа</p>
+                            <div className="flex items-center gap-1.5">
+                                <span className="material-icons-round text-sm text-[#40C1C7]">east</span>
+                                <p className="text-[13px] font-bold text-[#40C1C7]">{selectedOrder.to}</p>
                             </div>
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Нийт тоо / дүн</p>
+                            <p className="text-[13px] font-bold text-gray-800">
+                                {selectedOrder.totalQuantity} ш&nbsp;/&nbsp;
+                                <span className="text-primary">{selectedOrder.totalAmount.toLocaleString()} ₮</span>
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[9px] font-black text-gray-400 uppercase tracking-widest mb-1">Захиалга өгсөн</p>
+                            <p className="text-[13px] font-bold text-gray-800">{selectedOrder.date}</p>
+                        </div>
+                    </div>
+
+                    {/* Items table — max-height + scroll */}
+                    <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm overflow-hidden">
+                        <div className="px-6 py-4 bg-gray-50/70 border-b border-gray-100 flex text-[10px] font-black text-gray-400 tracking-widest uppercase items-center">
+                            <div className="flex-1">Барааны нэр</div>
+                            <div className="w-[130px] text-right">Нэгж үнэ</div>
+                            <div className="w-[110px] text-center">Захиалсан</div>
+                            <div className="w-[120px] text-center">Хүлээн авсан</div>
+                        </div>
+                        <div className="overflow-y-auto no-scrollbar" style={{ maxHeight: '340px' }}>
+                            {selectedOrder.items.map((item, idx) => (
+                                <div key={idx} className="px-6 py-4 border-b border-gray-50 flex items-center text-[13px]">
+                                    <div className="flex-1">
+                                        <p className="font-bold text-gray-800">{item.name}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase mt-0.5">{item.category}</p>
+                                    </div>
+                                    <div className="w-[130px] text-right font-bold text-gray-600">{item.price.toLocaleString()} ₮</div>
+                                    <div className="w-[110px] text-center font-black text-gray-900">{item.orderedQuantity}</div>
+                                    <div className={`w-[120px] text-center font-bold ${item.receivedQuantity > 0 ? 'text-green-500' : 'text-gray-300'}`}>
+                                        {item.receivedQuantity > 0 ? item.receivedQuantity : '–'}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Order remarks */}
+                    {selectedOrder.remarks && (
+                        <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5">
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="material-icons-round text-sm text-gray-400">notes</span>
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Захиалгын тайлбар</h4>
+                            </div>
+                            <p className="text-sm font-medium text-gray-700 leading-relaxed">{selectedOrder.remarks}</p>
                         </div>
                     )}
 
-                    {detailTab === 'DISPATCH' && (
-                        <div className="flex flex-col gap-6">
-                            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6">
-                                <h4 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <span className="material-icons-round text-blue-500">local_shipping</span>
-                                    Зарлага хийх (Салбар руу илгээх)
-                                </h4>
-                                <div className="divide-y divide-gray-50">
-                                    {selectedOrder.items.map((item, idx) => (
-                                        <div key={idx} className="py-4 flex items-center justify-between">
-                                            <div className="flex-1">
-                                                <p className="text-[13px] font-bold text-gray-800">{item.name}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 capitalize">Үлдэгдэл: {item.orderedQuantity - item.dispatchedQuantity}</p>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
-                                                    <button onClick={() => setDispatchQty(prev => ({ ...prev, [item.productId]: Math.max(0, (prev[item.productId] || 0) - 1) }))} className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-500">
-                                                        <span className="material-icons-round text-sm">remove</span>
-                                                    </button>
-                                                    <input
-                                                        type="number"
-                                                        value={dispatchQty[item.productId] || 0}
-                                                        onChange={e => setDispatchQty(prev => ({ ...prev, [item.productId]: parseInt(e.target.value) || 0 }))}
-                                                        className="w-12 bg-transparent text-center font-black text-gray-800 focus:outline-none"
-                                                    />
-                                                    <button onClick={() => setDispatchQty(prev => ({ ...prev, [item.productId]: (prev[item.productId] || 0) + 1 }))} className="w-8 h-8 rounded-lg bg-primary text-white shadow-md flex items-center justify-center">
-                                                        <span className="material-icons-round text-sm">add</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-8 flex justify-end">
-                                    <button className="bg-primary text-white px-10 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-primary/20 hover:scale-105 active:scale-95 transition-all">Зарлага хадгалах</button>
-                                </div>
+                    {/* Receipt history */}
+                    {selectedOrder.receiptHistory.length > 0 && (
+                        <div className="bg-white rounded-[20px] border border-gray-100 shadow-sm p-5">
+                            <div className="flex items-center gap-2 mb-4">
+                                <span className="material-icons-round text-sm text-green-500">history</span>
+                                <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Орлогын түүх</h4>
                             </div>
-
-                            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6">
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Зарлагын түүх</h4>
-                                <div className="flex flex-col gap-3">
-                                    {selectedOrder.history.filter(h => h.type === 'DISPATCH').length > 0 ? (
-                                        selectedOrder.history.filter(h => h.type === 'DISPATCH').map((h, i) => (
-                                            <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-500">
-                                                        <span className="material-icons-round text-sm">local_shipping</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[11px] font-black text-gray-800">{h.staff}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400">{h.date}</p>
-                                                    </div>
-                                                </div>
-                                                <p className="text-sm font-black text-blue-500">+{h.quantity} ширхэг</p>
-                                            </div>
-                                        ))
-                                    ) : <p className="text-center py-6 text-gray-300 font-bold text-xs uppercase tracking-widest">Түүх олдсонгүй</p>}
+                            {selectedOrder.receiptHistory.map((h, i) => (
+                                <div key={i} className="flex items-start gap-3 p-4 bg-green-50 rounded-2xl mb-2">
+                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-500 shrink-0">
+                                        <span className="material-icons-round text-sm">inbox</span>
+                                    </div>
+                                    <div>
+                                        <p className="text-[11px] font-black text-gray-800">{h.staff}</p>
+                                        <p className="text-[9px] font-bold text-gray-400">{h.date}</p>
+                                        {h.remarks && <p className="text-xs font-medium text-gray-600 mt-1">{h.remarks}</p>}
+                                    </div>
                                 </div>
-                            </div>
+                            ))}
                         </div>
                     )}
 
-                    {detailTab === 'RECEIPT' && (
-                        <div className="flex flex-col gap-6">
-                            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6">
-                                <h4 className="text-xs font-black text-gray-800 uppercase tracking-widest mb-6 flex items-center gap-2">
-                                    <span className="material-icons-round text-green-500">inbox</span>
-                                    Орлого авах (Салбар дээр хүлээн авах)
-                                </h4>
-                                <div className="divide-y divide-gray-50">
-                                    {selectedOrder.items.map((item, idx) => (
-                                        <div key={idx} className="py-4 flex items-center justify-between">
-                                            <div className="flex-1">
-                                                <p className="text-[13px] font-bold text-gray-800">{item.name}</p>
-                                                <p className="text-[10px] font-bold text-gray-400 capitalize">Илгээсэн: {item.dispatchedQuantity} | Авсан: {item.receivedQuantity}</p>
-                                            </div>
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-2 bg-gray-100 rounded-xl p-1">
-                                                    <button onClick={() => setReceiptQty(prev => ({ ...prev, [item.productId]: Math.max(0, (prev[item.productId] || 0) - 1) }))} className="w-8 h-8 rounded-lg bg-white shadow-sm flex items-center justify-center text-gray-500">
-                                                        <span className="material-icons-round text-sm">remove</span>
-                                                    </button>
-                                                    <input
-                                                        type="number"
-                                                        value={receiptQty[item.productId] || 0}
-                                                        onChange={e => setReceiptQty(prev => ({ ...prev, [item.productId]: parseInt(e.target.value) || 0 }))}
-                                                        className="w-12 bg-transparent text-center font-black text-gray-800 focus:outline-none"
-                                                    />
-                                                    <button onClick={() => setReceiptQty(prev => ({ ...prev, [item.productId]: (prev[item.productId] || 0) + 1 }))} className="w-8 h-8 rounded-lg bg-green-500 text-white shadow-md flex items-center justify-center">
-                                                        <span className="material-icons-round text-sm">add</span>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div className="mt-8 flex justify-end">
-                                    <button className="bg-green-500 text-white px-10 py-3 rounded-xl font-black text-[11px] uppercase tracking-widest shadow-lg shadow-green-200 hover:scale-105 active:scale-95 transition-all">Орлого хадгалах</button>
-                                </div>
-                            </div>
-
-                            <div className="bg-white rounded-[24px] shadow-sm border border-gray-100 p-6">
-                                <h4 className="text-xs font-black text-gray-400 uppercase tracking-widest mb-4">Орлогын түүх</h4>
-                                <div className="flex flex-col gap-3">
-                                    {selectedOrder.history.filter(h => h.type === 'RECEIPT').length > 0 ? (
-                                        selectedOrder.history.filter(h => h.type === 'RECEIPT').map((h, i) => (
-                                            <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-500">
-                                                        <span className="material-icons-round text-sm">inbox</span>
-                                                    </div>
-                                                    <div>
-                                                        <p className="text-[11px] font-black text-gray-800">{h.staff}</p>
-                                                        <p className="text-[9px] font-bold text-gray-400">{h.date}</p>
-                                                    </div>
-                                                </div>
-                                                <p className="text-sm font-black text-green-500">+{h.quantity} ширхэг</p>
-                                            </div>
-                                        ))
-                                    ) : <p className="text-center py-6 text-gray-300 font-bold text-xs uppercase tracking-widest">Түүх олдсонгүй</p>}
-                                </div>
+                    {/* Confirmed receipt remarks */}
+                    {selectedOrder.status === 'Авсан' && selectedOrder.receiptRemarks && (
+                        <div className="bg-green-50 rounded-[20px] border border-green-100 p-5 flex items-start gap-3">
+                            <span className="material-icons-round text-green-500 mt-0.5">check_circle</span>
+                            <div>
+                                <p className="text-[10px] font-black text-green-600 uppercase tracking-widest mb-1">Орлого баталгаажсан</p>
+                                <p className="text-sm font-medium text-gray-700">{selectedOrder.receiptRemarks}</p>
                             </div>
                         </div>
                     )}
@@ -501,8 +555,11 @@ const ProductOrderListScreen: React.FC = () => {
         );
     };
 
+    // ══════════════════════════════════════════════════════════
+    //  Root
+    // ══════════════════════════════════════════════════════════
     return (
-        <div className="flex-1 flex flex-col h-full bg-[#F8F9FA] overflow-y-auto no-scrollbar">
+        <div className="flex-1 flex flex-col h-full bg-[#F8F9FA] overflow-hidden">
             {viewMode === 'LIST' && renderList()}
             {viewMode === 'CREATE' && renderCreate()}
             {viewMode === 'DETAIL' && renderDetail()}
