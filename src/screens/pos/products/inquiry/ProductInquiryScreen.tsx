@@ -47,21 +47,27 @@ const ProductInquiryScreen: React.FC = () => {
                 {/* Product Grid - Only viewing prices, no action buttons */}
                 <div className="flex-1 overflow-y-auto no-scrollbar pb-10">
                     {filteredProducts.length > 0 ? (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-2.5">
                             {filteredProducts.map(p => (
-                                <div key={p.id} className="bg-white rounded-[28px] p-4 border border-gray-100 shadow-sm transition-all hover:shadow-xl hover:shadow-gray-200/50 flex flex-col gap-4 group">
-                                    <div className="aspect-square bg-[#F9FAFB] rounded-[24px] flex items-center justify-center relative overflow-hidden group-hover:scale-[1.02] transition-transform duration-500">
-                                        <span className="material-icons-round text-6xl text-gray-100">inventory_2</span>
+                                <div key={p.id} className="bg-white rounded-xl border-2 border-gray-100 shadow-sm transition-all hover:shadow-md hover:border-gray-200 flex flex-col overflow-hidden cursor-pointer active:scale-[0.97]">
+                                    {/* Product Image */}
+                                    <div className="h-[120px] bg-gray-50 flex items-center justify-center p-2 relative overflow-hidden">
+                                        <span className="material-icons-round text-4xl text-gray-200">inventory_2</span>
                                     </div>
-                                    <div className="flex flex-col gap-1.5 px-1">
-                                        <span className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{p.category}</span>
-                                        <h3 className="text-[13px] font-bold text-gray-800 leading-tight h-8 line-clamp-2">{p.name}</h3>
-                                        <div className="mt-2 flex flex-col">
+                                    {/* Product Info */}
+                                    <div className="p-2.5 flex flex-col gap-1 flex-1">
+                                        <p className="text-[8px] font-bold text-primary uppercase tracking-wider px-1 py-0.5 bg-primary/5 rounded self-start">
+                                            {p.category}
+                                        </p>
+                                        <h3 className="text-[11px] font-bold text-gray-800 line-clamp-2 leading-tight min-h-[28px]">
+                                            {p.name}
+                                        </h3>
+                                        <div className="mt-auto">
                                             {p.originalPrice && p.originalPrice > p.price && (
-                                                <span className="text-[10px] text-gray-400 line-through font-bold">{p.originalPrice.toLocaleString()}₮</span>
+                                                <span className="text-[9px] text-gray-400 line-through font-bold">{p.originalPrice.toLocaleString()}₮</span>
                                             )}
-                                            <span className="text-lg font-black text-gray-900 leading-none">
-                                                {p.price.toLocaleString()}<span className="text-[12px] ml-0.5">₮</span>
+                                            <span className="text-sm font-black text-gray-900 leading-none block">
+                                                {p.price.toLocaleString()}<span className="text-[10px] ml-0.5">₮</span>
                                             </span>
                                         </div>
                                     </div>

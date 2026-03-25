@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { GomdolOrderData, GomdolSelectedItem } from '../../receive/receiveSteps/Step4Complaint';
+import type { GomdolOrderData, GomdolSelectedItem } from '../../receive/receiveTypes';
 
 interface Step5GomdolSummaryProps {
     onValidationChange?: (isValid: boolean) => void;

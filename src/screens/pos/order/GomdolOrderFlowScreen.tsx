@@ -4,7 +4,7 @@ import StepLayout from '../flow/StepLayout';
 import Step5GomdolSummary from './steps/Step5GomdolSummary';
 import Step6Payment from './steps/Step6Payment';
 import Popup from '../../../shared/components/Popup/Popup';
-import type { GomdolOrderData } from '../receive/receiveSteps/Step4Complaint';
+import type { GomdolOrderData } from '../receive/receiveTypes';
 
 /**
  * GomdolOrderFlowScreen

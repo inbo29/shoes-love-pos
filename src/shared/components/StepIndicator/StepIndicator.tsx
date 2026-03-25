@@ -9,6 +9,7 @@ interface StepIndicatorProps {
     currentStep: number;
     maxCompletedStep?: number; // Legacy support
     stepStatuses?: Record<number, StepStatus>; // New granular support
+    stepLabels?: string[]; // Labels under step circles
     onStepClick?: (step: number) => void;
 }
 
@@ -17,6 +18,7 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
     currentStep,
     maxCompletedStep = 0,
     stepStatuses,
+    stepLabels,
     onStepClick
 }) => {
     const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
@@ -80,25 +82,31 @@ const StepIndicator: React.FC<StepIndicatorProps> = ({
                                     }`} />
                             )}
 
-                            {/* Step Circle */}
-                            <button
-                                disabled={isPending && !onStepClick}
-                                onClick={() => onStepClick && onStepClick(step)}
-                                className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all font-bold text-sm select-none ${isActive
+                            {/* Step Circle + Label */}
+                            <div className="relative flex flex-col items-center">
+                                <button
+                                    disabled={isPending && !onStepClick}
+                                    onClick={() => onStepClick && onStepClick(step)}
+                                    className={`w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all font-bold text-sm select-none ${isActive
                                         ? 'bg-primary border-primary text-white scale-110 shadow-lg ring-4 ring-primary/20'
                                         : isCompleted
                                             ? 'bg-white border-primary text-primary hover:bg-primary/5 cursor-pointer'
                                             : isWarning
                                                 ? 'bg-yellow-400 border-yellow-400 text-yellow-900 scale-110 shadow-lg ring-4 ring-yellow-400/20' // Warning Style
                                                 : 'bg-gray-50 border-gray-200 text-gray-400 cursor-not-allowed'
-                                    }`}
-                            >
-                                {isCompleted ? (
-                                    <span className="material-icons-round text-lg">check</span>
-                                ) : (
-                                    step
+                                        }`}
+                                >
+                                    {isCompleted ? (
+                                        <span className="material-icons-round text-lg">check</span>
+                                    ) : (
+                                        step
+                                    )}
+                                </button>
+                                {stepLabels && stepLabels[index] && (
+                                    <span className={`absolute -bottom-5 text-[8px] font-bold uppercase tracking-wider whitespace-nowrap ${isActive ? 'text-primary' : isCompleted ? 'text-primary/60' : isWarning ? 'text-yellow-600' : 'text-gray-400'
+                                        }`}>{stepLabels[index]}</span>
                                 )}
-                            </button>
+                            </div>
                         </React.Fragment>
                     );
                 })}

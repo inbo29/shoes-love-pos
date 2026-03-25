@@ -10,6 +10,7 @@ interface StepLayoutProps {
     currentStep: number;
     maxCompletedStep?: number;
     stepStatuses?: Record<number, StepStatus>; // New Prop
+    stepLabels?: string[];
     onBack: () => void;
     onTempSave?: () => void;
     onNext: () => void;
@@ -28,6 +29,7 @@ const StepLayout: React.FC<StepLayoutProps> = ({
     currentStep,
     maxCompletedStep,
     stepStatuses,
+    stepLabels,
     onBack,
     onTempSave,
     onNext,
@@ -54,13 +56,14 @@ const StepLayout: React.FC<StepLayoutProps> = ({
                     currentStep={currentStep}
                     maxCompletedStep={maxCompletedStep}
                     stepStatuses={stepStatuses}
+                    stepLabels={stepLabels}
                     onStepClick={onStepClick}
                 />
             </div>
 
-            {/* 2. Content Area (Scrollable) */}
-            <div className="flex-1 overflow-y-auto no-scrollbar">
-                <div className="max-w-[1280px] mx-auto p-6 md:p-8 h-full">
+            {/* 2. Content Area */}
+            <div className="flex-1 overflow-hidden">
+                <div className="h-full">
                     {children}
                 </div>
             </div>
