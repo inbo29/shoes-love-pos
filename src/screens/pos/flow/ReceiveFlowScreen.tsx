@@ -185,30 +185,47 @@ const ReceiveFlowScreen: React.FC = () => {
     const hasRefund = itemDecisions.some(d => d.action === 'complaint' && d.resolution === 'refund');
 
     const calculations = useMemo(() => {
-        const receiveTotal = itemDecisions
+        // Items processed in this session
+        const newlyReceivedTotal = itemDecisions
             .filter(d => d.action === 'receive')
-            .reduce((sum, d) => {
-                const item = selectedOrder.items.find(i => i.id === d.itemId);
-                return sum + (item?.price || 0);
-            }, 0);
+            .reduce((sum, d) => sum + (selectedOrder.items.find(i => i.id === d.itemId)?.price || 0), 0);
 
-        const refundTotal = itemDecisions
+        const newlyRefundedTotal = itemDecisions
             .filter(d => d.action === 'complaint' && d.resolution === 'refund')
-            .reduce((sum, d) => {
-                const item = selectedOrder.items.find(i => i.id === d.itemId);
-                return sum + (item?.price || 0);
-            }, 0);
+            .reduce((sum, d) => sum + (selectedOrder.items.find(i => i.id === d.itemId)?.price || 0), 0);
 
-        const reorderTotal = itemDecisions
+        const newlyReorderedTotal = itemDecisions
             .filter(d => d.action === 'complaint' && d.resolution === 'reorder')
-            .reduce((sum, d) => {
-                const item = selectedOrder.items.find(i => i.id === d.itemId);
-                return sum + (item?.price || 0);
-            }, 0);
+            .reduce((sum, d) => sum + (selectedOrder.items.find(i => i.id === d.itemId)?.price || 0), 0);
 
-        const currentPayment = Math.max(0, receiveTotal - selectedOrder.payment.paid);
+        // Calculate NEW total for the entire order
+        const newOrderTotal = selectedOrder.items.reduce((sum, item) => {
+            // If it was already refunded in the past, it doesn't count towards the new total
+            if (item.status === 'REFUNDED') return sum;
 
-        return { receiveTotal, refundTotal, reorderTotal, currentPayment };
+            // If it's being refunded NOW, it doesn't count towards the new total
+            const decision = itemDecisions.find(d => d.itemId === item.id);
+            if (decision?.action === 'complaint' && decision.resolution === 'refund') {
+                return sum;
+            }
+
+            // Otherwise (RECEIVED, PENDING -> received, REORDER_DONE -> received, PENDING -> reorder), it counts.
+            return sum + item.price;
+        }, 0);
+
+        const difference = selectedOrder.payment.paid - newOrderTotal;
+
+        const currentPayment = difference < 0 ? Math.abs(difference) : 0; // Customer needs to pay more
+        const refundToCustomer = difference > 0 ? difference : 0; // We need to return money
+
+        return {
+            receiveTotal: newlyReceivedTotal, // Keep older names for easier refactoring
+            refundTotal: newlyRefundedTotal,
+            reorderTotal: newlyReorderedTotal,
+            newOrderTotal,
+            currentPayment,
+            refundToCustomer
+        };
     }, [itemDecisions, selectedOrder]);
 
     // ===== DETERMINE ACTUAL STEPS =====
@@ -390,6 +407,7 @@ const ReceiveFlowScreen: React.FC = () => {
                     onDecisionsChange={setItemDecisions}
                     onValidationChange={setStep2Valid}
                     hasReorder={hasReorder}
+                    calculations={calculations}
                 />
             )}
             {currentStep === 3 && (
@@ -406,6 +424,7 @@ const ReceiveFlowScreen: React.FC = () => {
                     itemDecisions={itemDecisions}
                     hasReorder={hasReorder}
                     onGomdolReorder={handleGomdolReorder}
+                    calculations={calculations}
                 />
             )}
         </StepLayout>

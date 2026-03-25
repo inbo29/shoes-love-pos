@@ -6,6 +6,14 @@ interface Props {
     itemDecisions: ItemDecision[];
     hasReorder: boolean;
     onGomdolReorder: () => void;
+    calculations: {
+        receiveTotal: number;
+        refundTotal: number;
+        reorderTotal: number;
+        newOrderTotal: number;
+        currentPayment: number;
+        refundToCustomer: number;
+    };
 }
 
 const EMOJI_OPTIONS = [
@@ -20,7 +28,8 @@ const ReceiveStep4Complete: React.FC<Props> = ({
     orderData,
     itemDecisions,
     hasReorder,
-    onGomdolReorder
+    onGomdolReorder,
+    calculations
 }) => {
     const [selectedEmoji, setSelectedEmoji] = useState<number | null>(null);
     const [feedback, setFeedback] = useState('');
@@ -149,9 +158,26 @@ const ReceiveStep4Complete: React.FC<Props> = ({
                             <span className="font-black text-primary">{orderData.id}</span>
                         </div>
                         <div className="flex justify-between text-xs">
-                            <span className="font-bold text-gray-500">Нийт дүн</span>
-                            <span className="font-black text-gray-800">{orderData.payment.total.toLocaleString()}₮</span>
+                            <span className="font-bold text-gray-500">Анхны нийт дүн</span>
+                            <span className="font-black text-gray-500">{orderData.payment.total.toLocaleString()}₮</span>
                         </div>
+                        <div className="flex justify-between text-xs pt-1 border-t border-gray-100">
+                            <span className="font-bold text-gray-800">Шинэчилсэн нийт дүн</span>
+                            <span className="font-black text-[#5e2bff]">{calculations.newOrderTotal.toLocaleString()}₮</span>
+                        </div>
+
+                        {calculations.refundToCustomer > 0 && (
+                            <div className="flex justify-between text-[10px] mt-1">
+                                <span className="font-bold text-red-500">Бэлнээр буцаасан</span>
+                                <span className="font-black text-red-600">{calculations.refundToCustomer.toLocaleString()}₮</span>
+                            </div>
+                        )}
+                        {calculations.currentPayment > 0 && (
+                            <div className="flex justify-between text-[10px] mt-1">
+                                <span className="font-bold text-green-600">Нэмж төлсөн</span>
+                                <span className="font-black text-green-700">{calculations.currentPayment.toLocaleString()}₮</span>
+                            </div>
+                        )}
                     </div>
 
                     {/* Receipt Print */}

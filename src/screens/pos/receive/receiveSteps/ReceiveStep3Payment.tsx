@@ -75,17 +75,19 @@ const ReceiveStep3Payment: React.FC<Props> = ({
             <div className="flex-1 flex flex-col overflow-y-auto no-scrollbar p-3 md:p-4">
                 {isPaidFull || calculations.currentPayment <= 0 ? (
                     <div className="flex-1 flex items-center justify-center">
-                        <div className="p-12 bg-green-50 rounded-3xl border border-green-100 flex flex-col items-center text-center shadow-sm max-w-md w-full">
-                            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6 text-green-600">
-                                <span className="material-icons-round text-4xl">check_circle</span>
+                        <div className={`p-12 ${calculations.refundToCustomer > 0 ? 'bg-red-50 border-red-100' : 'bg-green-50 border-green-100'} rounded-3xl border flex flex-col items-center text-center shadow-sm max-w-md w-full`}>
+                            <div className={`w-20 h-20 rounded-full ${calculations.refundToCustomer > 0 ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'} flex items-center justify-center mb-6`}>
+                                <span className="material-icons-round text-4xl">{calculations.refundToCustomer > 0 ? 'price_check' : 'check_circle'}</span>
                             </div>
-                            <h2 className="text-2xl font-black text-gray-800 uppercase mb-3 tracking-tight">
-                                {calculations.currentPayment <= 0 ? 'Төлбөр шаардлагагүй' : 'Төлбөр бүрэн хийгдлээ'}
+                            <h2 className={`text-2xl font-black ${calculations.refundToCustomer > 0 ? 'text-red-700' : 'text-gray-800'} uppercase mb-3 tracking-tight`}>
+                                {calculations.refundToCustomer > 0 ? 'Буцаан олгох дүн гарлаа' : (calculations.currentPayment <= 0 ? 'Төлбөр шаардлагагүй' : 'Төлбөр бүрэн хийгдлээ')}
                             </h2>
-                            <p className="text-gray-500 text-xs font-bold max-w-sm leading-relaxed">
-                                {calculations.currentPayment <= 0
-                                    ? 'Урьдчилж төлсөн дүн хүрэлцэхүйц байна.'
-                                    : 'Дараагийн алхамд шилжих боломжтой.'
+                            <p className={`${calculations.refundToCustomer > 0 ? 'text-red-600' : 'text-gray-500'} text-xs font-bold max-w-sm leading-relaxed mb-4`}>
+                                {calculations.refundToCustomer > 0
+                                    ? `Захиалгын нийт дүн буурсан тул харилцагчид ${calculations.refundToCustomer.toLocaleString()}₮-г бэлнээр буцаан олгоно уу.`
+                                    : (calculations.currentPayment <= 0
+                                        ? 'Урьдчилж төлсөн дүн хүрэлцэхүйц байна.'
+                                        : 'Дараагийн алхамд шилжих боломжтой.')
                                 }
                             </p>
                         </div>
@@ -153,22 +155,21 @@ const ReceiveStep3Payment: React.FC<Props> = ({
 
                     <div className="space-y-3">
                         <div className="flex justify-between text-xs">
-                            <span className="font-bold text-gray-500">Үйлчилгээний дүн</span>
+                            <span className="font-bold text-gray-500">Анхны үйлчилгээний дүн</span>
                             <span className="font-black text-gray-800">{orderData.payment.total.toLocaleString()}₮</span>
                         </div>
                         {calculations.refundTotal > 0 && (
                             <div className="flex justify-between text-xs">
-                                <span className="font-bold text-red-500">Буцаалт</span>
+                                <span className="font-bold text-red-500">Буцаалт хассан</span>
                                 <span className="font-black text-red-500">- {calculations.refundTotal.toLocaleString()}₮</span>
                             </div>
                         )}
-                        {calculations.reorderTotal > 0 && (
-                            <div className="flex justify-between text-xs">
-                                <span className="font-bold text-orange-500">Дахин захиалга</span>
-                                <span className="font-black text-orange-500">- {calculations.reorderTotal.toLocaleString()}₮</span>
-                            </div>
-                        )}
-                        <div className="flex justify-between text-xs">
+                        <div className="flex justify-between text-xs pt-1 border-t border-gray-50">
+                            <span className="font-bold text-gray-800 uppercase tracking-wider text-[10px]">Шинэчилсэн нийт дүн</span>
+                            <span className="font-black text-[#5e2bff]">{calculations.newOrderTotal.toLocaleString()}₮</span>
+                        </div>
+
+                        <div className="flex justify-between text-xs mt-3">
                             <span className="font-bold text-gray-500">Урьдчилж төлсөн</span>
                             <span className="font-black text-green-600">- {orderData.payment.paid.toLocaleString()}₮</span>
                         </div>
@@ -185,10 +186,17 @@ const ReceiveStep3Payment: React.FC<Props> = ({
 
                         <div className="w-full h-px bg-gray-200 mt-2" />
 
-                        <div className="flex justify-between items-end pt-3">
-                            <span className="font-black text-gray-800 uppercase tracking-widest text-[10px]">Үлдэгдэл</span>
-                            <span className="text-2xl font-black text-primary tracking-tighter leading-none">{remaining.toLocaleString()}₮</span>
-                        </div>
+                        {calculations.refundToCustomer > 0 ? (
+                            <div className="flex justify-between items-end pt-3">
+                                <span className="font-black text-red-600 uppercase tracking-widest text-[10px]">Бэлнээр буцаах</span>
+                                <span className="text-2xl font-black text-red-600 tracking-tighter leading-none">{calculations.refundToCustomer.toLocaleString()}₮</span>
+                            </div>
+                        ) : (
+                            <div className="flex justify-between items-end pt-3">
+                                <span className="font-black text-gray-800 uppercase tracking-widest text-[10px]">Үлдэгдэл</span>
+                                <span className="text-2xl font-black text-primary tracking-tighter leading-none">{remaining.toLocaleString()}₮</span>
+                            </div>
+                        )}
                     </div>
 
                     {remaining > 0 && (

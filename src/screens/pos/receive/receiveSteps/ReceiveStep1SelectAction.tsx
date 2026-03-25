@@ -63,8 +63,9 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
         updateDecision(itemId, { complaintTypes: updated, complaintType: updated[0] });
     };
 
-    const validateAll = (decisions: ItemDecision[]) => {
-        const allDecided = orderData.items.every(item => {
+    const validateAll = (decisions: ItemDecision[], c1 = checked1, c2 = checked2) => {
+        const actionableItems = orderData.items.filter(i => i.status === 'PENDING' || i.status === 'REORDER_DONE');
+        const allDecided = actionableItems.every(item => {
             const dec = decisions.find(d => d.itemId === item.id);
             if (!dec) return false;
             if (dec.action === 'complaint') {
@@ -73,8 +74,15 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
             }
             return true;
         });
-        onValidationChange(allDecided);
+        onValidationChange(allDecided && c1 && c2);
     };
+
+    // Re-validate when checkboxes change
+    React.useEffect(() => {
+        if (itemDecisions.length > 0) {
+            validateAll(itemDecisions, checked1, checked2);
+        }
+    }, [checked1, checked2, itemDecisions]);
 
     // Determine which items are actionable (PENDING / REORDER_DONE) vs read-only (RECEIVED / REFUNDED)
     const actionableItems = orderData.items.filter(i => i.status === 'PENDING' || i.status === 'REORDER_DONE');

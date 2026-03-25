@@ -7,6 +7,14 @@ interface Props {
     onDecisionsChange: (decisions: ItemDecision[]) => void;
     onValidationChange: (isValid: boolean) => void;
     hasReorder: boolean;
+    calculations: {
+        receiveTotal: number;
+        refundTotal: number;
+        reorderTotal: number;
+        newOrderTotal: number;
+        currentPayment: number;
+        refundToCustomer: number;
+    };
 }
 
 const ReceiveStep2Resolution: React.FC<Props> = ({
@@ -14,7 +22,8 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
     itemDecisions,
     onDecisionsChange,
     onValidationChange,
-    hasReorder
+    hasReorder,
+    calculations
 }) => {
     const complaintItems = itemDecisions.filter(d => d.action === 'complaint');
     const receiveItems = itemDecisions.filter(d => d.action === 'receive');
@@ -37,28 +46,6 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
         const allResolved = complaintItems.every(d => d.resolution);
         onValidationChange(allResolved);
     }, []);
-
-    // Calculate amounts
-    const receiveTotal = receiveItems.reduce((sum, d) => {
-        const item = orderData.items.find(i => i.id === d.itemId);
-        return sum + (item?.price || 0);
-    }, 0);
-
-    const refundTotal = complaintItems
-        .filter(d => d.resolution === 'refund')
-        .reduce((sum, d) => {
-            const item = orderData.items.find(i => i.id === d.itemId);
-            return sum + (item?.price || 0);
-        }, 0);
-
-    const reorderTotal = complaintItems
-        .filter(d => d.resolution === 'reorder')
-        .reduce((sum, d) => {
-            const item = orderData.items.find(i => i.id === d.itemId);
-            return sum + (item?.price || 0);
-        }, 0);
-
-    const currentPayment = Math.max(0, receiveTotal - orderData.payment.paid);
 
     return (
         <div className="flex-1 flex flex-col lg:flex-row h-full bg-[#F8F9FA] gap-0 overflow-hidden">
@@ -185,58 +172,60 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
 
                     <div className="space-y-3">
                         <div className="flex justify-between text-xs">
-                            <span className="font-bold text-green-600 flex items-center gap-1.5">
-                                <span className="w-2 h-2 rounded-full bg-green-500"></span> Хүлээн авах
-                            </span>
-                            <span className="font-black text-gray-800">{receiveTotal.toLocaleString()}₮</span>
+                            <span className="font-bold text-gray-500">Анхны үйлчилгээний дүн</span>
+                            <span className="font-black text-gray-800">{orderData.payment.total.toLocaleString()}₮</span>
                         </div>
 
-                        {refundTotal > 0 && (
+                        {calculations.refundTotal > 0 && (
                             <div className="flex justify-between text-xs">
                                 <span className="font-bold text-red-500 flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Буцаалт
+                                    <span className="w-2 h-2 rounded-full bg-red-500"></span> Буцаалт хассан
                                 </span>
-                                <span className="font-black text-red-500">- {refundTotal.toLocaleString()}₮</span>
+                                <span className="font-black text-red-500">- {calculations.refundTotal.toLocaleString()}₮</span>
                             </div>
                         )}
 
-                        {reorderTotal > 0 && (
-                            <div className="flex justify-between text-xs">
-                                <span className="font-bold text-orange-500 flex items-center gap-1.5">
-                                    <span className="w-2 h-2 rounded-full bg-orange-500"></span> Дахин захиалга
-                                </span>
-                                <span className="font-black text-orange-500">- {reorderTotal.toLocaleString()}₮</span>
-                            </div>
-                        )}
+                        <div className="flex justify-between text-xs pt-1 border-t border-gray-50">
+                            <span className="font-bold text-gray-800 uppercase tracking-wider text-[10px]">Шинэчилсэн нийт дүн</span>
+                            <span className="font-black text-[#5e2bff]">{calculations.newOrderTotal.toLocaleString()}₮</span>
+                        </div>
 
-                        <div className="flex justify-between text-xs">
+                        <div className="flex justify-between text-xs mt-3">
                             <span className="font-bold text-gray-500">Урьдчилж төлсөн</span>
                             <span className="font-black text-green-600">- {orderData.payment.paid.toLocaleString()}₮</span>
                         </div>
 
                         <div className="border-t-2 border-dashed border-gray-200 my-3"></div>
 
-                        <div className="bg-primary/5 rounded-xl p-3 border-2 border-primary/20">
-                            <div className="flex justify-between items-center">
-                                <span className="text-xs font-black text-gray-600 uppercase">Төлөх дүн</span>
-                                <span className="text-xl font-black text-primary">{Math.max(0, currentPayment).toLocaleString()}₮</span>
+                        {calculations.currentPayment > 0 && (
+                            <div className="bg-primary/5 rounded-xl p-3 border-2 border-primary/20">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs font-black text-gray-600 uppercase">ТӨЛӨХ ДҮН</span>
+                                    <span className="text-xl font-black text-primary">{calculations.currentPayment.toLocaleString()}₮</span>
+                                </div>
                             </div>
-                        </div>
+                        )}
+
+                        {calculations.refundToCustomer > 0 && (
+                            <div className="bg-red-50 rounded-xl p-3 border-2 border-red-200">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-xs font-black text-red-600 uppercase">БУЦААН ОЛГОХ</span>
+                                    <span className="text-xl font-black text-red-600">{calculations.refundToCustomer.toLocaleString()}₮</span>
+                                </div>
+                            </div>
+                        )}
+
+                        {calculations.currentPayment === 0 && calculations.refundToCustomer === 0 && (
+                            <div className="bg-gray-50 rounded-xl p-3 border-2 border-gray-200 text-center">
+                                <span className="text-xs font-black text-gray-500 uppercase">Тооцоо дууссан (0₮)</span>
+                            </div>
+                        )}
 
                         {hasReorder && (
                             <div className="bg-orange-50 border border-orange-200 rounded-lg p-2.5 mt-3">
                                 <p className="text-[10px] text-orange-700 font-bold flex items-start gap-1.5">
                                     <span className="material-icons-round text-xs mt-0.5">info</span>
-                                    <span>Дахин захиалга сонгогдсон тул төлбөр алгасагдана. Захиалга Step 5 руу шилжинэ.</span>
-                                </p>
-                            </div>
-                        )}
-
-                        {!hasReorder && refundTotal > 0 && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-2.5 mt-3">
-                                <p className="text-[10px] text-red-700 font-bold flex items-start gap-1.5">
-                                    <span className="material-icons-round text-xs mt-0.5">info</span>
-                                    <span>Буцаалт дүн хасагдсан. Дараагийн алхамд төлбөр төлнө.</span>
+                                    <span>Дахин захиалга сонгогдсон тул хувцас Гомдол/Ачилт руу шилжинэ.</span>
                                 </p>
                             </div>
                         )}
