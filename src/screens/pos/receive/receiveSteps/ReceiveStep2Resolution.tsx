@@ -41,10 +41,19 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
         onValidationChange(allResolved);
     };
 
-    // Check validation on mount
+    // Auto-set reorder for all complaint items on mount (refund removed)
     React.useEffect(() => {
-        const allResolved = complaintItems.every(d => d.resolution);
-        onValidationChange(allResolved);
+        const needsUpdate = complaintItems.some(d => d.resolution !== 'reorder');
+        if (needsUpdate) {
+            const newDecisions = itemDecisions.map(d =>
+                d.action === 'complaint' ? { ...d, resolution: 'reorder' as const } : d
+            );
+            onDecisionsChange(newDecisions);
+            onValidationChange(true);
+        } else {
+            const allResolved = complaintItems.every(d => d.resolution);
+            onValidationChange(allResolved);
+        }
     }, []);
 
     return (
@@ -116,10 +125,10 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
                                     {d.complaintReason || '—'}
                                 </div>
 
-                                {/* Resolution Options */}
+                                {/* Resolution - Auto reorder */}
                                 <div className="p-4 space-y-2">
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Шийдвэрлэлт сонгох</span>
-                                    <div className="grid grid-cols-2 gap-2">
+                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Шийдвэрлэлт</span>
+                                    <div className="grid grid-cols-1 gap-2">
                                         <button
                                             onClick={() => updateResolution(d.itemId, 'reorder')}
                                             className={`p-3 rounded-xl border-2 text-center transition-all flex flex-col items-center gap-1.5 ${d.resolution === 'reorder'
@@ -134,27 +143,7 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
                                                 Дахин захиалга
                                             </span>
                                         </button>
-                                        <button
-                                            onClick={() => updateResolution(d.itemId, 'refund')}
-                                            className={`p-3 rounded-xl border-2 text-center transition-all flex flex-col items-center gap-1.5 ${d.resolution === 'refund'
-                                                ? 'border-red-400 bg-red-50 shadow-md'
-                                                : 'border-gray-100 bg-gray-50 hover:border-red-200'
-                                                }`}
-                                        >
-                                            <span className={`material-icons-round text-xl ${d.resolution === 'refund' ? 'text-red-500' : 'text-gray-400'}`}>
-                                                money_off
-                                            </span>
-                                            <span className={`text-[10px] font-black uppercase ${d.resolution === 'refund' ? 'text-red-600' : 'text-gray-500'}`}>
-                                                Буцаалт (Refund)
-                                            </span>
-                                        </button>
                                     </div>
-                                    {!d.resolution && (
-                                        <p className="text-[9px] text-red-400 font-bold flex items-center gap-1 mt-1">
-                                            <span className="material-icons-round text-xs">info</span>
-                                            Шийдвэрлэлт сонгоно уу
-                                        </p>
-                                    )}
                                 </div>
                             </div>
                         );

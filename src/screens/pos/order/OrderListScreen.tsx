@@ -329,7 +329,18 @@ const OrderListScreen: React.FC = () => {
                                     <div className="w-[150px] shrink-0 font-extrabold text-[#40C1C7] group-hover:underline">{item.id}</div>
                                     <div className="w-[180px] shrink-0 px-2 font-bold text-gray-800 truncate">{maskNameSmart(item.customer)}</div>
                                     <div className="w-[120px] shrink-0 px-2 text-gray-500 font-medium">{maskPhone(item.phone)}</div>
-                                    <div className="w-[300px] shrink-0 px-2 font-bold text-gray-500 truncate">{formatServiceItems(item.items)}</div>
+                                    <div className="w-[300px] shrink-0 px-2">
+                                        <div className="flex flex-col gap-1">
+                                            {item.items.map((svc, svcIdx) => {
+                                                const itemNum = String(svcIdx + 1).padStart(2, '0');
+                                                return (
+                                                    <span key={svcIdx} className="text-[10px] font-bold text-gray-600 truncate">
+                                                        <span className="text-gray-400 font-black">[{itemNum}]</span> {svc.name} {svc.count}
+                                                    </span>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
                                     <div className="w-[150px] shrink-0 px-2 text-gray-400 text-xs font-medium">{item.date}</div>
                                     <div className="w-[140px] shrink-0 px-2 flex justify-center">
                                         <span className={`px-4 py-1.5 text-[10px] font-black rounded-full border flex items-center gap-1.5 whitespace-nowrap ${getStatusStyles(item.status)}`}>

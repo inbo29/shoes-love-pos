@@ -231,10 +231,11 @@ const ReceiveListScreen: React.FC = () => {
         const remaining = items.length - MAX_VISIBLE_ITEMS;
 
         return (
-            <div className="flex flex-col gap-1 justify-center">
+            <div className="flex flex-col gap-1.5 justify-center">
                 {visible.map((item, idx) => {
                     const label = getItemStatusLabel(item.status);
                     const styles = getItemStatusStyles(item.status);
+                    const itemNum = String(idx + 1).padStart(2, '0');
                     return (
                         <div
                             key={idx}
@@ -245,7 +246,7 @@ const ReceiveListScreen: React.FC = () => {
                                     item.status === 'REORDER' ? 'bg-orange-500' :
                                         item.status === 'PENDING' ? 'bg-yellow-500' : 'bg-gray-400'
                                 }`}></span>
-                            {item.name} ({label})
+                            <span className="font-black text-[9px] opacity-60">[{itemNum}]</span> {item.name} ({label})
                         </div>
                     );
                 })}

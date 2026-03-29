@@ -169,10 +169,15 @@ const SellStep1ProductSelect: React.FC<Props> = ({ selectedProducts, onProductsC
                                             </h3>
                                             <div className="mt-auto">
                                                 {product.salePrice ? (
-                                                    <div className="flex items-center gap-1.5">
-                                                        <span className="text-[9px] font-bold text-gray-400 line-through">
-                                                            {product.price.toLocaleString()}₮
-                                                        </span>
+                                                    <div className="flex flex-col gap-0.5">
+                                                        <div className="flex items-center gap-1.5">
+                                                            <span className="text-[10px] font-black text-red-500 bg-red-50 px-1 py-0.5 rounded leading-none">
+                                                                -{Math.round(((product.price - product.salePrice) / product.price) * 100)}%
+                                                            </span>
+                                                            <span className="text-[9px] font-bold text-gray-400 line-through">
+                                                                {product.price.toLocaleString()}₮
+                                                            </span>
+                                                        </div>
                                                         <span className="text-sm font-black text-primary">
                                                             {product.salePrice.toLocaleString()}₮
                                                         </span>

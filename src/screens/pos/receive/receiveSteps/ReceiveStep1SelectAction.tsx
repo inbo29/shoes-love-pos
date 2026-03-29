@@ -69,8 +69,7 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
             const dec = decisions.find(d => d.itemId === item.id);
             if (!dec) return false;
             if (dec.action === 'complaint') {
-                const types = dec.complaintTypes || (dec.complaintType ? [dec.complaintType] : []);
-                return dec.complaintReason && dec.complaintReason.trim().length > 0 && types.length > 0;
+                return dec.complaintReason && dec.complaintReason.trim().length > 0;
             }
             return true;
         });
@@ -109,7 +108,7 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
         <div className="flex-1 flex flex-col lg:flex-row h-full bg-[#F8F9FA] gap-0 overflow-hidden">
             {/* LEFT: Items */}
             <div className="flex-1 flex flex-col overflow-hidden min-h-0 p-3 md:p-5">
-                <div className="overflow-y-auto flex-1 no-scrollbar space-y-4 pb-4">
+                <div className="overflow-y-auto flex-1 no-scrollbar space-y-6 pb-4">
 
                     {/* Order Header Card */}
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
@@ -164,10 +163,14 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                     {processedItems.length} бараа
                                 </span>
                             </div>
-                            {processedItems.map(item => (
+                            {processedItems.map((item, pIdx) => {
+                                const globalIdx = orderData.items.findIndex(i => i.id === item.id);
+                                const itemNum = String(globalIdx + 1).padStart(2, '0');
+                                return (
                                 <div key={`processed-${item.id}`} className="bg-white/60 rounded-2xl border-2 border-gray-100 opacity-70 overflow-hidden">
                                     <div className="p-4 flex flex-col sm:flex-row gap-3">
-                                        <div className="w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                        <div className="relative w-14 h-14 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                            <span className="absolute -top-0.5 -left-0.5 z-10 bg-gray-400 text-white text-[8px] font-black rounded-br-lg rounded-tl-lg px-1.5 py-0.5 leading-none shadow-sm">{itemNum}</span>
                                             {item.photos[0] ? (
                                                 <img src={item.photos[0]} alt={item.name} className="w-full h-full object-cover grayscale" />
                                             ) : (
@@ -176,7 +179,7 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                         </div>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2 flex-wrap">
-                                                <h3 className="text-sm font-bold text-gray-500">{item.name}</h3>
+                                                <h3 className="text-sm font-bold text-gray-500"><span className="text-gray-400">[{itemNum}]</span> {item.name}</h3>
                                                 <span className={`text-[8px] font-bold px-2 py-0.5 rounded-full border ${item.status === 'RECEIVED'
                                                     ? 'text-green-600 bg-green-50 border-green-200'
                                                     : 'text-red-500 bg-red-50 border-red-200'
@@ -193,7 +196,8 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </>
                     )}
 
@@ -218,6 +222,8 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                         const decision = getDecision(item.id);
                         const isComplaint = decision?.action === 'complaint';
                         const isReceive = decision?.action === 'receive';
+                        const globalIdx = orderData.items.findIndex(i => i.id === item.id);
+                        const itemNum = String(globalIdx + 1).padStart(2, '0');
 
                         return (
                             <div
@@ -266,8 +272,11 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
 
                                 {/* Item Header with Actions */}
                                 <div className="p-4 flex flex-col sm:flex-row gap-3">
-                                    {/* Photo */}
-                                    <div className="w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                    {/* Photo with Number Badge */}
+                                    <div className="relative w-16 h-16 rounded-xl bg-gray-50 border border-gray-100 overflow-hidden shrink-0 flex items-center justify-center">
+                                        <span className={`absolute -top-0.5 -left-0.5 z-10 text-white text-[9px] font-black rounded-br-lg rounded-tl-lg px-2 py-0.5 leading-none shadow-sm ${
+                                            isComplaint ? 'bg-orange-500' : isReceive ? 'bg-green-500' : 'bg-primary'
+                                        }`}>{itemNum}</span>
                                         {item.photos[0] ? (
                                             <img src={item.photos[0]} alt={item.name} className="w-full h-full object-cover" />
                                         ) : (
@@ -279,7 +288,7 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 flex-wrap">
                                             <span className="material-icons-round text-primary text-sm">hiking</span>
-                                            <h3 className="text-sm font-black text-gray-800 uppercase">{item.name}</h3>
+                                            <h3 className="text-sm font-black text-gray-800 uppercase"><span className="text-primary">[{itemNum}]</span> {item.name}</h3>
                                             {item.damage.hasDamage && (
                                                 <span className="text-[8px] font-bold text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
                                                     ГЭМТЭЛТЭЙ
@@ -302,6 +311,15 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                         <p className="text-sm font-black text-primary mt-1">
                                             {item.price.toLocaleString()}₮
                                         </p>
+                                        {/* Per-item status indicator */}
+                                        <div className={`mt-1.5 flex items-center gap-1.5 text-[10px] font-black ${
+                                            isComplaint ? 'text-orange-500' : isReceive ? 'text-green-600' : 'text-gray-400'
+                                        }`}>
+                                            <span className={`w-2 h-2 rounded-full ${
+                                                isComplaint ? 'bg-orange-500' : isReceive ? 'bg-green-500' : 'bg-gray-300'
+                                            }`}></span>
+                                            Төлөв: {isComplaint ? 'гомдол' : isReceive ? 'хүлээж авах' : '—'}
+                                        </div>
                                     </div>
 
                                     {/* Action Buttons */}
@@ -487,29 +505,6 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                             <span className="text-[10px] font-black uppercase tracking-wider">Гомдлын мэдээлэл</span>
                                         </div>
 
-                                        {/* Complaint Type - Multi-select */}
-                                        <div>
-                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Гомдлын төрөл (олон сонгож болно)</span>
-                                            <div className="flex flex-wrap gap-2">
-                                                {COMPLAINT_TYPES.map(ct => {
-                                                    const types = decision?.complaintTypes || (decision?.complaintType ? [decision.complaintType] : []);
-                                                    const isSelected = types.includes(ct.value);
-                                                    return (
-                                                        <button
-                                                            key={ct.value}
-                                                            onClick={() => toggleComplaintType(item.id, ct.value)}
-                                                            className={`px-3 py-1.5 rounded-full text-[9px] font-bold border transition-all ${isSelected
-                                                                ? 'bg-orange-500 text-white border-orange-500'
-                                                                : 'bg-white text-gray-500 border-gray-200 hover:border-orange-300'
-                                                                }`}
-                                                        >
-                                                            {ct.label}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-
                                         {/* Complaint Reason */}
                                         <div>
                                             <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Гомдлын агуулга *</span>
@@ -536,12 +531,11 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
 
                                         {/* Validation warning */}
                                         {(() => {
-                                            const types = decision?.complaintTypes || (decision?.complaintType ? [decision.complaintType] : []);
-                                            if (!decision?.complaintReason || types.length === 0) {
+                                            if (!decision?.complaintReason) {
                                                 return (
                                                     <p className="text-[9px] text-red-400 font-bold flex items-center gap-1">
                                                         <span className="material-icons-round text-xs">info</span>
-                                                        Гомдлын төрөл болон агуулга заавал оруулна уу
+                                                        Гомдлын агуулга заавал оруулна уу
                                                     </p>
                                                 );
                                             }
