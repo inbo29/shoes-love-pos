@@ -167,6 +167,12 @@ const PosLayout: React.FC<PosLayoutProps> = ({ children, userName, branchName = 
             onClick={() => navigate('/pos/product-order')}
           />
           <NavButton
+            label={<>Бараа<br />буцаалт</>}
+            icon="assignment_return"
+            active={location.pathname.startsWith('/pos/product-refund')}
+            onClick={() => navigate('/pos/product-refund')}
+          />
+          <NavButton
             label={<>Бараа<br />үлдэгдэл</>}
             icon="inventory"
             active={isActive('/pos/inventory')}

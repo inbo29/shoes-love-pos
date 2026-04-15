@@ -27,6 +27,8 @@ import AuditListScreen from '../screens/pos/products/audit/AuditListScreen';
 import ProductSellFlowScreen from '../screens/pos/products/sell/ProductSellFlowScreen';
 import ProductReceiveScreen from '../screens/pos/products/order/ProductReceiveScreen';
 import TransferReceiveScreen from '../screens/pos/products/transfer/TransferReceiveScreen';
+import ProductSaleListScreen from '../screens/pos/products/refund/ProductSaleListScreen';
+import ProductRefundFlowScreen from '../screens/pos/products/refund/ProductRefundFlowScreen';
 
 
 // Placeholder for screens moving to new structure
@@ -101,6 +103,11 @@ const PosRoutes: React.FC<{ userName: string; selectedBranch: string }> = ({ use
             <Route path="product-inquiry" element={<ProductInquiryScreen />} />
             <Route path="product-audit" element={<AuditListScreen userName={userName} initialBranch={selectedBranch} />} />
             <Route path="product-return" element={<ProductReturnScreen />} />
+            <Route path="product-refund">
+                <Route index element={<ProductSaleListScreen />} />
+                <Route path=":receiptNo/step/:step" element={<ProductRefundFlowScreen />} />
+                <Route path=":receiptNo" element={<Navigate to="step/1" replace />} />
+            </Route>
 
             <Route path="*" element={<Navigate to="dashboard" replace />} />
         </Routes>
