@@ -6,6 +6,7 @@ import PosExcelButton from '../../../../shared/components/PosExcelButton';
 import PosPagination from '../../../../shared/components/PosPagination';
 import { mockReceipts } from '../../../../services/mockReceiptData';
 import type { MockReceipt, ReceiptStatus, ReceiptPaymentMethod } from '../../../../services/mockReceiptData';
+import ReceiptDetailModal from './ReceiptDetailModal';
 
 const paymentLabel: Record<ReceiptPaymentMethod, string> = {
     cash: 'Бэлэн',
@@ -58,6 +59,7 @@ const ProductSaleListScreen: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const [startDate, setStartDate] = useState<Date | null>(null);
     const [endDate, setEndDate] = useState<Date | null>(null);
+    const [detailReceipt, setDetailReceipt] = useState<MockReceipt | null>(null);
 
     const itemsPerPage = 10;
 
@@ -183,7 +185,8 @@ const ProductSaleListScreen: React.FC = () => {
                                 return (
                                     <div
                                         key={r.receiptNo}
-                                        className="flex px-6 py-4 border-b border-gray-50 items-center text-[13px] group hover:bg-primary/5 transition-colors"
+                                        onClick={() => setDetailReceipt(r)}
+                                        className="flex px-6 py-4 border-b border-gray-50 items-center text-[13px] group hover:bg-primary/5 transition-colors cursor-pointer"
                                     >
                                         <div className="w-[170px] shrink-0 font-extrabold text-[#40C1C7] truncate">{r.receiptNo}</div>
                                         <div className="w-[160px] shrink-0 px-2 text-gray-500 font-medium">{formatDate(r.soldAt)}</div>
@@ -208,7 +211,10 @@ const ProductSaleListScreen: React.FC = () => {
                                         <div className="w-[140px] shrink-0 px-2 flex justify-end">
                                             <button
                                                 disabled={disabled}
-                                                onClick={() => navigate(`/pos/product-refund/${r.receiptNo}/step/1`)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    if (!disabled) navigate(`/pos/product-refund/${r.receiptNo}/step/1`);
+                                                }}
                                                 className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${disabled
                                                     ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
                                                     : 'bg-secondary text-gray-900 hover:bg-yellow-400 shadow-md shadow-secondary/30 active:scale-95'
@@ -238,6 +244,18 @@ const ProductSaleListScreen: React.FC = () => {
                     />
                 </div>
             </div>
+
+            {detailReceipt && (
+                <ReceiptDetailModal
+                    receipt={detailReceipt}
+                    onClose={() => setDetailReceipt(null)}
+                    onRefund={detailReceipt.status === 'refunded' ? undefined : () => {
+                        const no = detailReceipt.receiptNo;
+                        setDetailReceipt(null);
+                        navigate(`/pos/product-refund/${no}/step/1`);
+                    }}
+                />
+            )}
         </div>
     );
 };

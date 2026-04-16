@@ -62,17 +62,9 @@ const RefundStep3Complete: React.FC<Props> = ({ receipt, refundItems, totalRefun
                                 </div>
                             </>
                         )}
-                        <div className="flex justify-between text-xs">
-                            <span className="font-bold text-gray-500 uppercase tracking-widest text-[10px]">Анхны төлсөн дүн</span>
-                            <span className="font-black text-gray-800">{receipt.totalAmount.toLocaleString()} ₮</span>
-                        </div>
-                        <div className="flex justify-between text-xs">
-                            <span className="font-bold text-gray-500 uppercase tracking-widest text-[10px]">Буцаалтын дүн</span>
-                            <span className="font-black text-red-500">− {totalRefundAmount.toLocaleString()} ₮</span>
-                        </div>
                         <div className="border-t border-gray-100 pt-3 flex justify-between items-end">
                             <span className="font-black text-gray-800 uppercase tracking-widest text-[10px]">
-                                {isFullRefund ? 'Үлдсэн дүн' : 'Шинэ баримтын дүн'}
+                                Шинэ баримтын дүн
                             </span>
                             <span className="text-xl font-black text-primary tracking-tighter">{netReceiptAmount.toLocaleString()} ₮</span>
                         </div>
