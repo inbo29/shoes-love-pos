@@ -1,5 +1,5 @@
 import React from 'react';
-import type { MockReceipt, ReceiptPaymentMethod, ReceiptStatus } from '../../../../services/mockReceiptData';
+import type { MockReceipt, ReceiptPaymentMethod, ReceiptStatus, RefundMethodKind } from '../../../../services/mockReceiptData';
 
 interface Props {
     receipt: MockReceipt;
@@ -31,8 +31,22 @@ const formatDate = (iso: string) => {
     return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const refundMethodLabel: Record<RefundMethodKind, string> = {
+    cash: 'Бэлэн',
+    bank_transfer: 'Дансаар шилжүүлсэн',
+};
+
 const ReceiptDetailModal: React.FC<Props> = ({ receipt, onClose, onRefund }) => {
     const canRefund = receipt.status !== 'refunded' && !!onRefund;
+
+    const refundedQtyByProduct: Record<string, number> = {};
+    (receipt.refunds || []).forEach(rec => {
+        rec.lines.forEach(ln => {
+            refundedQtyByProduct[ln.productId] = (refundedQtyByProduct[ln.productId] || 0) + ln.quantity;
+        });
+    });
+    const totalRefunded = (receipt.refunds || []).reduce((sum, r) => sum + r.totalAmount, 0);
+    const netReceiptAmount = Math.max(0, receipt.totalAmount - totalRefunded);
 
     return (
         <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm" onClick={onClose}>
@@ -94,10 +108,20 @@ const ReceiptDetailModal: React.FC<Props> = ({ receipt, onClose, onRefund }) => 
                         </div>
                         {receipt.items.map(it => {
                             const unit = it.salePrice ?? it.price;
+                            const refundedQty = refundedQtyByProduct[it.productId] || 0;
+                            const isFullyRefunded = refundedQty >= it.quantity;
+                            const isPartiallyRefunded = refundedQty > 0 && !isFullyRefunded;
                             return (
-                                <div key={it.productId} className="flex px-4 py-3 border-t border-gray-100 text-xs items-center">
+                                <div key={it.productId} className={`flex px-4 py-3 border-t border-gray-100 text-xs items-center ${isFullyRefunded ? 'bg-red-50/40' : isPartiallyRefunded ? 'bg-orange-50/40' : ''}`}>
                                     <div className="flex-1 min-w-0">
-                                        <p className="font-bold text-gray-800 truncate">{it.name}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className={`font-bold truncate ${isFullyRefunded ? 'text-gray-400 line-through' : 'text-gray-800'}`}>{it.name}</p>
+                                            {refundedQty > 0 && (
+                                                <span className={`shrink-0 px-2 py-0.5 rounded-full border text-[8px] font-black uppercase tracking-tight ${isFullyRefunded ? 'bg-red-50 text-red-600 border-red-100' : 'bg-orange-50 text-orange-600 border-orange-100'}`}>
+                                                    {isFullyRefunded ? 'Буцаагдсан' : `Буцаалт ${refundedQty}`}
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-[10px] text-gray-400 font-medium mt-0.5">{it.productId}</p>
                                     </div>
                                     <div className="w-[90px] text-right">
@@ -110,26 +134,72 @@ const ReceiptDetailModal: React.FC<Props> = ({ receipt, onClose, onRefund }) => 
                                             <p className="font-black text-gray-800">{unit.toLocaleString()}₮</p>
                                         )}
                                     </div>
-                                    <div className="w-[60px] text-center font-bold text-gray-700">{it.quantity}</div>
+                                    <div className="w-[60px] text-center">
+                                        {refundedQty > 0 ? (
+                                            <div className="font-bold text-gray-700 leading-tight">
+                                                {it.quantity}
+                                                <div className="text-[9px] text-red-500 font-black">−{refundedQty}</div>
+                                            </div>
+                                        ) : (
+                                            <span className="font-bold text-gray-700">{it.quantity}</span>
+                                        )}
+                                    </div>
                                     <div className="w-[110px] text-right font-black text-gray-900">{(unit * it.quantity).toLocaleString()}₮</div>
                                 </div>
                             );
                         })}
                     </div>
 
-                    {/* Total */}
-                    <div className="flex justify-between items-end pt-2">
-                        <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">Нийт дүн</span>
-                        <span className="text-2xl font-black text-primary tracking-tighter leading-none">{receipt.totalAmount.toLocaleString()} ₮</span>
+                    {/* Totals */}
+                    <div className="space-y-2 pt-2">
+                        <div className="flex justify-between text-xs">
+                            <span className="font-bold text-gray-500 uppercase tracking-widest text-[10px]">Анхны нийт дүн</span>
+                            <span className="font-black text-gray-800">{receipt.totalAmount.toLocaleString()} ₮</span>
+                        </div>
+                        {totalRefunded > 0 && (
+                            <div className="flex justify-between text-xs">
+                                <span className="font-bold text-gray-500 uppercase tracking-widest text-[10px]">Буцаагдсан дүн</span>
+                                <span className="font-black text-red-500">− {totalRefunded.toLocaleString()} ₮</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between items-end pt-2 border-t border-gray-100">
+                            <span className="font-black text-gray-800 uppercase tracking-widest text-[11px]">
+                                {totalRefunded > 0 ? 'Үлдсэн дүн' : 'Нийт дүн'}
+                            </span>
+                            <span className="text-2xl font-black text-primary tracking-tighter leading-none">{netReceiptAmount.toLocaleString()} ₮</span>
+                        </div>
                     </div>
 
-                    {receipt.status !== 'completed' && (
-                        <div className="p-4 rounded-xl bg-orange-50 border border-orange-100 flex gap-3 text-xs">
-                            <span className="material-icons-round text-orange-500 shrink-0">info</span>
-                            <div className="text-orange-700 font-medium leading-relaxed">
-                                {receipt.status === 'refunded'
-                                    ? 'Энэхүү баримт дээрх бүх бараа буцаагдсан байна.'
-                                    : 'Энэхүү баримт дээр хэсэгчилсэн буцаалт хийгдсэн байна.'}
+                    {/* Refund history */}
+                    {receipt.refunds && receipt.refunds.length > 0 && (
+                        <div className="space-y-3">
+                            <div className="flex items-center gap-2">
+                                <span className="material-icons-round text-red-500 text-base">assignment_return</span>
+                                <h4 className="text-[11px] font-black text-gray-700 uppercase tracking-widest">Буцаалтын түүх</h4>
+                            </div>
+                            <div className="space-y-2">
+                                {receipt.refunds.map(rec => (
+                                    <div key={rec.reference} className="bg-red-50/50 border border-red-100 rounded-xl p-4">
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div>
+                                                <p className="text-[10px] font-black text-red-600 uppercase tracking-widest">{rec.reference}</p>
+                                                <p className="text-[10px] text-gray-500 font-medium mt-0.5">{formatDate(rec.refundedAt)} · {refundMethodLabel[rec.method]}</p>
+                                            </div>
+                                            <span className="text-sm font-black text-red-600">− {rec.totalAmount.toLocaleString()} ₮</span>
+                                        </div>
+                                        <div className="space-y-1 border-t border-red-100 pt-2">
+                                            {rec.lines.map(ln => {
+                                                const item = receipt.items.find(i => i.productId === ln.productId);
+                                                return (
+                                                    <div key={ln.productId} className="flex justify-between text-[11px]">
+                                                        <span className="text-gray-700 font-medium truncate pr-2">{item?.name || ln.productId}</span>
+                                                        <span className="shrink-0 text-gray-600 font-bold">×{ln.quantity} · {ln.amount.toLocaleString()}₮</span>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </div>
                     )}

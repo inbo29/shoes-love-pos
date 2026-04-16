@@ -8,6 +8,21 @@ export interface MockReceiptItem {
 
 export type ReceiptPaymentMethod = 'cash' | 'card' | 'qpay';
 export type ReceiptStatus = 'completed' | 'refunded' | 'partial_refunded';
+export type RefundMethodKind = 'cash' | 'bank_transfer';
+
+export interface RefundLine {
+    productId: string;
+    quantity: number;
+    amount: number;
+}
+
+export interface RefundRecord {
+    reference: string;
+    refundedAt: string;
+    method: RefundMethodKind;
+    lines: RefundLine[];
+    totalAmount: number;
+}
 
 export interface MockReceipt {
     receiptNo: string;
@@ -19,6 +34,7 @@ export interface MockReceipt {
     totalAmount: number;
     paymentMethod: ReceiptPaymentMethod;
     status: ReceiptStatus;
+    refunds?: RefundRecord[];
 }
 
 const calcTotal = (items: MockReceiptItem[]) =>
@@ -93,6 +109,15 @@ export const mockReceipts: MockReceipt[] = [
         ],
         paymentMethod: 'card',
         status: 'refunded',
+        refunds: [
+            {
+                reference: 'RFD-20260415-201',
+                refundedAt: '2026-04-15T14:05:00',
+                method: 'bank_transfer',
+                lines: [{ productId: 'P-101', quantity: 2, amount: 45800 }],
+                totalAmount: 45800,
+            },
+        ],
     }),
     build({
         receiptNo: 'R20260415-0058',
@@ -132,6 +157,15 @@ export const mockReceipts: MockReceipt[] = [
         ],
         paymentMethod: 'card',
         status: 'partial_refunded',
+        refunds: [
+            {
+                reference: 'RFD-20260414-112',
+                refundedAt: '2026-04-14T18:22:00',
+                method: 'cash',
+                lines: [{ productId: 'P-201', quantity: 1, amount: 14900 }],
+                totalAmount: 14900,
+            },
+        ],
     }),
     build({
         receiptNo: 'R20260414-0098',
