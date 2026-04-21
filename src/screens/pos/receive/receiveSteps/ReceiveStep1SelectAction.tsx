@@ -67,11 +67,7 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
         const actionableItems = orderData.items.filter(i => i.status === 'PENDING' || i.status === 'REORDER_DONE');
         const allDecided = actionableItems.every(item => {
             const dec = decisions.find(d => d.itemId === item.id);
-            if (!dec) return false;
-            if (dec.action === 'complaint') {
-                return dec.complaintReason && dec.complaintReason.trim().length > 0;
-            }
-            return true;
+            return !!dec;
         });
         onValidationChange(allDecided && c1 && c2);
     };
@@ -497,50 +493,10 @@ const ReceiveStep1SelectAction: React.FC<Props> = ({
                                     </div>
                                 )}
 
-                                {/* Complaint Details (inline, inside card) */}
                                 {isComplaint && (
-                                    <div className="border-t-2 border-orange-100 bg-orange-50/30 p-4 space-y-3">
-                                        <div className="flex items-center gap-1.5 text-orange-600">
-                                            <span className="material-icons-round text-sm">edit_note</span>
-                                            <span className="text-[10px] font-black uppercase tracking-wider">Гомдлын мэдээлэл</span>
-                                        </div>
-
-                                        {/* Complaint Reason */}
-                                        <div>
-                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">Гомдлын агуулга *</span>
-                                            <textarea
-                                                value={decision?.complaintReason || ''}
-                                                onChange={e => updateDecision(item.id, { complaintReason: e.target.value })}
-                                                placeholder="Харилцагчийн гомдлын дэлгэрэнгүй энд бичнэ үү..."
-                                                className="w-full px-3 py-2.5 bg-white border-2 border-orange-100 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:border-orange-300 resize-none transition-all"
-                                                rows={2}
-                                            />
-                                        </div>
-
-                                        {/* Photo upload placeholder */}
-                                        <div>
-                                            <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
-                                                <span className="material-icons-round text-[10px] align-middle mr-0.5">photo_camera</span>
-                                                Зураг / нотлох баримт (сонголтоор)
-                                            </span>
-                                            <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-orange-300 transition-colors">
-                                                <span className="material-icons-round text-gray-300 text-lg">add_photo_alternate</span>
-                                                <span className="text-[7px] text-gray-300 font-bold mt-0.5">Нэмэх</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Validation warning */}
-                                        {(() => {
-                                            if (!decision?.complaintReason) {
-                                                return (
-                                                    <p className="text-[9px] text-red-400 font-bold flex items-center gap-1">
-                                                        <span className="material-icons-round text-xs">info</span>
-                                                        Гомдлын агуулга заавал оруулна уу
-                                                    </p>
-                                                );
-                                            }
-                                            return null;
-                                        })()}
+                                    <div className="border-t-2 border-orange-100 bg-orange-50/30 px-4 py-2.5 flex items-center gap-1.5 text-orange-600">
+                                        <span className="material-icons-round text-sm">info</span>
+                                        <span className="text-[10px] font-bold">Дараагийн алхамд гомдлын дэлгэрэнгүй мэдээллийг оруулна</span>
                                     </div>
                                 )}
                             </div>

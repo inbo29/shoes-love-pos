@@ -1,5 +1,6 @@
 import React from 'react';
-import type { ReceiveOrder, ItemDecision } from '../receiveTypes';
+import type { ReceiveOrder, ItemDecision, ComplaintType } from '../receiveTypes';
+import { COMPLAINT_TYPES } from '../receiveTypes';
 
 interface Props {
     orderData: ReceiveOrder;
@@ -28,20 +29,29 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
     const complaintItems = itemDecisions.filter(d => d.action === 'complaint');
     const receiveItems = itemDecisions.filter(d => d.action === 'receive');
 
-    const updateResolution = (itemId: number, resolution: 'reorder' | 'refund') => {
+    const updateComplaintField = (itemId: number, fields: Partial<ItemDecision>) => {
         const newDecisions = itemDecisions.map(d =>
-            d.itemId === itemId ? { ...d, resolution } : d
+            d.itemId === itemId ? { ...d, ...fields } : d
         );
         onDecisionsChange(newDecisions);
-
-        // Valid when all complaint items have a resolution
-        const allResolved = newDecisions
-            .filter(d => d.action === 'complaint')
-            .every(d => d.resolution);
-        onValidationChange(allResolved);
+        revalidate(newDecisions);
     };
 
-    // Auto-set reorder for all complaint items on mount (refund removed)
+    const toggleComplaintType = (itemId: number, type: ComplaintType) => {
+        const dec = itemDecisions.find(d => d.itemId === itemId);
+        if (!dec) return;
+        const current = dec.complaintTypes || (dec.complaintType ? [dec.complaintType] : []);
+        const updated = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
+        updateComplaintField(itemId, { complaintTypes: updated, complaintType: updated[0] });
+    };
+
+    const revalidate = (decisions: ItemDecision[]) => {
+        const allValid = decisions
+            .filter(d => d.action === 'complaint')
+            .every(d => d.complaintReason && d.complaintReason.trim().length > 0);
+        onValidationChange(allValid);
+    };
+
     React.useEffect(() => {
         const needsUpdate = complaintItems.some(d => d.resolution !== 'reorder');
         if (needsUpdate) {
@@ -49,10 +59,9 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
                 d.action === 'complaint' ? { ...d, resolution: 'reorder' as const } : d
             );
             onDecisionsChange(newDecisions);
-            onValidationChange(true);
+            revalidate(newDecisions);
         } else {
-            const allResolved = complaintItems.every(d => d.resolution);
-            onValidationChange(allResolved);
+            revalidate(itemDecisions);
         }
     }, []);
 
@@ -119,31 +128,67 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
                                     </span>
                                 </div>
 
-                                {/* Complaint reason */}
-                                <div className="px-4 py-2 bg-orange-50/50 text-[10px] text-orange-700 font-bold">
-                                    <span className="material-icons-round text-xs mr-1 align-middle">format_quote</span>
-                                    {d.complaintReason || '—'}
-                                </div>
-
-                                {/* Resolution - Auto reorder */}
-                                <div className="p-4 space-y-2">
-                                    <span className="text-[9px] font-black text-gray-400 uppercase tracking-widest">Шийдвэрлэлт</span>
-                                    <div className="grid grid-cols-1 gap-2">
-                                        <button
-                                            onClick={() => updateResolution(d.itemId, 'reorder')}
-                                            className={`p-3 rounded-xl border-2 text-center transition-all flex flex-col items-center gap-1.5 ${d.resolution === 'reorder'
-                                                ? 'border-orange-400 bg-orange-50 shadow-md'
-                                                : 'border-gray-100 bg-gray-50 hover:border-orange-200'
-                                                }`}
-                                        >
-                                            <span className={`material-icons-round text-xl ${d.resolution === 'reorder' ? 'text-orange-500' : 'text-gray-400'}`}>
-                                                replay
-                                            </span>
-                                            <span className={`text-[10px] font-black uppercase ${d.resolution === 'reorder' ? 'text-orange-600' : 'text-gray-500'}`}>
-                                                Дахин захиалга
-                                            </span>
-                                        </button>
+                                {/* Complaint detail form */}
+                                <div className="p-4 space-y-4">
+                                    <div className="flex items-center gap-1.5 text-orange-600">
+                                        <span className="material-icons-round text-sm">edit_note</span>
+                                        <span className="text-[10px] font-black uppercase tracking-wider">Гомдлын мэдээлэл</span>
                                     </div>
+
+                                    {/* Complaint type multi-select */}
+                                    <div>
+                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Гомдлын төрөл</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {COMPLAINT_TYPES.map(ct => {
+                                                const selected = (d.complaintTypes || []).includes(ct.value);
+                                                return (
+                                                    <button
+                                                        key={ct.value}
+                                                        onClick={() => toggleComplaintType(d.itemId, ct.value)}
+                                                        className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-tight transition-all ${selected
+                                                            ? 'border-orange-400 bg-orange-50 text-orange-600'
+                                                            : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-orange-200'
+                                                            }`}
+                                                    >
+                                                        {ct.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {/* Complaint reason */}
+                                    <div>
+                                        <span className="text-[8px] font-bold text-red-500 uppercase tracking-wider block mb-1.5">Гомдлын агуулга *</span>
+                                        <textarea
+                                            value={d.complaintReason || ''}
+                                            onChange={e => updateComplaintField(d.itemId, { complaintReason: e.target.value })}
+                                            placeholder="Харилцагчийн гомдлын дэлгэрэнгүй энд бичнэ үү..."
+                                            className="w-full px-3 py-2.5 bg-white border-2 border-orange-100 rounded-xl text-xs font-bold text-gray-700 focus:outline-none focus:border-orange-300 resize-none transition-all"
+                                            rows={3}
+                                        />
+                                    </div>
+
+                                    {/* Photo upload */}
+                                    <div>
+                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-1.5">
+                                            <span className="material-icons-round text-[10px] align-middle mr-0.5">photo_camera</span>
+                                            Зураг / нотлох баримт (сонголтоор)
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-200 flex flex-col items-center justify-center cursor-pointer hover:border-orange-300 transition-colors">
+                                                <span className="material-icons-round text-gray-300 text-lg">add_photo_alternate</span>
+                                                <span className="text-[7px] text-gray-300 font-bold mt-0.5">Нэмэх</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {!d.complaintReason?.trim() && (
+                                        <p className="text-[9px] text-red-400 font-bold flex items-center gap-1">
+                                            <span className="material-icons-round text-xs">info</span>
+                                            Гомдлын агуулга заавал оруулна уу
+                                        </p>
+                                    )}
                                 </div>
                             </div>
                         );
