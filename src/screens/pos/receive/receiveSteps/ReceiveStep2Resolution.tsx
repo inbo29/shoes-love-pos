@@ -1,6 +1,5 @@
 import React from 'react';
-import type { ReceiveOrder, ItemDecision, ComplaintType } from '../receiveTypes';
-import { COMPLAINT_TYPES } from '../receiveTypes';
+import type { ReceiveOrder, ItemDecision } from '../receiveTypes';
 
 interface Props {
     orderData: ReceiveOrder;
@@ -35,14 +34,6 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
         );
         onDecisionsChange(newDecisions);
         revalidate(newDecisions);
-    };
-
-    const toggleComplaintType = (itemId: number, type: ComplaintType) => {
-        const dec = itemDecisions.find(d => d.itemId === itemId);
-        if (!dec) return;
-        const current = dec.complaintTypes || (dec.complaintType ? [dec.complaintType] : []);
-        const updated = current.includes(type) ? current.filter(t => t !== type) : [...current, type];
-        updateComplaintField(itemId, { complaintTypes: updated, complaintType: updated[0] });
     };
 
     const revalidate = (decisions: ItemDecision[]) => {
@@ -133,28 +124,6 @@ const ReceiveStep2Resolution: React.FC<Props> = ({
                                     <div className="flex items-center gap-1.5 text-orange-600">
                                         <span className="material-icons-round text-sm">edit_note</span>
                                         <span className="text-[10px] font-black uppercase tracking-wider">Гомдлын мэдээлэл</span>
-                                    </div>
-
-                                    {/* Complaint type multi-select */}
-                                    <div>
-                                        <span className="text-[8px] font-bold text-gray-400 uppercase tracking-wider block mb-2">Гомдлын төрөл</span>
-                                        <div className="flex flex-wrap gap-2">
-                                            {COMPLAINT_TYPES.map(ct => {
-                                                const selected = (d.complaintTypes || []).includes(ct.value);
-                                                return (
-                                                    <button
-                                                        key={ct.value}
-                                                        onClick={() => toggleComplaintType(d.itemId, ct.value)}
-                                                        className={`px-3 py-1.5 rounded-full border text-[10px] font-black uppercase tracking-tight transition-all ${selected
-                                                            ? 'border-orange-400 bg-orange-50 text-orange-600'
-                                                            : 'border-gray-200 bg-gray-50 text-gray-500 hover:border-orange-200'
-                                                            }`}
-                                                    >
-                                                        {ct.label}
-                                                    </button>
-                                                );
-                                            })}
-                                        </div>
                                     </div>
 
                                     {/* Complaint reason */}
