@@ -1,9 +1,21 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { mockCashReportData, PaymentMethodData, CancellationData } from './../../../services/mockCashReportData';
+import { mockCashReportData, PaymentMethodData, CancellationData, PaymentMethodName } from './../../../services/mockCashReportData';
 import Popup from '../../../shared/components/Popup/Popup';
 import PosDateRangePicker from '../../../shared/components/PosDateRangePicker';
 import PosDropdown from '../../../shared/components/PosDropdown';
+
+const METHOD_VISUAL: Record<PaymentMethodName, { icon: string; bg: string; fg: string }> = {
+    'Бэлэн': { icon: 'payments', bg: 'bg-green-100', fg: 'text-green-600' },
+    'Карт': { icon: 'credit_card', bg: 'bg-blue-100', fg: 'text-blue-600' },
+    'QPay': { icon: 'qr_code_2', bg: 'bg-purple-100', fg: 'text-purple-600' },
+    'Оноо': { icon: 'stars', bg: 'bg-amber-100', fg: 'text-amber-600' },
+    'Шилжүүлэг': { icon: 'sync_alt', bg: 'bg-indigo-100', fg: 'text-indigo-600' },
+    'Дансаар': { icon: 'account_balance', bg: 'bg-slate-100', fg: 'text-slate-600' },
+};
+
+const getMethodVisual = (method: string) =>
+    METHOD_VISUAL[method as PaymentMethodName] ?? { icon: 'payment', bg: 'bg-gray-100', fg: 'text-gray-500' };
 
 interface CashReportScreenProps {
     userName: string;
@@ -25,6 +37,11 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
     const [startDate, setStartDate] = useState<Date | null>(new Date('2025-12-24'));
     const [endDate, setEndDate] = useState<Date | null>(new Date('2025-12-24'));
     const [selectedBranch, setSelectedBranch] = useState(initialBranch);
+
+    // Print dialog state
+    const [showPrintDialog, setShowPrintDialog] = useState(false);
+    const [printStart, setPrintStart] = useState<Date | null>(startDate);
+    const [printEnd, setPrintEnd] = useState<Date | null>(endDate);
 
     const isAdmin = userName === 'Админ';
 
@@ -141,6 +158,19 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
         setShowConfirm(true);
     };
 
+    const handleOpenPrint = () => {
+        setPrintStart(startDate);
+        setPrintEnd(endDate);
+        setShowPrintDialog(true);
+    };
+
+    const handleConfirmPrint = () => {
+        if (printStart) setStartDate(printStart);
+        if (printEnd) setEndDate(printEnd);
+        setShowPrintDialog(false);
+        setTimeout(() => window.print(), 50);
+    };
+
     const confirmFinalize = () => {
         setIsProcessing(true);
         setShowConfirm(false);
@@ -197,6 +227,16 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                             {userName}
                         </p>
                     </div>
+                    <div className="space-y-1 pb-1">
+                        <p className="text-[10px] font-black text-transparent uppercase tracking-widest ml-1 select-none">.</p>
+                        <button
+                            onClick={handleOpenPrint}
+                            className="h-[44px] px-5 rounded-xl bg-primary text-white text-xs font-black uppercase tracking-widest shadow-md shadow-primary/20 hover:bg-primary-dark active:scale-95 transition-all flex items-center gap-2 print:hidden"
+                        >
+                            <span className="material-icons-round text-[18px]">print</span>
+                            Хэвлэх
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -223,14 +263,14 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                                         className={`p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors ${expandedMethod === data.method ? 'bg-gray-50/80 border-b border-gray-100' : ''}`}
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${data.method === 'Бэлэн' ? 'bg-green-100 text-green-600' :
-                                                data.method === 'Карт' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
-                                                }`}>
-                                                <span className="material-icons-round">{
-                                                    data.method === 'Бэлэн' ? 'payments' :
-                                                        data.method === 'Карт' ? 'credit_card' : 'qr_code_2'
-                                                }</span>
-                                            </div>
+                                            {(() => {
+                                                const v = getMethodVisual(data.method);
+                                                return (
+                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${v.bg} ${v.fg}`}>
+                                                        <span className="material-icons-round">{v.icon}</span>
+                                                    </div>
+                                                );
+                                            })()}
                                             <div>
                                                 <h4 className="font-black text-gray-800 uppercase tracking-tight">{data.method}</h4>
                                                 <p className="text-xs font-bold text-gray-400">Төлсөн дүн: {data.grossService.toLocaleString()} ₮</p>
@@ -330,9 +370,14 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                                         className={`p-6 flex items-center justify-between cursor-pointer hover:bg-gray-50/50 transition-colors ${expandedProductMethod === data.method ? 'bg-gray-50/80 border-b border-gray-100' : ''}`}
                                     >
                                         <div className="flex items-center gap-4">
-                                            <div className="w-12 h-12 rounded-2xl flex items-center justify-center bg-teal-50 text-teal-600">
-                                                <span className="material-icons-round">shopping_bag</span>
-                                            </div>
+                                            {(() => {
+                                                const v = getMethodVisual(data.method);
+                                                return (
+                                                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${v.bg} ${v.fg}`}>
+                                                        <span className="material-icons-round">{v.icon}</span>
+                                                    </div>
+                                                );
+                                            })()}
                                             <div>
                                                 <h4 className="font-black text-gray-800 uppercase tracking-tight">{data.method}</h4>
                                                 <p className="text-xs font-bold text-gray-400">Төлсөн дүн: {data.grossProduct.toLocaleString()} ₮</p>
@@ -525,6 +570,48 @@ const CashReportScreen: React.FC<CashReportScreenProps> = ({ userName, initialBr
                                 className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all active:scale-95 uppercase tracking-widest"
                             >
                                 Тийм
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Print Dialog */}
+            {showPrintDialog && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm print:hidden">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full overflow-visible animate-in zoom-in duration-300">
+                        <div className="p-8 space-y-6">
+                            <div className="flex items-center gap-3">
+                                <div className="w-12 h-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                                    <span className="material-icons-round">print</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-black text-gray-800 uppercase tracking-tight">Тайлан хэвлэх</h3>
+                                    <p className="text-[11px] font-bold text-gray-400">Хэвлэх хугацааг сонгоно уу</p>
+                                </div>
+                            </div>
+
+                            <PosDateRangePicker
+                                label="Огноо"
+                                start={printStart}
+                                end={printEnd}
+                                onChange={(s, e) => { setPrintStart(s); setPrintEnd(e); }}
+                            />
+                        </div>
+                        <div className="p-6 bg-gray-50 flex gap-3">
+                            <button
+                                onClick={() => setShowPrintDialog(false)}
+                                className="flex-1 py-4 bg-white border-2 border-gray-200 rounded-2xl text-[10px] font-black text-gray-500 hover:bg-gray-100 transition-all uppercase tracking-widest"
+                            >
+                                Буцах
+                            </button>
+                            <button
+                                onClick={handleConfirmPrint}
+                                disabled={!printStart || !printEnd}
+                                className="flex-1 py-4 bg-primary text-white rounded-2xl text-[10px] font-black shadow-lg shadow-primary/30 hover:bg-primary-dark transition-all active:scale-95 uppercase tracking-widest disabled:bg-gray-200 disabled:text-gray-400 disabled:shadow-none disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                                <span className="material-icons-round text-base">print</span>
+                                Хэвлэх
                             </button>
                         </div>
                     </div>

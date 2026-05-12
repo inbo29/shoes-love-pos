@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Popup from '../../../shared/components/Popup/Popup';
+import { mockCashReportData } from '../../../services/mockCashReportData';
 
 const DENOMINATIONS = [20000, 10000, 5000, 1000, 500, 100, 50, 20, 10, 5];
 
@@ -12,12 +13,16 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
     const [showConfirm, setShowConfirm] = useState(false);
     const [showSuccess, setShowSuccess] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [mealAllowanceStr, setMealAllowanceStr] = useState<string>('');
 
-    // Mocked expected totals (from "server")
-    const salesTotal = 1500000;
-    const orderTotal = 250000;
-    const expenseTotal = 15000;
-    const expectedTotal = salesTotal + orderTotal - expenseTotal; // Example calculation
+    // Today's cash drawer expectation (Бэлэн method total)
+    const cashSalesTotal = useMemo(() => {
+        const cash = mockCashReportData.paymentMethods.find(m => m.method === 'Бэлэн');
+        return cash ? cash.total : 0;
+    }, []);
+
+    const mealAllowance = parseInt(mealAllowanceStr) || 0;
+    const suggestedAmount = Math.max(0, cashSalesTotal - mealAllowance);
 
     const actualTotal = useMemo(() => {
         return DENOMINATIONS.reduce((sum, den) => {
@@ -25,7 +30,22 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
         }, 0);
     }, [counts]);
 
+    const difference = actualTotal - suggestedAmount;
     const canSubmit = actualTotal > 0;
+
+    const handleApplySuggestion = () => {
+        // Auto-fill denominations greedily to match the suggested amount
+        let remaining = suggestedAmount;
+        const next: Record<number, number> = {};
+        for (const den of DENOMINATIONS) {
+            const c = Math.floor(remaining / den);
+            if (c > 0) {
+                next[den] = c;
+                remaining -= c * den;
+            }
+        }
+        setCounts(next);
+    };
 
     const handleCountChange = (den: number, val: string) => {
         const num = parseInt(val) || 0;
@@ -104,34 +124,87 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
             </div>
 
             {/* Right Column: Summary */}
-            <div className="w-full md:w-[320px] lg:w-96 flex flex-col gap-6 shrink-0 overflow-y-auto no-scrollbar pb-10">
-                {/* Statistics Card */}
+            <div className="w-full md:w-[320px] lg:w-96 flex flex-col gap-4 shrink-0 overflow-y-auto no-scrollbar pb-10">
+                {/* Combined Summary Card */}
                 <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden">
-                    <div className="p-6 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
-                        <div className="h-8 w-1.5 bg-[#FFD400] rounded-sm"></div>
-                        <h3 className="text-sm font-black text-gray-800 uppercase tracking-tighter">Нийт дүн</h3>
+                    <div className="p-4 bg-gray-50/50 border-b border-gray-100 flex items-center gap-3">
+                        <div className="h-7 w-1.5 bg-[#FFD400] rounded-sm"></div>
+                        <h3 className="text-sm font-black text-gray-800 uppercase tracking-tighter">Тушаах нэгтгэл</h3>
                     </div>
 
-                    <div className="p-6 space-y-6">
-                        <div className="pt-2">
-                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Бичсэн дүн (Тоологдсон)</div>
-                            <div className={`rounded-2xl p-4 border flex items-center justify-between transition-all ${actualTotal > 0
+                    <div className="p-5 space-y-4">
+                        {/* Suggested section */}
+                        <div className="space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="font-bold text-gray-500">Бэлэн борлуулалт</span>
+                                <span className="font-black text-gray-800">{cashSalesTotal.toLocaleString()} ₮</span>
+                            </div>
+
+                            <div className="flex justify-between items-center gap-3">
+                                <label className="text-sm font-bold text-gray-500 whitespace-nowrap">Хоол унаа</label>
+                                <div className="relative flex-1 max-w-[160px]">
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        value={mealAllowanceStr}
+                                        onChange={(e) => {
+                                            const v = e.target.value.replace(/[^0-9]/g, '');
+                                            setMealAllowanceStr(v);
+                                        }}
+                                        placeholder="0"
+                                        className="w-full pl-8 pr-6 py-2 bg-gray-50 border border-gray-200 rounded-lg text-right font-black text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary transition-all"
+                                    />
+                                    <span className="material-icons-round absolute left-2 top-1/2 -translate-y-1/2 text-gray-300 text-base">restaurant</span>
+                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-bold text-gray-400 pointer-events-none">₮</span>
+                                </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-gray-50">
+                                <div className="rounded-2xl p-3 border bg-secondary/10 border-secondary/30 flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                        <span className="material-icons-round text-[#111827] text-lg">savings</span>
+                                        <span className="text-[10px] font-black text-[#111827] uppercase tracking-widest">Санал</span>
+                                    </div>
+                                    <div className="text-xl font-black tracking-tighter text-[#111827]">
+                                        {suggestedAmount.toLocaleString()} ₮
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={handleApplySuggestion}
+                                    disabled={suggestedAmount <= 0}
+                                    className="w-full mt-2 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest border border-primary/30 text-primary bg-white hover:bg-primary/5 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-1.5"
+                                >
+                                    <span className="material-icons-round text-sm">auto_fix_high</span>
+                                    Дэвсгэртэд оруулах
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Counted section */}
+                        <div className="pt-3 border-t border-gray-50 space-y-3">
+                            <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Бичсэн дүн (Тоологдсон)</div>
+                            <div className={`rounded-2xl p-3 border flex items-center justify-between transition-all ${actualTotal > 0
                                 ? 'bg-primary/5 border-primary/20 text-primary'
                                 : 'bg-gray-50 border-gray-100 text-gray-300'
                                 }`}>
                                 <span className="material-icons-round">account_balance_wallet</span>
-                                <div className="text-2xl font-black tracking-tighter">
+                                <div className="text-xl font-black tracking-tighter">
                                     {actualTotal.toLocaleString()} ₮
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Status */}
-                        <div className="pt-2">
-                            {actualTotal > 0 && (
-                                <div className="flex items-center gap-3 p-4 rounded-xl border bg-green-50 text-green-600 border-green-100 text-xs font-bold animate-in fade-in slide-in-from-top-2">
-                                    <span className="material-icons-round text-lg">check_circle</span>
-                                    <div>Мөнгө тушаахад бэлэн байна</div>
+                            {actualTotal > 0 && suggestedAmount > 0 && (
+                                <div className={`flex items-center justify-between px-3 py-2 rounded-lg border text-xs font-bold ${difference === 0
+                                    ? 'bg-green-50 border-green-100 text-green-600'
+                                    : difference > 0
+                                        ? 'bg-blue-50 border-blue-100 text-blue-600'
+                                        : 'bg-orange-50 border-orange-100 text-orange-600'
+                                    }`}>
+                                    <span className="uppercase tracking-widest text-[10px]">Зөрүү</span>
+                                    <span className="font-black">
+                                        {difference > 0 ? '+' : ''}{difference.toLocaleString()} ₮
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -139,19 +212,19 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
                 </div>
 
                 {/* Date & Action Card */}
-                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 space-y-6">
-                    <div className="space-y-2">
-                        <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Мөнгө тушаах огноо</label>
-                        <div className="p-3.5 bg-gray-50 rounded-2xl border border-gray-100 text-sm font-bold text-gray-600 flex items-center gap-3">
-                            <span className="material-icons-round text-gray-300 text-lg">calendar_today</span>
-                            {new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}
+                <div className="bg-white rounded-3xl shadow-xl border border-gray-100 p-5 space-y-4">
+                    <div className="flex items-center gap-3">
+                        <span className="material-icons-round text-gray-300 text-lg">calendar_today</span>
+                        <div>
+                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Тушаах огноо</p>
+                            <p className="text-sm font-bold text-gray-700">{new Date().toLocaleDateString('en-GB').replace(/\//g, '.')}</p>
                         </div>
                     </div>
 
                     <button
                         disabled={!canSubmit || isSubmitting}
                         onClick={handleSubmit}
-                        className={`w-full py-5 rounded-2xl text-base font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 flex items-center justify-center gap-4 ${canSubmit && !isSubmitting
+                        className={`w-full py-4 rounded-2xl text-sm font-black uppercase tracking-widest shadow-xl transition-all active:scale-95 flex items-center justify-center gap-3 ${canSubmit && !isSubmitting
                             ? 'bg-secondary text-[#111827] shadow-secondary/30 hover:bg-yellow-400 cursor-pointer'
                             : 'bg-gray-100 text-gray-300 cursor-not-allowed'
                             }`}
@@ -165,10 +238,6 @@ const CashSubmissionScreen: React.FC<CashSubmissionScreenProps> = () => {
                             </>
                         )}
                     </button>
-
-                    <p className="text-[10px] text-gray-400 text-center leading-relaxed">
-                        * Тушаах товчийг дарж гүйлгээг баталгаажуулна уу.
-                    </p>
                 </div>
             </div>
 
